@@ -52,21 +52,22 @@ if(window.rcmail)
 
 			$("body").append(key_manager);
 			$('#openpgpjs_tabs').tabs();
-			$("#openpgpjs_key_manager" ).dialog({ modal: true, autoOpen: true, title: "OpenPGP key management", width: "80%" });
+			$('#openpgpjs_key_manager').dialog({ modal: false, autoOpen: false, title: "OpenPGP key management", width: "80%" });
 			update_tables();
 
 			// Disable send button before encrypt
 			rcmail.enable_command("send", false);
 			$('#rcmbtn110').click(function() {encryptAndSend();});
+			$('#compose-buttons').append("<input type='button' class='button' value='Key manager' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");' />");
 			$('#compose-buttons').append("<input type='checkbox' checked='checked' /> Encrypt <input checked='checked' type='checkbox' /> Sign");
 		}
 		else if(rcmail.env.action == 'show')
 		{
-			this.passphrase = "";
+			this.passphrase = $.cookie("passphrase");
 			// TODO: Add key list and let user select which key to use
 			var key_select = "<div id='openpgpjs_key_select' style='display:none;'>" +
 					 	"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
-						"<p><input type='checkbox' /> Remember for this session</p>" +
+						"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for 5 minutes</p>" +
 						"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#passphrase\").val());' /></p>"
 					"</div>";
 			$("body").append(key_select);
@@ -74,12 +75,21 @@ if(window.rcmail)
 			decrypt($('#messageoutput').html());
 		}
 	});
-	
-	function set_passphrase(passphrase)
+
+	// TODO: Detect which private key we're using. Depends on multiple key support in key selector.
+	function set_passphrase(p)
 	{
-		this.passphrase = $('#passphrase').val();
+		this.passphrase = p;
 		$('#openpgpjs_key_select').dialog('close');
-		decrypt($('#messageoutput').html());
+		var r = decrypt($('#messageoutput').html());
+		// TODO: Detect idle time, and store for 5 minutes idle time instead of just straight 5 minutes
+		if(r != false && $('#openpgpjs_rememberpass').is(':checked'))
+		{
+			// 5*60*1000ms
+			var date = new Date();
+			date.setTime(date.getTime() + (5*60*1000));
+			$.cookie("passphrase", p, { expires: date });
+		}
 	}
 	
 	function encryptAndSend()
@@ -213,7 +223,7 @@ if(window.rcmail)
 		if(!msg)
 			return;
 
-		if(passphrase == '')
+		if(passphrase == null)
 		{
 			$("#openpgpjs_key_select").dialog('open');
 			return;
@@ -257,7 +267,7 @@ if(window.rcmail)
 			{
 				alert("Passphrase for secrect key was incorrect!");
 				$("#openpgpjs_key_select").dialog('open');
-				return;
+				return false;
 			}
 
 			// TODO: Sanitize first

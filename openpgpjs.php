@@ -34,6 +34,7 @@ class openpgpjs extends rcube_plugin
 	{
 		if($params['template'] == 'compose' || $params['template'] == 'message')
 		{
+			$this->include_script('js/jquery.cookie.js');
 			$this->include_script('js/openpgp.min.js');
 			$this->include_script('js/sjcl.js');
 			$this->include_script('js/uuid.js');
