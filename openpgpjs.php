@@ -28,10 +28,11 @@ class openpgpjs extends rcube_plugin
 	function init()
 	{
 		$this->add_hook('render_page', array($this, 'render_page'));
+		$this->register_action('plugin.someaction', array($this, 'pass_compare'));
 	}
 	
 	function render_page($params)
-	{
+	{	
 		if($params['template'] == 'compose' || $params['template'] == 'message')
 		{
 			$this->include_script('js/jquery.cookie.js');
@@ -43,5 +44,19 @@ class openpgpjs extends rcube_plugin
 		}
 
 		return $params;
+	}
+
+	/**
+	 * Determine if the provided passphrase equals the password of the authenticated
+	 * user. Deny key generation on JavaScript level if so is the case.
+	 */
+	function pass_compare()
+	{
+		$rcmail = rcmail::get_instance();
+		if($_POST['passphrase'] == $rcmail->decrypt($_SESSION['password']))
+			$ret = true;
+		else
+			$ret = false;
+		$rcmail->output->command('plugin.somecallback', array('message' => $ret));
 	}
 }

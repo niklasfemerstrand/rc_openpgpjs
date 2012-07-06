@@ -20,11 +20,15 @@
 +-------------------------------------------------------------------------+
 */
 
+// TODO: Use HTML5 web workers for heavy calculations
 if(window.rcmail)
 {
 	rcmail.addEventListener('init', function(evt)
 	{
 		openpgp.init();
+		rcmail.addEventListener('plugin.somecallback', some_callback_function);
+		rcmail.http_post('plugin.someaction', 'passphrase=hello');
+
 		if (rcmail.env.action == 'compose')
 		{
 			// Spawn temp(?) ui
@@ -33,6 +37,7 @@ if(window.rcmail)
 					  	"<ul>" +
 							"<li><a href='#openpgpjs-tab1'>Private keys</a></li>" + 
 							"<li><a href='#openpgpjs-tab2'>Public keys</a></li>" +
+							"<li><a href='#openpgpjs-tab3'>Generate keys</a></li>" +
 						"</ul>" + 
 						"<div id='openpgpjs-tab1'>" + 
 							"<table id='openpgpjs_privkeys' class='openpgpjs_keys'></table>" +
@@ -48,7 +53,12 @@ if(window.rcmail)
 								"<p><textarea id='importPubkeyField'></textarea></p>" +
 								"<p><input type='button' class='button' value='Import public key' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>" +
 							"</div>" +
-						"</div>";
+						"</div>" +
+						"<div id='openpgpjs-tab3'>" +
+							"<p><strong>Passphrase:</strong> <input type='text' id='gen_passphrase' /></p>" +
+							"<p><input type='button' class='button' value='Generate new key pair' onclick='generate_keypair();' /></p>" +
+						"</div>" +
+					  "</div></div>";
 
 			$("body").append(key_manager);
 			$('#openpgpjs_tabs').tabs();
@@ -75,6 +85,26 @@ if(window.rcmail)
 			decrypt($('#messageoutput').html());
 		}
 	});
+
+	function some_callback_function(response)
+	{
+		alert(response.message);
+	}
+
+	function generate_keypair()
+	{
+		// 1024 bit RSA
+		if($('#gen_passphrase').val() == '')
+		{
+			alert("Please specify a passphrase!");
+			return;
+		}
+
+		console.log("Generating keys...");
+		var keys = openpgp.generate_key_pair(1, 1024, "n <nik@qnrq.se>", $('#gen_passphrase').val()); 
+		console.log(keys.publicKeyArmored + "\n" + keys.privateKeyArmored);
+		$('#openpgpjs-tab3').append(keys.publicKeyArmored);
+	}
 
 	// TODO: Detect which private key we're using. Depends on multiple key support in key selector.
 	function set_passphrase(p)
@@ -223,7 +253,7 @@ if(window.rcmail)
 		if(!msg)
 			return;
 
-		if(passphrase == null)
+		if(passphrase == null && openpgp.keyring.privateKeys.length > 0)
 		{
 			$("#openpgpjs_key_select").dialog('open');
 			return;
