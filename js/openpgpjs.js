@@ -26,8 +26,11 @@ if(window.rcmail)
 	rcmail.addEventListener('init', function(evt)
 	{
 		openpgp.init();
+		openpgp.config.config.keyserver = "pgp.mit.edu:11371";
+		console.log(openpgp.config.config);
 		rcmail.addEventListener('plugin.somecallback', some_callback_function);
-		rcmail.http_post('plugin.someaction', 'passphrase=hello');
+		//rcmail.http_post('plugin.someaction', 'passphrase=hello');
+		rcmail.addEventListener('openpgpjs.pks_proxy_callback', pks_proxy_callback);
 
 		if (rcmail.env.action == 'compose')
 		{
@@ -50,19 +53,21 @@ if(window.rcmail)
 						"<div id='openpgpjs-tab2'>" +
 							"<table id='openpgpjs_pubkeys' class='openpgpjs_keys'></table>" +
 							"<div id='openpgpjs_import'>" +
+								"<p><strong>Keyserver:</strong> <input type='text' id='openpgpjs_keyserver' /></p>" +
 								"<p><textarea id='importPubkeyField'></textarea></p>" +
+								"<p><input type='checkbox' checked='checked' id='openpgpjs_use_keyserver' /> Send to keyserver</p>" +
 								"<p><input type='button' class='button' value='Import public key' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>" +
 							"</div>" +
 						"</div>" +
 						"<div id='openpgpjs-tab3'>" +
-							"<p><strong>Passphrase:</strong> <input type='text' id='gen_passphrase' /></p>" +
+							"<p><strong>Passphrase:</strong> <input type='password' id='gen_passphrase' /></p>" +
 							"<p><input type='button' class='button' value='Generate new key pair' onclick='generate_keypair();' /></p>" +
 						"</div>" +
 					  "</div></div>";
 
 			$("body").append(key_manager);
 			$('#openpgpjs_tabs').tabs();
-			$('#openpgpjs_key_manager').dialog({ modal: false, autoOpen: false, title: "OpenPGP key management", width: "80%" });
+			$('#openpgpjs_key_manager').dialog({ modal: false, autoOpen: true, title: "OpenPGP key management", width: "80%" });
 			update_tables();
 
 			// Disable send button before encrypt
@@ -131,6 +136,7 @@ if(window.rcmail)
 	// TODO: Add to keyring	
 	function importPubKey(key)
 	{
+/*
 		try
 		{
 			openpgp.keyring.importPublicKey(key);
@@ -143,6 +149,31 @@ if(window.rcmail)
 			alert("Could not import public key, possibly wrong format.");
 			return;
 		}
+*/
+
+		// Send to public key ring
+		// TODO: Either they need to be verified in the PKS, or this is incorrect.
+		// http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-4
+		if($('#openpgpjs_use_keyserver').is(':checked'))
+		{
+			// TODO: Verify status code
+	//		try()
+	//		{
+//				$.post("http://" + openpgp.config.config.keyserver + "/pks/add", { 'Origin': "http://" + openpgp.config.config.keyserver + "/pks/add", 'keytext': urlencode(key) } );
+				var r = rcmail.http_post('openpgpjs.pks_proxy', 'keytext=' + urlencode(key));
+				console.log(r);
+//
+	//		}
+	//		catch(e)
+	//		{
+	//			console.log(e);
+	//		}
+		}
+	}
+
+	function pks_proxy_callback(response)
+	{
+		alert(response.message);
 	}
 	
 	function importPrivKey(key)
@@ -170,6 +201,7 @@ if(window.rcmail)
 			openpgp.keyring.store();
 			update_tables();
 			$('#importPrivkeyField').val("");
+			$('#passphrase').val("");
 		}
 		catch(e)
 		{
@@ -218,6 +250,8 @@ if(window.rcmail)
 								"</td></tr>");
 			}
 		}
+
+		$('#openpgpjs_keyserver').val(openpgp.config.config.keyserver);
 	}
 
 	function getAlgorithmString(publicKey)
@@ -245,7 +279,7 @@ if(window.rcmail)
 		return result;
 	}
 	
-	// TODO: Add signature verification
+	// TODO: Add signature verification, depends on key ring connection
 	function decrypt(data)
 	{
 		var msg = openpgp.read_message(data);
