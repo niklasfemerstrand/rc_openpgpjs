@@ -30,7 +30,7 @@ if(window.rcmail)
 		console.log(openpgp.config.config);
 		rcmail.addEventListener('plugin.somecallback', some_callback_function);
 		//rcmail.http_post('plugin.someaction', 'passphrase=hello');
-		rcmail.addEventListener('openpgpjs.pks_proxy_callback', pks_proxy_callback);
+		rcmail.addEventListener('plugin.pks_proxy', pks_proxy_callback);
 
 		if (rcmail.env.action == 'compose')
 		{
@@ -54,6 +54,7 @@ if(window.rcmail)
 							"<table id='openpgpjs_pubkeys' class='openpgpjs_keys'></table>" +
 							"<div id='openpgpjs_import'>" +
 								"<p><strong>Keyserver:</strong> <input type='text' id='openpgpjs_keyserver' /></p>" +
+								"<p><strong>Search:</strong> <input type='text' id='pubkey_search' /></p>" +
 								"<p><textarea id='importPubkeyField'></textarea></p>" +
 								"<p><input type='checkbox' checked='checked' id='openpgpjs_use_keyserver' /> Send to keyserver</p>" +
 								"<p><input type='button' class='button' value='Import public key' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>" +
@@ -133,10 +134,12 @@ if(window.rcmail)
 		alert("encrypt");
 	}
 
-	// TODO: Add to keyring	
 	function importPubKey(key)
 	{
-/*
+		if($('#pubkey_search').val() != "")
+		{
+			rcmail.http_post('plugin.pks_proxy', 'action=search&' + 'search=' + urlencode(key));
+		}
 		try
 		{
 			openpgp.keyring.importPublicKey(key);
@@ -149,31 +152,20 @@ if(window.rcmail)
 			alert("Could not import public key, possibly wrong format.");
 			return;
 		}
-*/
 
 		// Send to public key ring
 		// TODO: Either they need to be verified in the PKS, or this is incorrect.
 		// http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-4
 		if($('#openpgpjs_use_keyserver').is(':checked'))
 		{
-			// TODO: Verify status code
-	//		try()
-	//		{
-//				$.post("http://" + openpgp.config.config.keyserver + "/pks/add", { 'Origin': "http://" + openpgp.config.config.keyserver + "/pks/add", 'keytext': urlencode(key) } );
-				var r = rcmail.http_post('openpgpjs.pks_proxy', 'keytext=' + urlencode(key));
-				console.log(r);
-//
-	//		}
-	//		catch(e)
-	//		{
-	//			console.log(e);
-	//		}
+				rcmail.http_post('plugin.pks_proxy', 'action=export&' + 'keytext=' + urlencode(key));
 		}
 	}
 
 	function pks_proxy_callback(response)
 	{
 		alert(response.message);
+		console.log(response);
 	}
 	
 	function importPrivKey(key)

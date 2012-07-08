@@ -29,9 +29,9 @@ class openpgpjs extends rcube_plugin
 	{
 		$this->add_hook('render_page', array($this, 'render_page'));
 		$this->register_action('plugin.someaction', array($this, 'pass_compare'));
-		$this->register_action('openpgpjs.pks_proxy', array($this, 'pks_proxy'));
+		$this->register_action('plugin.pks_proxy', array($this, 'pks_proxy'));
 	}
-	
+
 	function render_page($params)
 	{	
 		if($params['template'] == 'compose' || $params['template'] == 'message')
@@ -69,6 +69,25 @@ class openpgpjs extends rcube_plugin
 	function pks_proxy()
 	{
 		$rcmail = rcmail::get_instance();
-		$rcmail->output->command('openpgpjs.pks_proxy_callback', array('message' => 'test'));
+		$ch = curl_init();
+		switch($_POST['action'])
+		{
+			case 'export':
+				// TODO: This doesn't work...
+				// $ curl -d "keytext=test" http://pgp.mit.edu:11371/pks/add
+				curl_setopt($ch,CURLOPT_URL, "http://pgp.mit.edu:11371/pks/add");
+				curl_setopt($ch,CURLOPT_POST, 1);
+				curl_setopt($ch,CURLOPT_POSTFIELDS, urlencode("keytext=".$_POST['keytext']));
+				$result = curl_exec($ch);
+				
+				break;
+			case 'search':
+				// TODO: http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-3.4
+				$result = "search";
+				break;
+			default:
+				return;
+		}
+		$rcmail->output->command('plugin.pks_proxy', array('message' => $result));
 	}
 }
