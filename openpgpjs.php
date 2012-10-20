@@ -23,13 +23,13 @@
 
 class openpgpjs extends rcube_plugin
 {
-	public $task = 'mail';
+//	public $task = 'mail';
 
 	function init()
 	{
 		$this->add_hook('render_page', array($this, 'render_page'));
-		$this->register_action('plugin.someaction', array($this, 'pass_compare'));
-		$this->register_action('plugin.pks_proxy', array($this, 'pks_proxy'));
+		$this->add_hook('user_create', array($this, 'user_create'));
+		$this->register_action('plugin.pks_search', array($this, 'pks_search'));
 	}
 
 	function render_page($params)
@@ -47,47 +47,41 @@ class openpgpjs extends rcube_plugin
 		return $params;
 	}
 
-	/**
-	 * Determine if the provided passphrase equals the password of the authenticated
-	 * user. Deny key generation on JavaScript level if so is the case.
-	 */
-	function pass_compare()
+	// Create default identity, required as pubkey metadata
+	function user_create($params)
 	{
-		$rcmail = rcmail::get_instance();
-		if($_POST['passphrase'] == $rcmail->decrypt($_SESSION['password']))
-			$ret = true;
-		else
-			$ret = false;
-		$rcmail->output->command('plugin.somecallback', array('message' => $ret));
+		$params['user_name'] = preg_replace("/@.*$/", "", $params['user']);
+		$params['user_email'] = $params['user'];
+		return $params;
 	}
 
 	/**
 	 * Public key server proxy used to circument Access-Control-Allow-Origin.
 	 * If the the Roundcube service is running on HTTPS this function also helps
-	 * anonymizing who the user is emailing as PKS uses HTTP by default.
+	 * anonymizing who the user is emailing as PKS uses HTTP by default. See
+	 * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00 for more info.
 	 */
-	function pks_proxy()
+	function pks_search()
 	{
 		$rcmail = rcmail::get_instance();
-		$ch = curl_init();
-		switch($_POST['action'])
+		//TODO switch to curl, read http status code
+		if($_POST['op'] == "index")
 		{
-			case 'export':
-				// TODO: This doesn't work...
-				// $ curl -d "keytext=test" http://pgp.mit.edu:11371/pks/add
-				curl_setopt($ch,CURLOPT_URL, "http://pgp.mit.edu:11371/pks/add");
-				curl_setopt($ch,CURLOPT_POST, 1);
-				curl_setopt($ch,CURLOPT_POSTFIELDS, urlencode("keytext=".$_POST['keytext']));
-				$result = curl_exec($ch);
-				
-				break;
-			case 'search':
-				// TODO: http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-3.4
-				$result = "search";
-				break;
-			default:
-				return;
+			$return = "";
+			$result = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=index&search={$_POST['search']}");
+			preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
+			if(count($m > 0))
+			{
+				for($i = 0; $i < count($m[0]); $i++)
+					$return .= "{$m[1][$i]}:{$m[2][$i]}\n";
+			}
 		}
-		$rcmail->output->command('plugin.pks_proxy', array('message' => $result));
+		elseif($_POST['op'] == "get")
+		{
+			$return = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST['search']}");
+		}
+
+		$rcmail->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
+		return;
 	}
 }
