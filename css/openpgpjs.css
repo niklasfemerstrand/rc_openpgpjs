@@ -12,3 +12,4 @@ tr.key { cursor: pointer; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; }
 .search_row { cursor: pointer; }
 .odd { background-color: #ccc; } /* kaos kommunikation */
+.button#openpgp_js { background: url("../img/lock.png") no-repeat; background-position: center; }

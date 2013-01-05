@@ -82,14 +82,17 @@ if(window.rcmail)
 
 			$("body").append(key_manager);
 			$('#openpgpjs_tabs').tabs();
-			$('#openpgpjs_key_manager').dialog({ modal: true, autoOpen: false, title: "OpenPGP key management", width: "90%" });
+			$('#openpgpjs_key_manager').dialog({ modal: true,
+			                                     autoOpen: false,
+			                                     title: "OpenPGP key management",
+			                                     width: "90%" });
 			update_tables();
 
 			rcmail.enable_command("send", false);
-			$('#rcmbtn110').click(function() {encryptAndSend();});
+			$('#rcmbtn114').click(function() { encryptAndSend(); });
 
-			$('#compose-buttons').append("<input type='button' class='button' value='Key manager' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");' />");
-			$("#compose-headers").append("<tr><td class=\"title\">Security(<a href=\"https://mejly.com/docs\" target=\"_blank\">?</a>)</td><td><input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign</td></tr>");
+			$("#mailtoolbar").prepend("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
+			$("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
 		} else if (rcmail.env.action === 'show')
 		{
 			decrypt($('#messagebody div.message-part pre').html());
