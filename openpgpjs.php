@@ -63,6 +63,12 @@ class openpgpjs extends rcube_plugin
 	 */
 	function pks_search()
 	{
+		if(!isset($_POST['op']))
+		{
+			$rcmail->output->command('plugin.pks_search', array('message' => "ERR: Missing param"));
+			return;
+		}
+
 		$rcmail = rcmail::get_instance();
 		//TODO switch to curl, read http status code
 		if($_POST['op'] == "index")
