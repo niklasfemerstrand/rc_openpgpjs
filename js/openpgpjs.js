@@ -31,14 +31,17 @@ if(window.rcmail)
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
 
 		this.passphrase = $.cookie("passphrase");
-		// TODO: Add key list and let user select which key to use
+		// TODO: Add key list and let user select which key to use to support multiple keys
 		var key_select = "<div id='openpgpjs_key_select'>" +
 						 	"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
 							"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for 5 minutes</p>" +
 							"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#passphrase\").val());' /></p>"
 						"</div>";
 		$("body").append(key_select);
-		$("#openpgpjs_key_select" ).dialog({ modal: true, autoOpen: false, title: "OpenPGP key select", width: "30%" });
+		$("#openpgpjs_key_select" ).dialog({ modal: true,
+		                                     autoOpen: false,
+		                                     title: "OpenPGP key select",
+		                                     width: "30%" });
 
 		if (rcmail.env.action === 'compose')
 		{
@@ -153,6 +156,7 @@ if(window.rcmail)
 			var r = true;
 			encryptAndSend(); // Async
 		}
+
 		// TODO: Detect idle time, and store for 5 minutes idle time instead of just straight 5 minutes
 		if(r != false && $('#openpgpjs_rememberpass').is(':checked'))
 		{
@@ -194,7 +198,7 @@ if(window.rcmail)
 			}
 
 			// TODO sign
-			$("textarea#compose-body").val(openpgp.write_encrypted_message(pubkeys, $("textarea#compose-body").val()));
+			$("textarea#composebody").val(openpgp.write_encrypted_message(pubkeys, $("textarea#composebody").val()));
 		}
 
 		rcmail.enable_command("send", true);
@@ -212,7 +216,7 @@ if(window.rcmail)
 		}
 		catch(e)
 		{
-			//alert("Could not import public key, possibly wrong format.");
+			alert("Could not import public key, possibly wrong format.");
 			return;
 		}
 	}
@@ -272,7 +276,7 @@ if(window.rcmail)
 		// Verify passphrase
 		try
 		{
-			// TODO: Test encryption
+			// TODO: Verify passphrase by testing encryption
 		}
 		catch(e)
 		{
@@ -350,7 +354,7 @@ if(window.rcmail)
 		$("#importPubkeyField").val(openpgp.keyring.publicKeys[key].armored);
 	}
 
-function displayPriv(key)
+	function displayPriv(key)
 	{
 		var keyid = openpgp.keyring.privateKeys[key].obj.getKeyId();
 		$("#importPrivkeyField").val(openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored);
