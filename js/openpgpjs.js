@@ -65,8 +65,8 @@ if(window.rcmail)
 							"<table id='openpgpjs_privkeys' class='openpgpjs_keys'></table>" +
 							"<div id='openpgpjs_import'>" +
 								"<p><textarea id='importPrivkeyField'></textarea></p>" +
-								"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
-								"<p><input type='button' class='button' value='Import private key' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#passphrase\").val());' /></p>" +
+								"<p><strong>Passphrase:</strong> <input type='password' id='import_passphrase' /></p>" +
+								"<p><input type='button' class='button' value='Import private key' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#import_passphrase\").val());' /></p>" +
 							"</div>" +
 						"</div>" +
 						"<div id='openpgpjs-tab3'>" +
@@ -121,20 +121,13 @@ if(window.rcmail)
 	function importGenerated()
 	{
 		$('#import_button').addClass("hidden");
-		try
-		{
-			importPubKey($("#generated_public").html());
-			importPrivKey($("#generated_private").html(), $("#gen_passphrase").val());
-			alert("Great success! Please save your keys somewhere safe, preferably in an encrypted container. Keys are not transferred to the server.");
-			$("#gen_passphrase").val("");
-			$("#gen_passphrase_verify").val("");
+		importPubKey($("#generated_public").html());
 
-		}
-		catch(Exception)
-		{
-			// Errors come from other functions
-			return;
-		}
+		if(importPrivKey($("#generated_private").html(), $("#gen_passphrase").val()))
+			alert("Great success! Please save your keys somewhere safe, preferably in an encrypted container. Keys are not transferred to the server.");
+
+		$("#gen_passphrase").val("");
+		$("#gen_passphrase_verify").val("");
 	}
 
 	// TODO: Detect which private key we're using. Depends on multiple key support in key selector.
@@ -262,34 +255,30 @@ if(window.rcmail)
 		if(passphrase === '')
 		{
 			alert('Please enter passphrase.');
-			return;
+			return false;
 		}
 
-		// Verify passphrase
 		try
 		{
-			// TODO: Verify passphrase by testing encryption
-			console.log("They will never find us here, Jimmy.");
+			privkey_obj = openpgp.read_privateKey(key)[0];
 		}
 		catch(e)
+		{
+			alert("Wrong key format.");
+			return false;
+		}
+
+		if(!privkey_obj.decryptSecretMPIs(passphrase))
 		{
 			alert('Wrong passphrase specified');
 			return false;
 		}
-		
-		try
-		{
-			openpgp.keyring.importPrivateKey(key, passphrase);
-			openpgp.keyring.store();
-			update_tables();
-			$('#importPrivkeyField').val("");
-			$('#passphrase').val("");
-		}
-		catch(e)
-		{
-			//alert("Could not import private key, possibly wrong format.");
-			return;
-		}
+
+		openpgp.keyring.importPrivateKey(key, passphrase);
+		openpgp.keyring.store();
+		update_tables();
+		$('#importPrivkeyField').val("");
+		$('#passphrase').val("");
 	}
 	
 	function update_tables()
