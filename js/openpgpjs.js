@@ -26,8 +26,6 @@ if(window.rcmail)
 	rcmail.addEventListener('init', function(evt)
 	{
 		openpgp.init();
-		openpgp.config.config.keyserver = "pgp.mit.edu:11371";
-		rcmail.addEventListener('plugin.somecallback', some_callback_function);
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
 
 		this.passphrase = $.cookie("passphrase");
@@ -43,45 +41,43 @@ if(window.rcmail)
 		                                     title: "OpenPGP key select",
 		                                     width: "30%" });
 
-		if (rcmail.env.action === 'compose')
-		{
-			// Spawn temp(?) ui
-			var key_manager = "<div id='openpgpjs_key_manager'><div id='openpgpjs_key_manager_container'>" +
-					  "<div id='openpgpjs_tabs'>" + 
-					  	"<ul>" +
-							"<li><a href='#openpgpjs-tab1'>Generate keys</a></li>" +
-							"<li><a href='#openpgpjs-tab2'>Private keys</a></li>" + 
-							"<li><a href='#openpgpjs-tab3'>Public keys</a></li>" +
-						"</ul>" + 
-						"<div id='openpgpjs-tab1'>" +
-							"<p><strong>Passphrase:</strong> <input type='password' id='gen_passphrase' /> " +
-							"<strong>Verify:</strong> <input type='password' id='gen_passphrase_verify' /> " +
-							"<strong>Bits:</strong> <select id='gen_bits'><option value='1024'>1024</option><option value='2048'>2048</option><option value='4096'>4096</option></select> " +
-//							"<strong>Algorithm:</strong> <select id='gen_algo'><option value='1'>RSA</option><option value='16'>DSA/Elgamal</option></select> " +
-							"<input type='button' class='button' value='Generate' onclick='generate_keypair($(\"#gen_bits\").val(), 1);' />" +
-							"<input type='button' class='button hidden' id='import_button' value='Import' onclick='importGenerated();' />" +
-						"<div id='generated_keys'></div>" +
-					"</div>" +
-					"<div id='openpgpjs-tab2'>" + 
-						"<table id='openpgpjs_privkeys' class='openpgpjs_keys'></table>" +
-						"<div id='openpgpjs_import'>" +
-							"<p><textarea id='importPrivkeyField'></textarea></p>" +
-							"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
-							"<p><input type='button' class='button' value='Import private key' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#passphrase\").val());' /></p>" +
+		var key_manager = "<div id='openpgpjs_key_manager'><div id='openpgpjs_key_manager_container'>" +
+							  "<div id='openpgpjs_tabs'>" + 
+							  	"<ul>" +
+									"<li><a href='#openpgpjs-tab1'>Generate keys</a></li>" +
+									"<li><a href='#openpgpjs-tab2'>Private keys</a></li>" + 
+									"<li><a href='#openpgpjs-tab3'>Public keys</a></li>" +
+								"</ul>" + 
+								"<div id='openpgpjs-tab1'>" +
+									"<p><strong>Passphrase:</strong> <input type='password' id='gen_passphrase' /> " +
+										"<strong>Verify:</strong> <input type='password' id='gen_passphrase_verify' /> " +
+										"<strong>Bits:</strong> " +
+										"<select id='gen_bits'><option value='1024'>1024</option>" +
+															  "<option value='2048'>2048</option>" +
+															  "<option value='4096'>4096</option>" +
+										"</select> " +
+//										"<strong>Algorithm:</strong> <select id='gen_algo'><option value='1'>RSA</option><option value='16'>DSA/Elgamal</option></select> " +
+										"<input type='button' class='button' value='Generate' onclick='generate_keypair($(\"#gen_bits\").val(), 1);' />" +
+										"<input type='button' class='button hidden' id='import_button' value='Import' onclick='importGenerated();' /></p>" +
+										"<div id='generated_keys'></div>" +
+								"</div>" +
+						"<div id='openpgpjs-tab2'>" + 
+							"<table id='openpgpjs_privkeys' class='openpgpjs_keys'></table>" +
+							"<div id='openpgpjs_import'>" +
+								"<p><textarea id='importPrivkeyField'></textarea></p>" +
+								"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
+								"<p><input type='button' class='button' value='Import private key' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#passphrase\").val());' /></p>" +
+							"</div>" +
 						"</div>" +
-					"</div>" +
-					"<div id='openpgpjs-tab3'>" +
-						"<table id='openpgpjs_pubkeys' class='openpgpjs_keys'></table>" +
-						"<div id='openpgpjs_import'>" +
-							"<p id='openpgpjs_keyserver'></p>" +
-							"<p><strong>Search:</strong> <input type='text' id='pubkey_search' onchange='pubkey_search($(this).val(), \"index\")' /></p>" +
-							"<div id='openpgpjs_search_results' class='hidden'></div>" +
-							"<p><textarea id='importPubkeyField'></textarea></p>" +
-							"<p><input type='checkbox' checked='checked' id='openpgpjs_use_keyserver' /> Send to keyserver</p>" +
-							"<p><input type='button' class='button' value='Import public key' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>" +
-						"</div>" +
-					"</div>" +
-				  "</div></div></div>";
+						"<div id='openpgpjs-tab3'>" +
+							"<table id='openpgpjs_pubkeys' class='openpgpjs_keys'></table>" +
+							"<div id='openpgpjs_import'>" +
+								"<p><textarea id='importPubkeyField'></textarea></p>" +
+								"<p><input type='button' class='button' value='Import public key' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>" +
+							"</div>" +
+						"</div>" + // TODO how many of these badboys are necessary?
+					  "</div>"+
+					"</div></div>";
 
 			$("body").append(key_manager);
 			$('#openpgpjs_tabs').tabs();
@@ -91,6 +87,8 @@ if(window.rcmail)
 			                                     width: "90%" });
 			update_tables();
 
+		if (rcmail.env.action === 'compose')
+		{
 			rcmail.enable_command("send", false);
 			$('#rcmbtn114').click(function() { encryptAndSend(); });
 
@@ -98,14 +96,10 @@ if(window.rcmail)
 			$("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
 		} else if (rcmail.env.action === 'show')
 		{
+			$("#rcmbtn111").after("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
 			decrypt($('#messagebody div.message-part pre').html());
 		}
 	});
-
-	function some_callback_function(response)
-	{
-		alert(response.message);
-	}
 
 	function generate_keypair(bits, algo)
 	{
@@ -131,7 +125,7 @@ if(window.rcmail)
 		{
 			importPubKey($("#generated_public").html());
 			importPrivKey($("#generated_private").html(), $("#gen_passphrase").val());
-			alert("Great success! Please save your keys somewhere safe, preferably in an encrypted container. Our servers can't see your keys.");
+			alert("Great success! Please save your keys somewhere safe, preferably in an encrypted container. Keys are not transferred to the server.");
 			$("#gen_passphrase").val("");
 			$("#gen_passphrase_verify").val("");
 
@@ -256,8 +250,6 @@ if(window.rcmail)
 					var parse = true;
 				if(parse === true)
 					parsed += rows[i] + "\n";
-				// For some stupid fucking JavaScript bullshit reason this statement is
-				// never true unless done this way.
 				if(rows[i].match(/-----END PGP PUBLIC KEY BLOCK-----/))
 					var parse = false;
 			}
@@ -277,6 +269,7 @@ if(window.rcmail)
 		try
 		{
 			// TODO: Verify passphrase by testing encryption
+			console.log("They will never find us here, Jimmy.");
 		}
 		catch(e)
 		{
@@ -318,7 +311,7 @@ if(window.rcmail)
 				     "</td><td>" +
 				     (status ? "Valid" : "Invalid") + 
 				     "</td><td>" +
-				     "<a href='#' onclick='openpgp.keyring.removePublicKey(" + i + "); update_tables();'>Delete</a>" +
+				     "<a href='#' onclick='if(confirm(\"Delete this public key?\")) { openpgp.keyring.removePublicKey(" + i + "); update_tables(); }'>Delete</a>" +
 				     "</td></tr>";
 			$('#openpgpjs_pubkeys').append(result);
 		}
@@ -341,12 +334,10 @@ if(window.rcmail)
 //				"</td><td>" +
 //				"</td><td>" +
 				"</td><td>" +
-				"<a href='#' onclick='openpgp.keyring.removePrivateKey(" + i + "); update_tables();'>Delete</a>" +
+				"<a href='#' onclick='if(confirm(\"Delete this private key?\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>Delete</a>" +
 				"</td></tr>");
 			}
 		}
-
-		$('#openpgpjs_keyserver').html("<strong>Keyserver:</strong> " + openpgp.config.config.keyserver);
 	}
 
 	function displayPub(key)

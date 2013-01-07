@@ -23,8 +23,6 @@
 
 class openpgpjs extends rcube_plugin
 {
-//	public $task = 'mail';
-
 	function init()
 	{
 		$this->add_hook('render_page', array($this, 'render_page'));
@@ -38,8 +36,6 @@ class openpgpjs extends rcube_plugin
 		{
 			$this->include_script('js/jquery.cookie.js');
 			$this->include_script('js/openpgp.min.js');
-			$this->include_script('js/sjcl.js');
-			$this->include_script('js/uuid.js');
 			$this->include_script('js/openpgpjs.js');
 			$this->include_stylesheet('css/openpgpjs.css');
 		}
@@ -56,10 +52,11 @@ class openpgpjs extends rcube_plugin
 	}
 
 	/**
-	 * Public key server proxy used to circument Access-Control-Allow-Origin.
-	 * If the the Roundcube service is running on HTTPS this function also helps
-	 * anonymizing who the user is emailing as PKS uses HTTP by default. See
-	 * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00 for more info.
+	 * This Public Key Server proxy is written to circumvent Access-Control-Allow-Origin
+	 * limitations. It also provides a layer of security as HTTP PKS normally
+	 * doesn't support HTTPS; essentially preventing MITM if the Roundcube installation
+	 * is configured to use HTPS. For more details see the following doc:
+	 * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00.
 	 */
 	function pks_search()
 	{
