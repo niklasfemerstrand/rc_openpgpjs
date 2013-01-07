@@ -279,6 +279,8 @@ if(window.rcmail)
 		update_tables();
 		$('#importPrivkeyField').val("");
 		$('#passphrase').val("");
+
+		return true;
 	}
 	
 	function update_tables()
