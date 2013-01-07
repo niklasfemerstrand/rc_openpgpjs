@@ -58,6 +58,7 @@ class openpgpjs extends rcube_plugin
 	 * is configured to use HTPS. For more details see the following doc:
 	 * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00.
 	 */
+	// TODO Add cache and slowly roll over to HTTP PKS directly in Roundcube
 	function pks_search()
 	{
 		if(!isset($_POST['op']))
