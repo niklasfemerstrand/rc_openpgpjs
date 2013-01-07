@@ -373,9 +373,12 @@ if(window.rcmail)
 		if(!msg)
 			return;
 
-		// TODO
-		// if(openpgp.keyring.privateKeys.length === 0)
-		// 	open keymanager
+		if(!openpgp.keyring.hasPrivateKey())
+		{
+			alert("Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the OpenPGP key manager!");
+			return;
+		}
+
 		if(this.passphrase === 'undefined' || this.passphrase == null && openpgp.keyring.privateKeys.length > 0)
 		{
 			$("#openpgpjs_key_select").dialog('open');
