@@ -139,12 +139,11 @@ if(window.rcmail)
 	function set_passphrase(p)
 	{
 		this.passphrase = p;
+
 		if($('#messagebody div.message-part pre').length > 0)
 		{
 			var r = decrypt($('#messagebody div.message-part pre').html());
-		}
-		else
-		{
+		} else {
 			var r = true;
 			encryptAndSend(); // Async
 		}
@@ -157,6 +156,7 @@ if(window.rcmail)
 			date.setTime(date.getTime() + (5*60*1000));
 			$.cookie("passphrase", p, { expires: date });
 		}
+
 		$('#openpgpjs_key_select').dialog('close');
 	}
 	
@@ -287,8 +287,15 @@ if(window.rcmail)
 
 		return true;
 	}
+
+	// Param i: int, used as openpgp.keyring[private|public]Keys[i]
+	function select_key(i)
+	{
+		fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+		$("#openpgpjs_selected").html("<strong>Selected:</strong> " + fingerprint);
+	}
 	
-	// TODO: This function is _really_ messy and ugly, refactor it when it's proven functional.
+	// TODO: This function is _really_ messy and ugly, refactor it when it's proven functional. Especially the fingerprint part...
 	function update_tables()
 	{
 		// Fills key_select key list
@@ -299,17 +306,18 @@ if(window.rcmail)
 		{
 			$("#openpgpjs_selected_id").val(0);
 		} else {
-			// TODO Make ID (i) selectable and set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
-			$("#openpgpjs_key_select_list").append("<strong>Select key:</strong>");
+			// Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
 			for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
 			{
 				for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
 				{
 					fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
 					person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
-					$("#openpgpjs_key_select_list").append("<div class=\"clickme\">" + fingerprint + " " + person + "</div>");
+					$("#openpgpjs_key_select_list").append("<div class=\"clickme\" onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
 				}
 			}
+
+			$("#openpgpjs_key_select_list").append("<div id=\"openpgpjs_selected\"><strong>Selected:</strong> <i>None</i></div>");
 		}
 
 		// Fills OpenPGP key manager tables
