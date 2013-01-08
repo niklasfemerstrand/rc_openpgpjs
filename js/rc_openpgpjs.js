@@ -29,12 +29,11 @@ if(window.rcmail)
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
 
 		this.passphrase = $.cookie("passphrase");
-		// TODO: Add key list and let user select which key to use to support multiple keys
 		var key_select = "<div id='openpgpjs_key_select'>" +
 							"<div id='openpgpjs_key_select_list'></div>" +
 						 	"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
 							"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for 5 minutes</p>" +
-							"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#passphrase\").val());' /></p>"
+							"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#openpgpjs_selected_id\").val(), $(\"#passphrase\").val());' /></p>"
 						"</div>";
 		$("body").append(key_select);
 		$("#openpgpjs_key_select" ).dialog({ modal: true,
@@ -135,17 +134,35 @@ if(window.rcmail)
 		$("#gen_passphrase_verify").val("");
 	}
 
-	// TODO: Detect which private key we're using. Depends on multiple key support in key selector.
-	function set_passphrase(p)
+	/*
+	 * Params:
+	 * 	i: int, used as openpgp.keyring[private|public]Keys[i]
+	 * 	p: str, the passphrase
+	 */
+	function set_passphrase(i, p)
 	{
-		this.passphrase = p;
+		if(i === "-1")
+		{
+			alert("Please select a key.");
+			return;
+		}
 
+		if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p))
+		{
+			alert("Incorrect passphrase.");
+			return;
+		}
+
+		this.passphrase = JSON.stringify({ "id" : i, "passphrase" : p } );
+
+		// TODO I think "r" is for return, but this function doesn't need it.
 		if($('#messagebody div.message-part pre').length > 0)
 		{
-			var r = decrypt($('#messagebody div.message-part pre').html());
+			if(!decrypt($('#messagebody div.message-part pre').html()))
+				return;
 		} else {
 			var r = true;
-			encryptAndSend(); // Async
+			encryptAndSend();
 		}
 
 		// TODO: Detect idle time, and store for 5 minutes idle time instead of just straight 5 minutes
@@ -157,6 +174,7 @@ if(window.rcmail)
 			$.cookie("passphrase", p, { expires: date });
 		}
 
+		// TODO return before if decrypt etc fails
 		$('#openpgpjs_key_select').dialog('close');
 	}
 	
@@ -164,6 +182,7 @@ if(window.rcmail)
 	{
 		if($("#openpgpjs_encrypt").is(':checked'))
 		{
+			// TODO: ONLY IF SIGNING
 			if(passphrase == null && openpgp.keyring.privateKeys.length > 0)
 			{
 				$("#openpgpjs_key_select").dialog('open');
@@ -293,6 +312,8 @@ if(window.rcmail)
 	{
 		fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
 		$("#openpgpjs_selected").html("<strong>Selected:</strong> " + fingerprint);
+		$("#openpgpjs_selected_id").val(i);
+		$("#passphrase").val("");
 	}
 	
 	// TODO: This function is _really_ messy and ugly, refactor it when it's proven functional. Especially the fingerprint part...
@@ -409,31 +430,38 @@ if(window.rcmail)
 		var msg = openpgp.read_message(data);
 		
 		if(!msg)
-			return;
+			return false;
 
 		if(!openpgp.keyring.hasPrivateKey())
 		{
 			alert("Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the OpenPGP key manager!");
-			return;
+			return false;
 		}
 
-		if(this.passphrase === 'undefined' || this.passphrase == null && openpgp.keyring.privateKeys.length > 0)
+		if((this.passphrase === 'undefined' || this.passphrase == null) && openpgp.keyring.privateKeys.length > 0)
 		{
 			$("#openpgpjs_key_select").dialog('open');
-			return;
+			return false;
 		}
 
-		// TODO debug
-		if(openpgp.keyring.privateKeys.length < 1)
-			return;
+		// json string from set_passphrase, obj.id = privkey id, obj.passphrase = privkey passphrase
+		passobj = JSON.parse(passphrase);
 
 		// TODO Move to key_select set_passphrase()
-		var keyid = openpgp.keyring.privateKeys[0].obj.getKeyId();
+		var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
 		var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
 		var priv_key = openpgp.read_privateKey(privkey_armored);
 		var keymat = null;
 		var sesskey = null;
-		
+
+		if(!openpgp.keyring.privateKeys[passobj.id].obj.decryptSecretMPIs(passobj.passphrase))
+		{
+			alert("Passphrase for secrect key was incorrect!");
+			$("#openpgpjs_key_select").dialog('open');
+			return false;
+		}
+
+
 		for (var i = 0; i< msg[0].sessionKeys.length; i++)
 		{
 			if (priv_key[0].privateKeyPacket.publicKey.getKeyId() == msg[0].sessionKeys[i].keyId.bytes)
@@ -449,6 +477,7 @@ if(window.rcmail)
 				{
 					keymat = { key: priv_key[0], keymaterial: priv_key[0].subKeys[j]};
 					sesskey = msg[0].sessionKeys[i];
+
 					break;
 				}
 			}
@@ -456,16 +485,20 @@ if(window.rcmail)
 
 		if (keymat != null)
 		{
-			if (!keymat.keymaterial.decryptSecretMPIs(passphrase))
+			try
 			{
-				alert("Passphrase for secrect key was incorrect!");
-				$("#openpgpjs_key_select").dialog('open');
+				keymat.keymaterial.decryptSecretMPIs(passobj.passphrase);
+			}
+			catch (e)
+			{
+				alert("Failed to decrypt secret MPIs");
 				return false;
 			}
 
 			$('#messagebody div.message-part pre').html("<strong>********* *BEGIN ENCRYPTED or SIGNED PART* *********</strong><br />" + escapeHtml(msg[0].decrypt(keymat, sesskey)) + "<br /><strong>********** *END ENCRYPTED or SIGNED PART* **********</strong>");
+			return true;
 		} else {
-			alert("No private key found!");
+			alert("This message was not intended for this private key.");
 		}
 	}
 
