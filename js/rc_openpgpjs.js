@@ -31,6 +31,7 @@ if(window.rcmail)
 		this.passphrase = $.cookie("passphrase");
 		// TODO: Add key list and let user select which key to use to support multiple keys
 		var key_select = "<div id='openpgpjs_key_select'>" +
+							"<div id='openpgpjs_key_select_list'></div>" +
 						 	"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
 							"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for 5 minutes</p>" +
 							"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#passphrase\").val());' /></p>"
@@ -39,7 +40,11 @@ if(window.rcmail)
 		$("#openpgpjs_key_select" ).dialog({ modal: true,
 		                                     autoOpen: false,
 		                                     title: "OpenPGP key select",
-		                                     width: "30%" });
+		                                     width: "30%",
+		                                     open: function(event, ui) {
+		                                            	update_tables();
+		                                           }
+		                                   });
 
 		var key_manager = "<div id='openpgpjs_key_manager'><div id='openpgpjs_key_manager_container'>" +
 							  "<div id='openpgpjs_tabs'>" + 
@@ -283,15 +288,38 @@ if(window.rcmail)
 		return true;
 	}
 	
+	// TODO: This function is _really_ messy and ugly, refactor it when it's proven functional.
 	function update_tables()
 	{
+		// Fills key_select key list
+		$("#openpgpjs_key_select_list").html("<input type=\"hidden\" id=\"openpgpjs_selected_id\" value=\"-1\" />");
+
+		// Only one key in keyring, nothing to select from
+		if(openpgp.keyring.privateKeys.length == 1)
+		{
+			$("#openpgpjs_selected_id").val(0);
+		} else {
+			// TODO Make ID (i) selectable and set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
+			$("#openpgpjs_key_select_list").append("<strong>Select key:</strong>");
+			for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
+			{
+				for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
+				{
+					fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+					person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
+					$("#openpgpjs_key_select_list").append("<div class=\"clickme\">" + fingerprint + " " + person + "</div>");
+				}
+			}
+		}
+
+		// Fills OpenPGP key manager tables
 		$('#openpgpjs_pubkeys').empty();
 		$('#openpgpjs_pubkeys').append("<tr class='boxtitle'><th>Key ID</th><th>Fingerprint</th><th>Person</th><th>Length/Alg.</th><th>Status</th><th>Action</th></tr>");
 
 		for (var i = 0; i < openpgp.keyring.publicKeys.length; i++)
 		{
 			var status = openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures();
-			var result = "<tr class='key' onclick='displayPub(" + i + ");'><td>0x" +
+			var result = "<tr class='clickme' onclick='displayPub(" + i + ");'><td>0x" +
 				     util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8) +
 				     "</td><td>" + 
                      util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ") +
@@ -316,7 +344,7 @@ if(window.rcmail)
 		{
 			for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
 			{
-				$("#openpgpjs_privkeys").append("<tr class='key' onclick='displayPriv(" + i + ");'><td>0x" +
+				$("#openpgpjs_privkeys").append("<tr class='clickme' onclick='displayPriv(" + i + ");'><td>0x" +
 				util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8) +
 				"</td><td>" +
                 util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ") +

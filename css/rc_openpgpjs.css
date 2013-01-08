@@ -8,7 +8,7 @@
 #openpgpjs_import .button { float: right; }
 #openpgpjs_search_results { text-align: left; width: 75%; height: 100px; overflow: scroll; margin-left: 25%; } 
 .hidden { visibility: hidden; }
-tr.key { cursor: pointer; }
+.clickme { cursor: pointer; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; font-size: 7pt; }
 .search_row { cursor: pointer; }
 .odd { background-color: #ccc; } /* kaos kommunikation */
