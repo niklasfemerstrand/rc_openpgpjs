@@ -55,13 +55,19 @@ if(window.rcmail)
 								"<div id='openpgpjs-tab1'>" +
 									"<p><strong>Passphrase:</strong> <input type='password' id='gen_passphrase' /> " +
 										"<strong>Verify:</strong> <input type='password' id='gen_passphrase_verify' /> " +
+// OpenPGP.js currently only supports RSA generation
+//										"<strong>Algorithm:</strong>" +
+//										"<select id='gen_algo'><option value='1'>RSA (S/E)</option>" +
+//															  "<option value='16'>ElGamal</option>" +
+//															  "<option value='17'>DSA</option>" +
+//										"</select> " +
+//
 										"<strong>Bits:</strong> " +
 										"<select id='gen_bits'><option value='1024'>1024</option>" +
 															  "<option value='2048'>2048</option>" +
 															  "<option value='4096'>4096</option>" +
 										"</select> " +
-//										"<strong>Algorithm:</strong> <select id='gen_algo'><option value='1'>RSA</option><option value='16'>DSA/Elgamal</option></select> " +
-										"<input type='button' class='button' value='Generate' onclick='generate_keypair($(\"#gen_bits\").val(), 1);' />" +
+										"<input type='button' class='button' value='Generate' onclick='generate_keypair($(\"#gen_bits\").val(), $(\"#gen_algo\").val());' />" +
 										"<input type='button' class='button hidden' id='import_button' value='Import' onclick='importGenerated();' /></p>" +
 										"<div id='generated_keys'></div>" +
 								"</div>" +
@@ -117,7 +123,8 @@ if(window.rcmail)
 			return;
 		}
 
-		var keys = openpgp.generate_key_pair(algo, bits, $("#_from option[value='" + $('#_from option:selected').val() + "']").text(), $('#gen_passphrase').val()); 
+		// TODO Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
+		var keys = openpgp.generate_key_pair(1, bits, $("#_from option[value='" + $('#_from option:selected').val() + "']").text(), $('#gen_passphrase').val()); 
 		$('#generated_keys').html("<pre id='generated_private'>" + keys.privateKeyArmored + "</pre><pre id='generated_public'>" + keys.publicKeyArmored  +  "</pre>");
 		$('#import_button').removeClass("hidden");
 	}
@@ -155,13 +162,11 @@ if(window.rcmail)
 
 		this.passphrase = JSON.stringify({ "id" : i, "passphrase" : p } );
 
-		// TODO I think "r" is for return, but this function doesn't need it.
 		if($('#messagebody div.message-part pre').length > 0)
 		{
 			if(!decrypt($('#messagebody div.message-part pre').html()))
 				return;
 		} else {
-			var r = true;
 			encryptAndSend();
 		}
 
@@ -174,7 +179,6 @@ if(window.rcmail)
 			$.cookie("passphrase", p, { expires: date });
 		}
 
-		// TODO return before if decrypt etc fails
 		$('#openpgpjs_key_select').dialog('close');
 	}
 	
@@ -367,7 +371,7 @@ if(window.rcmail)
 		$('#openpgpjs_privkeys').empty();
 		// TODO: Add length/alg info and status. Requires patching openpgpjs.
 		// When this is finished, write a function like getAlgorithmString() for private keys.
-		$('#openpgpjs_privkeys').append("<tr class='boxtitle'><th>Key ID</th><th>Fingerprint</th><th>Person</th><!-- <th>Length/Alg.</th><th>Status</th> --><th>Action</th></tr>");
+		$('#openpgpjs_privkeys').append("<tr class='boxtitle'><th>Key ID</th><th>Fingerprint</th><th>Person</th><th>Length/Alg.</th><th>Action</th></tr>");
 		
 		for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
 		{
@@ -380,7 +384,8 @@ if(window.rcmail)
 				"</td><td>" +
 				escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text) +
 //				"</td><td>" +
-//				"</td><td>" +
+				"</td><td>" +
+				getAlgorithmString(openpgp.keyring.privateKeys[i].obj) +
 				"</td><td>" +
 				"<a href='#' onclick='if(confirm(\"Delete this private key?\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>Delete</a>" +
 				"</td></tr>");
@@ -399,10 +404,19 @@ if(window.rcmail)
 		$("#importPrivkeyField").val(openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored);
 	}
 
-	function getAlgorithmString(publicKey)
+	function getAlgorithmString(key)
 	{
-		var result = publicKey.publicKeyPacket.MPIs[0].mpiByteLength * 8 + "/";
-		switch (publicKey.publicKeyPacket.publicKeyAlgorithm)
+		if(typeof(key.publicKeyPacket) != "undefined")
+		{
+			var result = key.publicKeyPacket.MPIs[0].mpiByteLength * 8 + "/";
+			var sw = key.publicKeyPacket.publicKeyAlgorithm;
+		} else {
+			// For some reason publicKeyAlgorithm doesn't work directly on the privatekeyPacket, heh
+			var result = (key.privateKeyPacket.publicKey.MPIs[0].mpiByteLength * 8 + "/");
+			var sw = key.privateKeyPacket.publicKey.publicKeyAlgorithm;
+		}
+
+		switch(sw)
 		{
 			case 1:
 				result += "RSA(S/E)";
@@ -460,7 +474,6 @@ if(window.rcmail)
 			$("#openpgpjs_key_select").dialog('open');
 			return false;
 		}
-
 
 		for (var i = 0; i< msg[0].sessionKeys.length; i++)
 		{
