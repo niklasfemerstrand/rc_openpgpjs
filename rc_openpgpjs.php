@@ -21,7 +21,7 @@
 +-------------------------------------------------------------------------+
 */
 
-class openpgpjs extends rcube_plugin
+class rc_openpgpjs extends rcube_plugin
 {
 	function init()
 	{
@@ -36,8 +36,8 @@ class openpgpjs extends rcube_plugin
 		{
 			$this->include_script('js/jquery.cookie.js');
 			$this->include_script('js/openpgp.min.js');
-			$this->include_script('js/openpgpjs.js');
-			$this->include_stylesheet('css/openpgpjs.css');
+			$this->include_script('js/rc_openpgpjs.js');
+			$this->include_stylesheet('css/rc_openpgpjs.css');
 		}
 
 		return $params;
