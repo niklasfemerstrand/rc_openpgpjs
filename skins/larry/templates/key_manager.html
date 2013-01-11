@@ -18,7 +18,18 @@
       <div id='generated_keys'></div>
     </div>
     <div id='openpgpjs-tab2'> 
-      <table id='openpgpjs_privkeys' class='openpgpjs_keys'></table>
+      <table id='openpgpjs_privkeys' class='openpgpjs_keys'>
+        <thead>
+          <tr class='boxtitle'>
+            <th>Key ID</th><th><roundcube:label name="rc_openpgpjs.fingerprint" /></th>
+            <th><roundcube:label name="rc_openpgpjs.person" /></th>
+            <th>Length/Alg.</th>
+            <!--<th><roundcube:label name="rc_openpgpjs.status" /></th>-->
+            <th><roundcube:label name="rc_openpgpjs.action" /></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
       <div id='openpgpjs_import'>
         <p><textarea id='importPrivkeyField'></textarea></p>
         <p><strong><roundcube:label name="rc_openpgpjs.passphrase" />:</strong> <input type='password' id='import_passphrase' /></p>
@@ -26,7 +37,18 @@
       </div>
     </div>
     <div id='openpgpjs-tab3'>
-      <table id='openpgpjs_pubkeys' class='openpgpjs_keys'></table>
+      <table id='openpgpjs_pubkeys' class='openpgpjs_keys'>
+        <thead>
+          <tr class='boxtitle'>
+            <th>Key ID</th><th><roundcube:label name="rc_openpgpjs.fingerprint" /></th>
+            <th><roundcube:label name="rc_openpgpjs.person" /></th>
+            <th>Length/Alg.</th>
+            <th><roundcube:label name="rc_openpgpjs.status" /></th>
+            <th><roundcube:label name="rc_openpgpjs.action" /></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
       <div id='openpgpjs_import'>
         <p><textarea id='importPubkeyField'></textarea></p>
         <p><input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.import_private" />' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>

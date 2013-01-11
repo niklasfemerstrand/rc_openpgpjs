@@ -336,8 +336,7 @@ if(window.rcmail)
 		}
 
 		// Fills OpenPGP key manager tables
-		$('#openpgpjs_pubkeys').empty();
-		$('#openpgpjs_pubkeys').append("<tr class='boxtitle'><th>Key ID</th><th>" + rcmail.gettext('fingerprint', 'rc_openpgpjs') + "</th><th>" + rcmail.gettext('person', 'rc_openpgpjs') + "</th><th>Length/Alg.</th><th>" + rcmail.gettext('status', 'rc_openpgpjs') + "</th><th>" + rcmail.gettext('action', 'rc_openpgpjs') + "</th></tr>");
+		$('#openpgpjs_pubkeys tbody').empty();
 
 		for (var i = 0; i < openpgp.keyring.publicKeys.length; i++)
 		{
@@ -355,19 +354,17 @@ if(window.rcmail)
 				     "</td><td>" +
 				     "<a href='#' onclick='if(confirm(\"Delete this public key?\")) { openpgp.keyring.removePublicKey(" + i + "); update_tables(); }'>Delete</a>" +
 				     "</td></tr>";
-			$('#openpgpjs_pubkeys').append(result);
+			$('#openpgpjs_pubkeys tbody').append(result);
 		}
 		
-		$('#openpgpjs_privkeys').empty();
+		$('#openpgpjs_privkeys tbody').empty();
 		// TODO: Add length/alg info and status. Requires patching openpgpjs.
-		// When this is finished, write a function like getAlgorithmString() for private keys.
-		$('#openpgpjs_privkeys').append("<tr class='boxtitle'><th>Key ID</th><th>" + rcmail.gettext('fingerprint', 'rc_openpgpjs') + "</th><th>" + rcmail.gettext('person', 'rc_openpgpjs') + "</th><th>Length/Alg.</th><th>" + rcmail.gettext('action', 'rc_openpgpjs') + "</th></tr>");
-		
+		// When this is finished, write a function like getAlgorithmString() for private keys.		
 		for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
 		{
 			for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
 			{
-				$("#openpgpjs_privkeys").append("<tr class='clickme' onclick='displayPriv(" + i + ");'><td>0x" +
+				$("#openpgpjs_privkeys tbody").append("<tr class='clickme' onclick='displayPriv(" + i + ");'><td>0x" +
 				util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8) +
 				"</td><td>" +
                 util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ") +
