@@ -28,6 +28,9 @@ class rc_openpgpjs extends rcube_plugin
 		$this->add_hook('render_page', array($this, 'render_page'));
 		$this->add_hook('user_create', array($this, 'user_create'));
 		$this->register_action('plugin.pks_search', array($this, 'pks_search'));
+    
+    // make localization available on the client
+    $this->add_texts('localization/', true);
 	}
 
 	function render_page($params)
