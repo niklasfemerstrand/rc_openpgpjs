@@ -1,0 +1,36 @@
+<div id='openpgpjs_key_manager'><div id='openpgpjs_key_manager_container'>
+  <div id='openpgpjs_tabs'> 
+    <ul>
+      <li><a href='#openpgpjs-tab1'><roundcube:label name="rc_openpgpjs.generate_keys" /></a></li>
+      <li><a href='#openpgpjs-tab2'><roundcube:label name="rc_openpgpjs.private_keys" /></a></li> 
+      <li><a href='#openpgpjs-tab3'><roundcube:label name="rc_openpgpjs.public_keys" /></a></li>
+    </ul> 
+    <div id='openpgpjs-tab1'>
+      <p><strong><roundcube:label name="rc_openpgpjs.passphrase" />:</strong> <input type='password' id='gen_passphrase' /> 
+      <strong><roundcube:label name="rc_openpgpjs.verify" />:</strong> <input type='password' id='gen_passphrase_verify' /> 
+      <strong><roundcube:label name="rc_openpgpjs.bits" />:</strong> 
+      <select id='gen_bits'><option value='1024'>1024</option>
+        <option value='2048'>2048</option>
+        <option value='4096'>4096</option>
+      </select> 
+      <input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.generate" />' onclick='generate_keypair($(\"#gen_bits\").val(), $(\"#gen_algo\").val());' />
+      <input type='button' class='button hidden' id='import_button' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importGenerated();' /></p>
+      <div id='generated_keys'></div>
+    </div>
+    <div id='openpgpjs-tab2'> 
+      <table id='openpgpjs_privkeys' class='openpgpjs_keys'></table>
+      <div id='openpgpjs_import'>
+        <p><textarea id='importPrivkeyField'></textarea></p>
+        <p><strong><roundcube:label name="rc_openpgpjs.passphrase" />:</strong> <input type='password' id='import_passphrase' /></p>
+        <p><input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.import_private" />' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#import_passphrase\").val());' /></p>
+      </div>
+    </div>
+    <div id='openpgpjs-tab3'>
+      <table id='openpgpjs_pubkeys' class='openpgpjs_keys'></table>
+      <div id='openpgpjs_import'>
+        <p><textarea id='importPubkeyField'></textarea></p>
+        <p><input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.import_private" />' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>
+      </div>
+    </div>
+  </div>
+</div></div>
