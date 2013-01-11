@@ -26,6 +26,7 @@ if(window.rcmail)
 	rcmail.addEventListener('init', function(evt)
 	{
 		openpgp.init();
+//		openpgp.config.debug = true
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
 //		rcmail.enable_command("savedraft", false);
 
@@ -217,6 +218,7 @@ if(window.rcmail)
 
 			// TODO: For some reason signing can only be made with one pubkey, gotta investigate
 			$("textarea#composebody").val(openpgp.write_signed_and_encrypted_message(priv_key[0], pubkey[0].obj, $("textarea#composebody").val()));
+			return;
 		} else if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").not(":checked")) {
 			var pubkeys = new Array();
 			var recipients = $("#_to").val().split(",");
@@ -482,6 +484,20 @@ if(window.rcmail)
 		if(!msg)
 			return false;
 
+		if(!("decrypt" in msg[0]))
+			return false;
+
+		// msg is only signed, so verify it
+		if(!("sessionKeys" in msg[0]))
+		{
+			var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
+			var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
+			// TODO: Make visually obvious
+			if(msg[0].verifySignature(pubkey))
+				console.log("Verified signature");
+			return;
+		}
+
 		if(!openpgp.keyring.hasPrivateKey())
 		{
 			alert("Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the OpenPGP key manager!");
@@ -511,6 +527,7 @@ if(window.rcmail)
 			return false;
 		}
 
+		// msg is encrypted
 		for (var i = 0; i< msg[0].sessionKeys.length; i++)
 		{
 			if (priv_key[0].privateKeyPacket.publicKey.getKeyId() == msg[0].sessionKeys[i].keyId.bytes)
