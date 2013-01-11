@@ -53,7 +53,7 @@ if(window.rcmail)
 			                                     width: "90%" });
 			update_tables();
 
-		if (rcmail.env.action === 'compose')
+		if (rcmail.env.action === "compose" || rcmail.env.action === "preview")
 		{
 			rcmail.enable_command("send", false);
 			$('#rcmbtn114').click(function() { encryptAndSend(); });
