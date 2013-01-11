@@ -360,8 +360,7 @@ if(window.rcmail)
 		}
 		
 		$('#openpgpjs_privkeys tbody').empty();
-		// TODO: Add length/alg info and status. Requires patching openpgpjs.
-		// When this is finished, write a function like getAlgorithmString() for private keys.		
+
 		for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
 		{
 			for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
@@ -427,7 +426,6 @@ if(window.rcmail)
 		return result;
 	}
 	
-	// TODO: Add signature verification, depends on key ring connection
 	function decrypt(data)
 	{
 		var msg = openpgp.read_message(data);
