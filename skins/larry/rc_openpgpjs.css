@@ -1,10 +1,9 @@
 #openpgpjs_key_manager { display:none; }
-#openpgpjs_key_manager_container { overflow: scroll; height: 500px; }
 #openpgpjs_key_select { display:none; }
 .openpgpjs_keys { width: 60%; float:left; position:relative; margin:0px; padding: 0px; }
 #openpgpjs_import { width: 40%; float:left; position:relative; margin:0px; padding: 0px; text-align: right; }
 #openpgpjs_import textarea { width: 75%; height: 100px; margin-left: 15%; }
-#openpgpjs_tabs { border: 0px; }
+#openpgpjs_tabs { overflow: scroll; height: 500px; border: 0px; }
 #openpgpjs_import .button { float: right; }
 #openpgpjs_search_results { text-align: left; width: 75%; height: 100px; overflow: scroll; margin-left: 25%; } 
 .hidden { visibility: hidden; }
