@@ -23,24 +23,38 @@
 
 class rc_openpgpjs extends rcube_plugin
 {
+  public $rc;
+
+  /**
+   * Plugin initialization.
+   */
 	function init()
 	{
+    $this->rc = rcube::get_instance();
+
 		$this->add_hook('render_page', array($this, 'render_page'));
 		$this->add_hook('user_create', array($this, 'user_create'));
 		$this->register_action('plugin.pks_search', array($this, 'pks_search'));
-    
-    // make localization available on the client
-    $this->add_texts('localization/', true);
 	}
 
 	function render_page($params)
-	{	
+	{
 		if($params['template'] == 'compose' || $params['template'] == 'message')
 		{
 			$this->include_script('js/jquery.cookie.js');
 			$this->include_script('js/openpgp.min.js');
 			$this->include_script('js/rc_openpgpjs.js');
-			$this->include_stylesheet('css/rc_openpgpjs.css');
+
+      // make localization available on the client
+      $this->add_texts('localization/', true);
+
+      // load css
+      $this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
+
+      // add key manager to html output
+      $this->rc->output->add_footer($this->rc->output->just_parse(
+        file_get_contents($this->home . '/'. $this->local_skin_path() . '/templates/key_manager.html')
+      ));
 		}
 
 		return $params;
@@ -66,11 +80,10 @@ class rc_openpgpjs extends rcube_plugin
 	{
 		if(!isset($_POST['op']))
 		{
-			$rcmail->output->command('plugin.pks_search', array('message' => "ERR: Missing param"));
+			$this->rc->output->command('plugin.pks_search', array('message' => "ERR: Missing param"));
 			return;
 		}
 
-		$rcmail = rcmail::get_instance();
 		//TODO switch to curl, read http status code
 		if($_POST['op'] == "index")
 		{
@@ -88,7 +101,7 @@ class rc_openpgpjs extends rcube_plugin
 			$return = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST['search']}");
 		}
 
-		$rcmail->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
+		$this->rc->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
 		return;
 	}
 }
