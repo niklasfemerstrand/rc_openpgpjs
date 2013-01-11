@@ -32,7 +32,7 @@ if(window.rcmail)
 		this.passphrase = $.cookie("passphrase");
 		var key_select = "<div id='openpgpjs_key_select'>" +
 							"<div id='openpgpjs_key_select_list'></div>" +
-						 	"<p><strong>Passphrase:</strong> <input type='password' id='passphrase' /></p>" +
+						 	"<p><strong>" + rcmail.gettext('passphrase', 'rc_openpgpjs') + ":</strong> <input type='password' id='passphrase' /></p>" +
 							"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for 5 minutes</p>" +
 							"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#openpgpjs_selected_id\").val(), $(\"#passphrase\").val());' /></p>"
 						"</div>";
@@ -49,13 +49,13 @@ if(window.rcmail)
 		var key_manager = "<div id='openpgpjs_key_manager'><div id='openpgpjs_key_manager_container'>" +
 							  "<div id='openpgpjs_tabs'>" + 
 							  	"<ul>" +
-									"<li><a href='#openpgpjs-tab1'>Generate keys</a></li>" +
-									"<li><a href='#openpgpjs-tab2'>Private keys</a></li>" + 
-									"<li><a href='#openpgpjs-tab3'>Public keys</a></li>" +
+									"<li><a href='#openpgpjs-tab1'>" + rcmail.gettext('generate_keys', 'rc_openpgpjs') + "</a></li>" +
+									"<li><a href='#openpgpjs-tab2'>" + rcmail.gettext('private_keys', 'rc_openpgpjs') + "</a></li>" + 
+									"<li><a href='#openpgpjs-tab3'>" + rcmail.gettext('public_keys', 'rc_openpgpjs') + "</a></li>" +
 								"</ul>" + 
 								"<div id='openpgpjs-tab1'>" +
-									"<p><strong>Passphrase:</strong> <input type='password' id='gen_passphrase' /> " +
-										"<strong>Verify:</strong> <input type='password' id='gen_passphrase_verify' /> " +
+									"<p><strong>" + rcmail.gettext('passphrase', 'rc_openpgpjs') + ":</strong> <input type='password' id='gen_passphrase' /> " +
+										"<strong>" + rcmail.gettext('verify', 'rc_openpgpjs') + ":</strong> <input type='password' id='gen_passphrase_verify' /> " +
 // OpenPGP.js currently only supports RSA generation
 //										"<strong>Algorithm:</strong>" +
 //										"<select id='gen_algo'><option value='1'>RSA (S/E)</option>" +
@@ -63,28 +63,28 @@ if(window.rcmail)
 //															  "<option value='17'>DSA</option>" +
 //										"</select> " +
 //
-										"<strong>Bits:</strong> " +
+										"<strong>" + rcmail.gettext('bits', 'rc_openpgpjs') + ":</strong> " +
 										"<select id='gen_bits'><option value='1024'>1024</option>" +
 															  "<option value='2048'>2048</option>" +
 															  "<option value='4096'>4096</option>" +
 										"</select> " +
-										"<input type='button' class='button' value='Generate' onclick='generate_keypair($(\"#gen_bits\").val(), $(\"#gen_algo\").val());' />" +
-										"<input type='button' class='button hidden' id='import_button' value='Import' onclick='importGenerated();' /></p>" +
+										"<input type='button' class='button' value='" + rcmail.gettext('generate', 'rc_openpgpjs') + "' onclick='generate_keypair($(\"#gen_bits\").val(), $(\"#gen_algo\").val());' />" +
+										"<input type='button' class='button hidden' id='import_button' value='" + rcmail.gettext('import', 'rc_openpgpjs') + "' onclick='importGenerated();' /></p>" +
 										"<div id='generated_keys'></div>" +
 								"</div>" +
 						"<div id='openpgpjs-tab2'>" + 
 							"<table id='openpgpjs_privkeys' class='openpgpjs_keys'></table>" +
 							"<div id='openpgpjs_import'>" +
 								"<p><textarea id='importPrivkeyField'></textarea></p>" +
-								"<p><strong>Passphrase:</strong> <input type='password' id='import_passphrase' /></p>" +
-								"<p><input type='button' class='button' value='Import private key' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#import_passphrase\").val());' /></p>" +
+								"<p><strong>" + rcmail.gettext('passphrase', 'rc_openpgpjs') + ":</strong> <input type='password' id='import_passphrase' /></p>" +
+								"<p><input type='button' class='button' value='" + rcmail.gettext('import_private', 'rc_openpgpjs') + "' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#import_passphrase\").val());' /></p>" +
 							"</div>" +
 						"</div>" +
 						"<div id='openpgpjs-tab3'>" +
 							"<table id='openpgpjs_pubkeys' class='openpgpjs_keys'></table>" +
 							"<div id='openpgpjs_import'>" +
 								"<p><textarea id='importPubkeyField'></textarea></p>" +
-								"<p><input type='button' class='button' value='Import public key' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>" +
+								"<p><input type='button' class='button' value='" + rcmail.gettext('import_private', 'rc_openpgpjs') + "' onclick='importPubKey($(\"#importPubkeyField\").val());' /></p>" +
 							"</div>" +
 						"</div>" + // TODO how many of these badboys are necessary?
 					  "</div>"+
@@ -94,7 +94,7 @@ if(window.rcmail)
 			$('#openpgpjs_tabs').tabs();
 			$('#openpgpjs_key_manager').dialog({ modal: true,
 			                                     autoOpen: false,
-			                                     title: "OpenPGP key management",
+			                                     title: rcmail.gettext('key_management', 'rc_openpgpjs'),
 			                                     width: "90%" });
 			update_tables();
 
@@ -383,7 +383,7 @@ if(window.rcmail)
 
 		// Fills OpenPGP key manager tables
 		$('#openpgpjs_pubkeys').empty();
-		$('#openpgpjs_pubkeys').append("<tr class='boxtitle'><th>Key ID</th><th>Fingerprint</th><th>Person</th><th>Length/Alg.</th><th>Status</th><th>Action</th></tr>");
+		$('#openpgpjs_pubkeys').append("<tr class='boxtitle'><th>Key ID</th><th>" + rcmail.gettext('fingerprint', 'rc_openpgpjs') + "</th><th>" + rcmail.gettext('person', 'rc_openpgpjs') + "</th><th>Length/Alg.</th><th>" + rcmail.gettext('status', 'rc_openpgpjs') + "</th><th>" + rcmail.gettext('action', 'rc_openpgpjs') + "</th></tr>");
 
 		for (var i = 0; i < openpgp.keyring.publicKeys.length; i++)
 		{
@@ -407,7 +407,7 @@ if(window.rcmail)
 		$('#openpgpjs_privkeys').empty();
 		// TODO: Add length/alg info and status. Requires patching openpgpjs.
 		// When this is finished, write a function like getAlgorithmString() for private keys.
-		$('#openpgpjs_privkeys').append("<tr class='boxtitle'><th>Key ID</th><th>Fingerprint</th><th>Person</th><th>Length/Alg.</th><th>Action</th></tr>");
+		$('#openpgpjs_privkeys').append("<tr class='boxtitle'><th>Key ID</th><th>" + rcmail.gettext('fingerprint', 'rc_openpgpjs') + "</th><th>" + rcmail.gettext('person', 'rc_openpgpjs') + "</th><th>Length/Alg.</th><th>" + rcmail.gettext('action', 'rc_openpgpjs') + "</th></tr>");
 		
 		for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
 		{
