@@ -23,6 +23,7 @@
 
 class rc_openpgpjs extends rcube_plugin
 {
+  public $task = 'mail';
 	public $rc;
 
 	/**
@@ -32,36 +33,55 @@ class rc_openpgpjs extends rcube_plugin
 	{
 		$this->rc = rcube::get_instance();
 
-		$this->add_hook('render_page', array($this, 'render_page'));
 		$this->add_hook('user_create', array($this, 'user_create'));
 		$this->register_action('plugin.pks_search', array($this, 'pks_search'));
-	}
+    
+    if ($this->rc->task == 'mail') {
+   		$this->add_hook('render_page', array($this, 'render_page'));
 
-	function render_page($params)
-	{
-		if($params['template'] == 'compose' || $params['template'] == 'message')
-		{
+      // make localization available on the client
+			$this->add_texts('localization/', true);
+      
+      // load js
 			$this->include_script('js/openpgp.min.js');
 			$this->include_script('js/rc_openpgpjs.js');
 
-			// make localization available on the client
-			$this->add_texts('localization/', true);
-
 			// load css
 			$this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
-
-      // add key manager and key selector to html output
-      $template_path = $this->home . '/'. $this->local_skin_path();
-      $this->rc->output->add_footer($this->rc->output->just_parse(
-        file_get_contents($template_path . '/templates/key_manager.html') .
-        file_get_contents($template_path . '/templates/key_select.html')
-      ));
-		}
-
+      
+      // add key manager item to message menu
+      if ($this->api->output->type == 'html') {
+        $this->api->add_content(html::tag('li', null, 
+          $this->api->output->button(array(
+            'command'  => 'open-key-manager',
+            'label'    => 'rc_openpgpjs.key_management',
+            'type'     => 'link',
+            'classact' => 'icon calendarlink active',
+            'class'    => 'icon calendarlink',
+            'innerclass' => 'icon calendar',
+          ))),
+          'messagemenu');
+      }
+    }
+	}
+  
+	/**
+   * Add key manager and key selector to html output
+   */
+  function render_page($params)
+	{
+    $template_path = $this->home . '/'. $this->local_skin_path();
+    $this->rc->output->add_footer($this->rc->output->just_parse(
+      file_get_contents($template_path . '/templates/key_manager.html') .
+      file_get_contents($template_path . '/templates/key_select.html')
+    ));
+    
 		return $params;
 	}
 
-	// Create default identity, required as pubkey metadata
+	/**
+   * Create default identity, required as pubkey metadata
+   */
 	function user_create($params)
 	{
 		$params['user_name'] = preg_replace("/@.*$/", "", $params['user']);
