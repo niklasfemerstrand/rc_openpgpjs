@@ -44,7 +44,7 @@ if(window.rcmail)
 			$('#openpgpjs_tabs').tabs();
 			$('#openpgpjs_key_manager').dialog({ modal: true,
 			                                     autoOpen: false,
-			                                     title: rcmail.gettext('key_management', 'rc_openpgpjs'),
+			                                     title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
 			                                     width: "90%" });
 			update_tables();
 
@@ -207,7 +207,7 @@ if(window.rcmail)
 			var priv_key = openpgp.read_privateKey(privkey_armored);
 
 			if(!priv_key[0].decryptSecretMPIs(passobj.passphrase))
-				alert("wrong pass");
+				alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
 
 			$("textarea#composebody").val(openpgp.write_signed_message(priv_key[0], $("textarea#composebody").val()));
 		}

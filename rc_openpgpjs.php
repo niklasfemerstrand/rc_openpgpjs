@@ -52,7 +52,7 @@ class rc_openpgpjs extends rcube_plugin
 			// add key manager item to message menu
 			if ($this->api->output->type == 'html') {
 				$opts = array("command"    => "open-key-manager",
-				              "label"      => "rc_openpgpjs.key_management",
+				              "label"      => "rc_openpgpjs.key_manager",
 				              "type"       => "link",
 				              "classact"   => "icon active",
 				              "class"      => "icon",
