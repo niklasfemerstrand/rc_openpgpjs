@@ -54,15 +54,12 @@ if(window.rcmail)
 			                                     width: "90%" });
 			update_tables();
 
-		if (rcmail.env.action === "compose" || rcmail.env.action === "preview")
-		{
-			rcmail.enable_command("send", false);
-			$('#rcmbtn114').click(function() { encryptAndSend(); });
+		if (rcmail.env.action === "compose" || rcmail.env.action === "preview") {
+			rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
 
 			$("#mailtoolbar").prepend("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
 			$("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
-		} else if (rcmail.env.action === 'show')
-		{
+		} else if (rcmail.env.action === 'show') {
 			$("#rcmbtn111").after("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
 			decrypt($('#messagebody div.message-part pre').html());
 		}
@@ -168,7 +165,6 @@ if(window.rcmail)
 
 			// TODO: For some reason signing can only be made with one pubkey, gotta investigate
 			$("textarea#composebody").val(openpgp.write_signed_and_encrypted_message(priv_key[0], pubkey[0].obj, $("textarea#composebody").val()));
-			return;
 		} else if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").not(":checked")) {
 			var pubkeys = new Array();
 			var recipients = $("#_to").val().split(",");
@@ -204,8 +200,7 @@ if(window.rcmail)
 			$("textarea#composebody").val(openpgp.write_signed_message(priv_key[0], $("textarea#composebody").val()));
 		}
 
-		rcmail.enable_command("send", true);
-		return rcmail.command('send', '', this,event);
+		return true;
 	}
 
 	function importPubKey(key)
