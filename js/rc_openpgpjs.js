@@ -441,9 +441,11 @@ if(window.rcmail)
 		{
 			var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
 			var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
-			// TODO: Make visually obvious
+
 			if(msg[0].verifySignature(pubkey))
-				console.log("Verified signature");
+				rcmail.display_message("Signature matches pubkey", "confirmation");
+			else
+				rcmail.display_message("WARNING! Signature doesn't match pubkey!", "error");
 			return;
 		}
 
