@@ -21,8 +21,14 @@
       </table>
       <fieldset id="openpgpjs_import">
         <h3><roundcube:label name="rc_openpgpjs.import_public" /></h3>
-        <p><textarea id='importPubkeyField'></textarea></p>
-        <p><input type='button' class='button' value='<roundcube:label name="import" />' onclick='importPubKey($("#importPubkeyField").val());' /></p>
+        <div id="import_pub_error" class="ui-state-error ui-corner-all hidden">
+          <span class="ui-icon ui-icon-alert"></span>
+          <p></p>
+        </div>
+        <textarea id='importPubkeyField'></textarea>
+        <div class="formbuttons">
+          <input type='button' class='button mainaction' value='<roundcube:label name="import" />' onclick='importPubKey($("#importPubkeyField").val());' />
+        </div>
       </fieldset>
     </div>
     <div id='openpgpjs-tab2'>
@@ -41,14 +47,24 @@
       </table>
       <fieldset id="openpgpjs_import">
         <h3><roundcube:label name="rc_openpgpjs.import_private" /></h3>
-        <p><textarea id='importPrivkeyField'></textarea></p>
-        <p><strong><roundcube:label name="rc_openpgpjs.passphrase" />:</strong> <input type='password' id='import_passphrase' /></p>
-        <p><input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importPrivKey($("#importPrivkeyField").val(), $("#import_passphrase").val());' /></p>
+        <div id="import_priv_error" class="ui-state-error ui-corner-all hidden">
+          <span class="ui-icon ui-icon-alert"></span>
+          <p></p>
+        </div>
+        <textarea id='importPrivkeyField'></textarea><br /><br />
+        <label for="import_passphrase"><roundcube:label name="rc_openpgpjs.passphrase" />:</label> <input type='password' id='import_passphrase' />
+        <div class="formbuttons">
+          <input type='button' class='button mainaction' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importPrivKey($("#importPrivkeyField").val(), $("#import_passphrase").val());' /></p>
+        </div>
       </fieldset>
     </div>
     <div id='openpgpjs-tab3'>
       <fieldset>
         <h3><roundcube:label name="rc_openpgpjs.generate_keys" /></h3>
+        <div id="generate_key_error" class="ui-state-error ui-corner-all hidden">
+          <span class="ui-icon ui-icon-alert"></span>
+          <p></p>
+        </div>
         <label for="gen_passphrase"><roundcube:label name="rc_openpgpjs.passphrase" />:</label> <input type='password' id='gen_passphrase' /> 
         <label for="gen_passphrase_verify"><roundcube:label name="rc_openpgpjs.verify" />:</label> <input type='password' id='gen_passphrase_verify' /> 
         <label for="gen_bits"><roundcube:label name="rc_openpgpjs.bits" />:</label> 
@@ -57,8 +73,10 @@
           <option value='2048'>2048</option>
           <option value='4096'>4096</option>
         </select> 
-        <input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.generate" />' onclick='generate_keypair($("#gen_bits").val(), $("#gen_algo").val());' />
-        <input type='button' class='button hidden' id='import_button' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importGenerated();' />
+        <div class="formbuttons">
+          <input type='button' class='button mainaction' value='<roundcube:label name="rc_openpgpjs.generate" />' onclick='generate_keypair($("#gen_bits").val(), $("#gen_algo").val());' />
+          <input type='button' class='button mainaction hidden' id='import_button' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importGenerated();' />
+        </div>
         <div id='generated_keys'></div>
     </div>
   </div>

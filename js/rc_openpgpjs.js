@@ -65,16 +65,19 @@ if(window.rcmail)
 	function generate_keypair(bits, algo)
 	{
 		if($('#gen_passphrase').val() == '') {
-			alert(rcmail.gettext('specify_pass', 'rc_openpgpjs'));
+			$('#generate_key_error').removeClass("hidden");
+			$('#generate_key_error p').html(rcmail.gettext('specify_pass', 'rc_openpgpjs'));
 			return false;
 		} else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val()) {
-			alert(rcmail.gettext('pass_mismatch', 'rc_openpgpjs'));
+			$('#generate_key_error').removeClass("hidden");
+			$('#generate_key_error p').html(rcmail.gettext('pass_mismatch', 'rc_openpgpjs'));
 			return false;
 		}
 
 		// TODO Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
 		var keys = openpgp.generate_key_pair(1, bits, $("#_from option[value='" + $('#_from option:selected').val() + "']").text(), $('#gen_passphrase').val());
 		$('#generated_keys').html("<pre id='generated_private'>" + keys.privateKeyArmored + "</pre><pre id='generated_public'>" + keys.publicKeyArmored  +  "</pre>");
+		$('#generate_key_error').addClass("hidden");
 		$('#import_button').removeClass("hidden");
 	}
 
@@ -99,13 +102,15 @@ if(window.rcmail)
 	{
 		if(i === "-1")
 		{
-			alert(rcmail.gettext('select_key', 'rc_openpgpjs'));
+			$('#key_select_error').removeClass("hidden");
+			$('#key_select_error p').html(rcmail.gettext('select_key', 'rc_openpgpjs'));
 			return false;
 		}
 
 		if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p))
 		{
-			alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
+			$('#key_select_error').removeClass("hidden");
+			$('#key_select_error p').html(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
 			return false;
 		}
 
@@ -123,6 +128,7 @@ if(window.rcmail)
 		if($('#openpgpjs_rememberpass').is(':checked'))
 			sessionStorage.setItem(i, this.passphrase);
 
+		$('#key_select_error').addClass("hidden");
 		$('#openpgpjs_key_select').dialog('close');
 	}
 	
@@ -223,10 +229,12 @@ if(window.rcmail)
 			openpgp.keyring.store();
 			update_tables();
 			$('#importPubkeyField').val("");
+			$('#import_pub_error').addClass("hidden");
 		}
 		catch(e)
 		{
-			alert(rcmail.gettext('import_pub_failed', 'rc_openpgpjs'));
+			$('#import_pub_error').removeClass("hidden");
+			$('#import_pub_error p').html(rcmail.gettext('import_failed', 'rc_openpgpjs'));
 			return false;
 		}
 	}
@@ -277,7 +285,8 @@ if(window.rcmail)
 	{
 		if(passphrase === '')
 		{
-			alert(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
+			$('#import_priv_error').removeClass("hidden");
+			$('#import_priv_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
 			return false;
 		}
 
@@ -287,13 +296,15 @@ if(window.rcmail)
 		}
 		catch(e)
 		{
-			alert(rcmail.gettext('import_priv_failed', 'rc_openpgpjs'));
+			$('#import_priv_error').removeClass("hidden");
+			$('#import_priv_error p').html(rcmail.gettext('import_failed', 'rc_openpgpjs'));
 			return false;
 		}
 
 		if(!privkey_obj.decryptSecretMPIs(passphrase))
 		{
-			alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
+			$('#import_priv_error').removeClass("hidden");
+			$('#import_priv_error p').html(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
 			return false;
 		}
 
@@ -302,6 +313,7 @@ if(window.rcmail)
 		update_tables();
 		$('#importPrivkeyField').val("");
 		$('#passphrase').val("");
+		$('#import_priv_error').addClass("hidden");
 
 		return true;
 	}
