@@ -13,7 +13,7 @@
         <option value='2048'>2048</option>
         <option value='4096'>4096</option>
       </select> 
-      <input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.generate" />' onclick='generate_keypair($(\"#gen_bits\").val(), $(\"#gen_algo\").val());' />
+      <input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.generate" />' onclick='generate_keypair($("#gen_bits").val(), $("#gen_algo").val());' />
       <input type='button' class='button hidden' id='import_button' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importGenerated();' /></p>
       <div id='generated_keys'></div>
     </div>
@@ -34,7 +34,7 @@
       <div id='openpgpjs_import'>
         <p><textarea id='importPrivkeyField'></textarea></p>
         <p><strong><roundcube:label name="rc_openpgpjs.passphrase" />:</strong> <input type='password' id='import_passphrase' /></p>
-        <p><input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.import_private" />' onclick='importPrivKey($(\"#importPrivkeyField\").val(), $(\"#import_passphrase\").val());' /></p>
+        <p><input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.import_private" />' onclick='importPrivKey($("#importPrivkeyField").val(), $("#import_passphrase").val());' /></p>
       </div>
     </div>
     <div id='openpgpjs-tab3'>
