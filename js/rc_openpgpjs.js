@@ -33,7 +33,7 @@ if (window.rcmail) {
 
     $("#openpgpjs_key_select").dialog({ modal: true,
                                         autoOpen: false,
-                                        title: "OpenPGP key select",
+                                        title: rcmail.gettext('key_selector', 'rc_openpgpjs'),
                                         width: "30%",
                                         open: function(event, ui) {
                                           update_tables();
@@ -61,10 +61,10 @@ if (window.rcmail) {
 
 function generate_keypair(bits, algo) {
   if ($('#gen_passphrase').val() == '') {
-    alert("Please specify a passphrase!");
+    alert(rcmail.gettext('specify_pass', 'rc_openpgpjs'));
     return false;
   } else if ($("#gen_passphrase").val() != $("#gen_passphrase_verify").val()) {
-    alert("Passphrase mismatch.");
+    alert(rcmail.gettext('pass_mismatch', 'rc_openpgpjs'));
     return false;
   }
 
@@ -79,7 +79,7 @@ function importGenerated() {
   importPubKey($("#generated_public").html());
 
   if (importPrivKey($("#generated_private").html(), $("#gen_passphrase").val())) {
-    alert("Great success! Please save your keys somewhere safe, preferably in an encrypted container. Keys are not transferred to the server.");
+    alert(rcmail.gettext('import_gen', 'rc_openpgpjs'));
   }
   $("#gen_passphrase").val("");
   $("#gen_passphrase_verify").val("");
@@ -92,12 +92,12 @@ function importGenerated() {
  */
 function set_passphrase(i, p) {
   if (i === "-1") {
-    alert("Please select a key.");
+    alert(rcmail.gettext('select_key', 'rc_openpgpjs'));
     return false;
   }
 
   if (!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p)) {
-    alert("Incorrect passphrase.");
+    alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
     return false;
   }
 
@@ -204,7 +204,7 @@ function importPubKey(key) {
     update_tables();
     $('#importPubkeyField').val("");
   } catch(e) {
-    alert("Could not import public key, possibly wrong format.");
+    alert(rcmail.gettext('import_pub_failed', 'rc_openpgpjs'));
     return false;
   }
 }
@@ -244,19 +244,19 @@ function pks_search_callback(response)  {
 
 function importPrivKey(key, passphrase) {
   if (passphrase === '') {
-    alert('Please enter passphrase.');
+    alert(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
     return false;
   }
 
   try {
     privkey_obj = openpgp.read_privateKey(key)[0];
   } catch(e) {
-    alert("Wrong key format.");
+    alert(rcmail.gettext('import_priv_failed', 'rc_openpgpjs'));
     return false;
   }
 
   if (!privkey_obj.decryptSecretMPIs(passphrase)) {
-    alert('Wrong passphrase specified');
+    alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
     return false;
   }
 
@@ -401,7 +401,7 @@ function decrypt(data) {
   }
 
   if (!openpgp.keyring.hasPrivateKey()) {
-    alert("Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the OpenPGP key manager!");
+    alert(rcmail.gettext('no_key_imported', 'rc_openpgpjs'));
     return false;
   }
 
@@ -421,7 +421,7 @@ function decrypt(data) {
   var sesskey = null;
   
   if (!openpgp.keyring.privateKeys[passobj.id].obj.decryptSecretMPIs(passobj.passphrase)) {
-    alert("Passphrase for secrect key was incorrect!");
+    alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
     $("#openpgpjs_key_select").dialog('open');
     return false;
   }
@@ -454,7 +454,7 @@ function decrypt(data) {
     $('#messagebody div.message-part pre').html("<strong>********* *BEGIN ENCRYPTED or SIGNED PART* *********</strong><br />" + escapeHtml(msg[0].decrypt(keymat, sesskey)) + "<br /><strong>********** *END ENCRYPTED or SIGNED PART* **********</strong>");
     return true;
   } else {
-    alert("This message was not intended for this private key.");
+    alert(rcmail.gettext('key_mismatch', 'rc_openpgpjs'));
   }
 }
 
