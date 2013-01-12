@@ -54,7 +54,7 @@ class rc_openpgpjs extends rcube_plugin
         $this->api->add_content(html::tag('li', null, 
           $this->api->output->button(array(
             'command'  => 'open-key-manager',
-            'label'    => 'rc_openpgpjs.key_management',
+            'label'    => 'rc_openpgpjs.key_manager',
             'type'     => 'link',
             'classact' => 'icon active',
             'class'    => 'icon',
