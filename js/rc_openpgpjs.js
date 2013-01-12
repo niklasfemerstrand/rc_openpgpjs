@@ -27,16 +27,9 @@ if(window.rcmail)
 	{
 		openpgp.init();
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
-//		rcmail.enable_command("savedraft", false);
+    // rcmail.enable_command("savedraft", false);
 
 		this.passphrase = $.cookie("passphrase");
-		var key_select = "<div id='openpgpjs_key_select'>" +
-							"<div id='openpgpjs_key_select_list'></div>" +
-						 	"<p><strong>" + rcmail.gettext('passphrase', 'rc_openpgpjs') + ":</strong> <input type='password' id='passphrase' /></p>" +
-							"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for 5 minutes</p>" +
-							"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#openpgpjs_selected_id\").val(), $(\"#passphrase\").val());' /></p>"
-						"</div>";
-		$("body").append(key_select);
 		$("#openpgpjs_key_select" ).dialog({ modal: true,
 		                                     autoOpen: false,
 		                                     title: "OpenPGP key select",
