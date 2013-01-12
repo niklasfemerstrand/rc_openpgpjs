@@ -6,15 +6,16 @@
       <li><a href='#openpgpjs-tab3'><roundcube:label name="rc_openpgpjs.public_keys" /></a></li>
     </ul> 
     <div id='openpgpjs-tab1'>
-      <p><strong><roundcube:label name="rc_openpgpjs.passphrase" />:</strong> <input type='password' id='gen_passphrase' /> 
-      <strong><roundcube:label name="rc_openpgpjs.verify" />:</strong> <input type='password' id='gen_passphrase_verify' /> 
-      <strong><roundcube:label name="rc_openpgpjs.bits" />:</strong> 
-      <select id='gen_bits'><option value='1024'>1024</option>
+      <label for="gen_passphrase"><roundcube:label name="rc_openpgpjs.passphrase" />:</label> <input type='password' id='gen_passphrase' /> 
+      <label for="gen_passphrase_verify"><roundcube:label name="rc_openpgpjs.verify" />:</label> <input type='password' id='gen_passphrase_verify' /> 
+      <label for="gen_bits"><roundcube:label name="rc_openpgpjs.bits" />:</label> 
+      <select id='gen_bits'>
+        <option value='1024'>1024</option>
         <option value='2048'>2048</option>
         <option value='4096'>4096</option>
       </select> 
       <input type='button' class='button' value='<roundcube:label name="rc_openpgpjs.generate" />' onclick='generate_keypair($("#gen_bits").val(), $("#gen_algo").val());' />
-      <input type='button' class='button hidden' id='import_button' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importGenerated();' /></p>
+      <input type='button' class='button hidden' id='import_button' value='<roundcube:label name="rc_openpgpjs.import" />' onclick='importGenerated();' />
       <div id='generated_keys'></div>
     </div>
     <div id='openpgpjs-tab2'> 
