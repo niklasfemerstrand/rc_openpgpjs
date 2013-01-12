@@ -18,6 +18,7 @@ $labels['person'] = 'Person';
 $labels['length_alg'] = 'Length/Alg';
 $labels['status'] = 'Status';
 $labels['action'] = 'Action';
+$labels['delete'] = 'Delete';
 $labels['remember_this_session'] = 'Remember for this session';
 $labels['specify_pass'] = 'Please specify a passphrase!';
 $labels['pass_mismatch'] = 'Passphrase mismatch';

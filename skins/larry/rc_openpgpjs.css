@@ -1,13 +1,14 @@
-#openpgpjs_key_manager label, #openpgpjs_key_select label { font-weight: bold; }
-.openpgpjs_keys { width: 60%; float:left; position:relative; margin:0px; padding: 0px; }
-#openpgpjs_import { width: 40%; float:left; position:relative; margin:0px; padding: 0px; text-align: right; }
-#openpgpjs_import textarea { width: 75%; height: 100px; margin-left: 15%; }
-#openpgpjs_tabs { overflow: scroll; height: 500px; border: 0px; }
-#openpgpjs_import .button { float: right; }
+#openpgpjs_key_manager .ui-dialog .ui-dialog-content { padding: 0; }
+
+#openpgpjs_tabs { min-height: 400px;}
+#openpgpjs_tabs .ui-tabs { padding: 0;}
+#openpgpjs_tabs .ui-tabs-panel { background: transparent; padding: 0;}
+
+#openpgpjs_import textarea { width: 40%; height: 150px;}
+
 #openpgpjs_search_results { text-align: left; width: 75%; height: 100px; overflow: scroll; margin-left: 25%; } 
 .hidden { visibility: hidden; }
-.clickme { cursor: pointer; }
-.clickme:hover { background-color: #000; color: #fff; }
+.clickme { cursor: pointer !important; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; font-size: 7pt; }
 .search_row { cursor: pointer; }
 .odd { background-color: #ccc; } /* kaos kommunikation */

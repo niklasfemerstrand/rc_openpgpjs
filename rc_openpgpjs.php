@@ -54,9 +54,9 @@ class rc_openpgpjs extends rcube_plugin
 				$opts = array("command"    => "open-key-manager",
 				              "label"      => "rc_openpgpjs.key_management",
 				              "type"       => "link",
-				              "classact"   => "icon calendarlink active",
-				              "class"      => "icon calendarlink",
-				              "innerclass" => "icon calendar");
+				              "classact"   => "icon active",
+				              "class"      => "icon",
+				              "innerclass" => "icon");
 
 				$this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
 			}
