@@ -20,16 +20,17 @@
 +-------------------------------------------------------------------------+
 */
 
-// TODO: Use HTML5 web workers for heavy calculations
 if(window.rcmail)
 {
 	rcmail.addEventListener('init', function(evt)
 	{
 		openpgp.init();
+//		openpgp.config.debug = true
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
     // rcmail.enable_command("savedraft", false);
 
-		this.passphrase = $.cookie("passphrase");
+		this.passphrase = sessionStorage[0];
+
 		$("#openpgpjs_key_select" ).dialog({ modal: true,
 		                                     autoOpen: false,
 		                                     title: "OpenPGP key select",
@@ -45,15 +46,12 @@ if(window.rcmail)
 			                                     width: "90%" });
 			update_tables();
 
-		if (rcmail.env.action === 'compose')
-		{
-			rcmail.enable_command("send", false);
-			$('#rcmbtn114').click(function() { encryptAndSend(); });
+		if (rcmail.env.action === "compose" || rcmail.env.action === "preview") {
+			rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
 
 			$("#mailtoolbar").prepend("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
 			$("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
-		} else if (rcmail.env.action === 'show')
-		{
+		} else if (rcmail.env.action === 'show') {
 			$("#rcmbtn111").after("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
 			decrypt($('#messagebody div.message-part pre').html());
 		}
@@ -61,15 +59,14 @@ if(window.rcmail)
 
 	function generate_keypair(bits, algo)
 	{
-		if($('#gen_passphrase').val() == '')
-		{
+		if($('#gen_passphrase').val() == '') {
 			alert("Please specify a passphrase!");
-			return;
-		} else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val())
-		{
+			return false;
+		} else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val()) {
 			alert("Passphrase mismatch.");
-			return;
+			return false;
 		}
+
 		// TODO Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
 		var keys = openpgp.generate_key_pair(1, bits, $("#_from option[value='" + $('#_from option:selected').val() + "']").text(), $('#gen_passphrase').val());
 		$('#generated_keys').html("<pre id='generated_private'>" + keys.privateKeyArmored + "</pre><pre id='generated_public'>" + keys.publicKeyArmored  +  "</pre>");
@@ -118,14 +115,8 @@ if(window.rcmail)
 				return false;
 		}
 
-		// TODO: Detect idle time, and store for 5 minutes idle time instead of just straight 5 minutes
 		if($('#openpgpjs_rememberpass').is(':checked'))
-		{
-			// 5*60*1000ms
-			var date = new Date();
-			date.setTime(date.getTime() + (5*60*1000));
-			$.cookie("passphrase", p, { expires: date });
-		}
+			sessionStorage.setItem(i, this.passphrase);
 
 		$('#openpgpjs_key_select').dialog('close');
 	}
@@ -134,7 +125,7 @@ if(window.rcmail)
 	{
 		if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").is(":checked"))
 		{
-			if(passphrase == null && openpgp.keyring.privateKeys.length > 0)
+			if(this.passphrase == null && openpgp.keyring.privateKeys.length > 0)
 			{
 				$("#openpgpjs_key_select").dialog('open');
 				return false;
@@ -145,7 +136,8 @@ if(window.rcmail)
 			}
 
 			// json string from set_passphrase, obj.id = privkey id, obj.passphrase = privkey passphrase
-			passobj = JSON.parse(passphrase);
+			passobj = JSON.parse(this.passphrase);
+
 			var pubkeys = new Array();
 			var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
 			var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
@@ -166,7 +158,23 @@ if(window.rcmail)
 			$("textarea#composebody").val(openpgp.write_signed_and_encrypted_message(priv_key[0], pubkey[0].obj, $("textarea#composebody").val()));
 		} else if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").not(":checked")) {
 			var pubkeys = new Array();
-			var recipients = $("#_to").val().split(",");
+
+			var c = 0;
+			var recipients = [];
+			var matches = "";
+			var fields = ["_to", "_cc", "_bcc"];
+			var re = /[a-zA-Z0-9\._%+-]+@[a-zA-Z0-9\._%+-]+\.[a-zA-Z]{2,4}/g;
+
+			for(field in fields)
+			{
+				matches = $("#" + fields[field]).val().match(re);
+
+				for(key in matches)
+				{
+					recipients[c] = matches[key];
+					c++;
+				}
+			}
 
 			for (var i = 0; i < recipients.length; i++)
 			{
@@ -199,8 +207,7 @@ if(window.rcmail)
 			$("textarea#composebody").val(openpgp.write_signed_message(priv_key[0], $("textarea#composebody").val()));
 		}
 
-		rcmail.enable_command("send", true);
-		return rcmail.command('send', '', this,event);
+		return true;
 	}
 
 	function importPubKey(key)
@@ -351,8 +358,7 @@ if(window.rcmail)
 		}
 		
 		$('#openpgpjs_privkeys tbody').empty();
-		// TODO: Add length/alg info and status. Requires patching openpgpjs.
-		// When this is finished, write a function like getAlgorithmString() for private keys.		
+
 		for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
 		{
 			for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
@@ -418,13 +424,28 @@ if(window.rcmail)
 		return result;
 	}
 	
-	// TODO: Add signature verification, depends on key ring connection
 	function decrypt(data)
 	{
 		var msg = openpgp.read_message(data);
 		
 		if(!msg)
 			return false;
+
+		if(!("decrypt" in msg[0]))
+			return false;
+
+		// msg is only signed, so verify it
+		if(!("sessionKeys" in msg[0]))
+		{
+			var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
+			var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
+
+			if(msg[0].verifySignature(pubkey))
+				rcmail.display_message("Signature matches pubkey", "confirmation");
+			else
+				rcmail.display_message("WARNING! Signature doesn't match pubkey!", "error");
+			return;
+		}
 
 		if(!openpgp.keyring.hasPrivateKey())
 		{
@@ -439,7 +460,7 @@ if(window.rcmail)
 		}
 
 		// json string from set_passphrase, obj.id = privkey id, obj.passphrase = privkey passphrase
-		passobj = JSON.parse(passphrase);
+		passobj = JSON.parse(this.passphrase);
 
 		// TODO Move to key_select set_passphrase()
 		var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
@@ -455,6 +476,7 @@ if(window.rcmail)
 			return false;
 		}
 
+		// msg is encrypted
 		for (var i = 0; i< msg[0].sessionKeys.length; i++)
 		{
 			if (priv_key[0].privateKeyPacket.publicKey.getKeyId() == msg[0].sessionKeys[i].keyId.bytes)

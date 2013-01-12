@@ -23,14 +23,14 @@
 
 class rc_openpgpjs extends rcube_plugin
 {
-  public $rc;
+	public $rc;
 
-  /**
-   * Plugin initialization.
-   */
+	/**
+	 * Plugin initialization.
+	 */
 	function init()
 	{
-    $this->rc = rcube::get_instance();
+		$this->rc = rcube::get_instance();
 
 		$this->add_hook('render_page', array($this, 'render_page'));
 		$this->add_hook('user_create', array($this, 'user_create'));
@@ -41,15 +41,14 @@ class rc_openpgpjs extends rcube_plugin
 	{
 		if($params['template'] == 'compose' || $params['template'] == 'message')
 		{
-			$this->include_script('js/jquery.cookie.js');
 			$this->include_script('js/openpgp.min.js');
 			$this->include_script('js/rc_openpgpjs.js');
 
-      // make localization available on the client
-      $this->add_texts('localization/', true);
+			// make localization available on the client
+			$this->add_texts('localization/', true);
 
-      // load css
-      $this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
+			// load css
+			$this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
 
       // add key manager and key selector to html output
       $template_path = $this->home . '/'. $this->local_skin_path();
@@ -92,6 +91,7 @@ class rc_openpgpjs extends rcube_plugin
 			$return = "";
 			$result = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=index&search={$_POST['search']}");
 			preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
+
 			if(count($m > 0))
 			{
 				for($i = 0; $i < count($m[0]); $i++)
