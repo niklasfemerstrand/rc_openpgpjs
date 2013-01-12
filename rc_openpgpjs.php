@@ -56,9 +56,9 @@ class rc_openpgpjs extends rcube_plugin
             'command'  => 'open-key-manager',
             'label'    => 'rc_openpgpjs.key_management',
             'type'     => 'link',
-            'classact' => 'icon calendarlink active',
-            'class'    => 'icon calendarlink',
-            'innerclass' => 'icon calendar',
+            'classact' => 'icon active',
+            'class'    => 'icon',
+            'innerclass' => 'icon',
           ))),
           'messagemenu');
       }

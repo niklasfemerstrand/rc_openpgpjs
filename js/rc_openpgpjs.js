@@ -317,7 +317,8 @@ function update_tables() {
       "</td><td>" +
       (status ? "Valid" : "Invalid") +
       "</td><td>" +
-      "<a href='#' onclick='if (confirm(\"Delete this public key?\")) { openpgp.keyring.removePublicKey(" + i + "); update_tables(); }'>Delete</a>" +
+      "<a href='#' onclick='if (confirm(\"Delete this public key?\")) { openpgp.keyring.removePublicKey(" + i + "); update_tables(); }'>"+ 
+      rcmail.gettext('delete','rc_openpgpjs') +"</a>" +
       "</td></tr>";
     $('#openpgpjs_pubkeys tbody').append(result);
   }
@@ -336,7 +337,8 @@ function update_tables() {
       "</td><td>" +
       getAlgorithmString(openpgp.keyring.privateKeys[i].obj) +
       "</td><td>" +
-      "<a href='#' onclick='if (confirm(\"Delete this private key?\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>Delete</a>" +
+      "<a href='#' onclick='if (confirm(\"Delete this private key?\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>"+ 
+      rcmail.gettext('delete', 'rc_openpgpjs') +"</a>" +
       "</td></tr>");
     }
   }
