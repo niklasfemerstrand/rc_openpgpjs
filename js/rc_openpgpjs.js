@@ -48,13 +48,16 @@ if(window.rcmail)
 			                                     width: "90%" });
 			update_tables();
 
+			// register open key manager command
+			rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
+			rcmail.enable_command('open-key-manager', true);
+
 		if (rcmail.env.action === "compose" || rcmail.env.action === "preview") {
 			rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
 
-			$("#mailtoolbar").prepend("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
+			$("#mailtoolbar").append("<a href='#' class='button' id='openpgp_js' onclick=\"return rcmail.command('open-key-manager','',this,event)\"></a>");
 			$("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
 		} else if (rcmail.env.action === 'show') {
-			$("#rcmbtn111").after("<a href='#' class='button' id='openpgp_js' onclick='$(\"#openpgpjs_key_manager\").dialog(\"open\");'></a>");
 			decrypt($('#messagebody div.message-part pre').html());
 		}
 	});
