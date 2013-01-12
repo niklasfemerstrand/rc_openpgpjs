@@ -20,7 +20,6 @@
 +-------------------------------------------------------------------------+
 */
 
-// TODO: Use HTML5 web workers for heavy calculations
 if(window.rcmail)
 {
 	rcmail.addEventListener('init', function(evt)
@@ -67,15 +66,14 @@ if(window.rcmail)
 
 	function generate_keypair(bits, algo)
 	{
-		if($('#gen_passphrase').val() == '')
-		{
+		if($('#gen_passphrase').val() == '') {
 			alert("Please specify a passphrase!");
-			return;
-		} else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val())
-		{
+			return false;
+		} else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val()) {
 			alert("Passphrase mismatch.");
-			return;
+			return false;
 		}
+
 		// TODO Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
 		var keys = openpgp.generate_key_pair(1, bits, $("#_from option[value='" + $('#_from option:selected').val() + "']").text(), $('#gen_passphrase').val());
 		$('#generated_keys').html("<pre id='generated_private'>" + keys.privateKeyArmored + "</pre><pre id='generated_public'>" + keys.publicKeyArmored  +  "</pre>");
@@ -167,7 +165,23 @@ if(window.rcmail)
 			$("textarea#composebody").val(openpgp.write_signed_and_encrypted_message(priv_key[0], pubkey[0].obj, $("textarea#composebody").val()));
 		} else if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").not(":checked")) {
 			var pubkeys = new Array();
-			var recipients = $("#_to").val().split(",");
+
+			var c = 0;
+			var recipients = [];
+			var matches = "";
+			var fields = ["_to", "_cc", "_bcc"];
+			var re = /[a-zA-Z0-9\._%+-]+@[a-zA-Z0-9\._%+-]+\.[a-zA-Z]{2,4}/g;
+
+			for(field in fields)
+			{
+				matches = $("#" + fields[field]).val().match(re);
+
+				for(key in matches)
+				{
+					recipients[c] = matches[key];
+					c++;
+				}
+			}
 
 			for (var i = 0; i < recipients.length; i++)
 			{
