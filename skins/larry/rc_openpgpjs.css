@@ -1,5 +1,6 @@
 #openpgpjs_key_manager { display:none; }
 #openpgpjs_key_select { display:none; }
+#openpgpjs_key_manager label, #openpgpjs_key_select label { font-weight: bold; }
 .openpgpjs_keys { width: 60%; float:left; position:relative; margin:0px; padding: 0px; }
 #openpgpjs_import { width: 40%; float:left; position:relative; margin:0px; padding: 0px; text-align: right; }
 #openpgpjs_import textarea { width: 75%; height: 100px; margin-left: 15%; }
