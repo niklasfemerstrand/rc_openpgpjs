@@ -29,8 +29,10 @@ if(window.rcmail)
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
     // rcmail.enable_command("savedraft", false);
 
-		this.passphrase = sessionStorage[0];
-
+    if(sessionStorage.length > 0) {
+      this.passphrase = sessionStorage[0];
+    }
+    
 		$("#openpgpjs_key_select" ).dialog({ modal: true,
 		                                     autoOpen: false,
 		                                     title: "OpenPGP key select",
