@@ -30,11 +30,12 @@ if(window.rcmail)
 		rcmail.addEventListener('plugin.pks_search', pks_search_callback);
 //		rcmail.enable_command("savedraft", false);
 
-		this.passphrase = $.cookie("passphrase");
+		this.passphrase = sessionStorage[0];
+
 		var key_select = "<div id='openpgpjs_key_select'>" +
 							"<div id='openpgpjs_key_select_list'></div>" +
 						 	"<p><strong>" + rcmail.gettext('passphrase', 'rc_openpgpjs') + ":</strong> <input type='password' id='passphrase' /></p>" +
-							"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for 5 minutes</p>" +
+							"<p><input type='checkbox' id='openpgpjs_rememberpass' /> Remember for this session</p>" +
 							"<p><input type='button' class='button' value='OK' onclick='set_passphrase($(\"#openpgpjs_selected_id\").val(), $(\"#passphrase\").val());' /></p>"
 						"</div>";
 		$("body").append(key_select);
@@ -126,14 +127,8 @@ if(window.rcmail)
 				return false;
 		}
 
-		// TODO: Detect idle time, and store for 5 minutes idle time instead of just straight 5 minutes
 		if($('#openpgpjs_rememberpass').is(':checked'))
-		{
-			// 5*60*1000ms
-			var date = new Date();
-			date.setTime(date.getTime() + (5*60*1000));
-			$.cookie("passphrase", p, { expires: date });
-		}
+			sessionStorage.setItem(i, this.passphrase);
 
 		$('#openpgpjs_key_select').dialog('close');
 	}
@@ -142,7 +137,7 @@ if(window.rcmail)
 	{
 		if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").is(":checked"))
 		{
-			if(passphrase == null && openpgp.keyring.privateKeys.length > 0)
+			if(this.passphrase == null && openpgp.keyring.privateKeys.length > 0)
 			{
 				$("#openpgpjs_key_select").dialog('open');
 				return false;
@@ -153,7 +148,8 @@ if(window.rcmail)
 			}
 
 			// json string from set_passphrase, obj.id = privkey id, obj.passphrase = privkey passphrase
-			passobj = JSON.parse(passphrase);
+			passobj = JSON.parse(this.passphrase);
+
 			var pubkeys = new Array();
 			var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
 			var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
@@ -462,7 +458,7 @@ if(window.rcmail)
 		}
 
 		// json string from set_passphrase, obj.id = privkey id, obj.passphrase = privkey passphrase
-		passobj = JSON.parse(passphrase);
+		passobj = JSON.parse(this.passphrase);
 
 		// TODO Move to key_select set_passphrase()
 		var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
