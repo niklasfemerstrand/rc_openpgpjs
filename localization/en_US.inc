@@ -26,9 +26,8 @@ $labels['pass_mismatch'] = 'Passphrase mismatch';
 $labels['import_gen'] = 'Great success! Please save your keys somewhere safe, preferably in an encrypted container. Keys are not transferred to the server';
 $labels['select_key'] = 'Please select a key';
 $labels['incorrect_pass'] = 'Incorrect passphrase';
-$labels['import_pub_failed'] = 'Could not import public key, possibly wrong format';
+$labels['import_failed'] = 'Could not import key, possibly wrong format';
 $labels['enter_pass'] = 'Please enter passphrase';
-$labels['import_priv_failed'] = 'Wrong key format';
 $labels['no_key_imported'] = '"Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the OpenPGP key manager!';
 $labels['key_mismatch'] = 'This message was not intended for this private key';
 
