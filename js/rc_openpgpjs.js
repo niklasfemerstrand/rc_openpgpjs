@@ -66,7 +66,7 @@ if(window.rcmail)
   {
     if($('#gen_passphrase').val() == '') {
       $('#generate_key_error').removeClass("hidden");
-      $('#generate_key_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
+      $('#generate_key_error p').html(rcmail.gettext('enter_passFw', 'rc_openpgpjs'));
       return false;
     } else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val()) {
       $('#generate_key_error').removeClass("hidden");
@@ -455,15 +455,15 @@ if(window.rcmail)
       var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
 
       if(msg[0].verifySignature(pubkey))
-        rcmail.display_message("Signature matches pubkey", "confirmation");
+        rcmail.display_message(rcmail.gettext('signature_match', 'rc_openpgpjs'), "confirmation");
       else
-        rcmail.display_message("WARNING! Signature doesn't match pubkey!", "error");
+        rcmail.display_message(rcmail.gettext('signature_mismatch', 'rc_openpgpjs'), "error");
       return;
     }
 
     if(!openpgp.keyring.hasPrivateKey())
     {
-      alert(rcmail.gettext('no_key_imported', 'rc_openpgpjs'));
+      rcmail.display_message(rcmail.gettext('no_key_imported', 'rc_openpgpjs'), "error");
       return false;
     }
 
