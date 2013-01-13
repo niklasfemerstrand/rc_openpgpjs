@@ -50,9 +50,11 @@ class rc_openpgpjs extends rcube_plugin
 			// load css
 			$this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
 
-			// add key manager to html output
+			// add key manager and key selector to html output
+			$template_path = $this->home . '/'. $this->local_skin_path();
 			$this->rc->output->add_footer($this->rc->output->just_parse(
-				file_get_contents($this->home . '/'. $this->local_skin_path() . '/templates/key_manager.html')
+				file_get_contents($template_path . '/templates/key_manager.html') .
+				file_get_contents($template_path . '/templates/key_select.html')
 			));
 		}
 
