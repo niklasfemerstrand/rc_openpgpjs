@@ -38,3 +38,6 @@ $labels['signature_match'] = 'Signature matches public key';
 $labels['signature_mismatch'] = 'WARNING! Signature doesn\'t match public key!';
 $labels['no_keys'] = 'Please generate or import keys in the key manager!';
 $labels['failed_mpi'] = 'Failed to decrypt secret MPIs';
+$labels['encrypt'] = 'Encrypt';
+$labels['sign'] = 'Sign';
+

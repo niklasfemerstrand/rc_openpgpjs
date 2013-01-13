@@ -38,3 +38,5 @@ $labels['signature_match'] = 'Handtekening komt overeen met publieke sleutel';
 $labels['signature_mismatch'] = 'WAARSCHUWING! Handtekening komt niet overeen met publieke sleutel!';
 $labels['no_keys'] = 'Genereer of importeer sleutels in sleutel beheer!';
 $labels['failed_mpi'] = 'Ontsleutelen geheime MPIs mislukt';
+$labels['encrypt'] = 'Versleutel';
+$labels['sign'] = 'Signeer';
