@@ -28,3 +28,5 @@ $labels['import_failed'] = 'Kan sleutel niet importeren, mogelijk verkeerd forma
 $labels['enter_pass'] = 'Geef een wachtwoord op';
 $labels['no_key_imported'] = 'PGP versleutelde inhoud gevonden, maar er zijn geen geheime sleutels geimporteerd. Importeer je geheime sleutels via Sleutel beheer!';
 $labels['key_mismatch'] = 'Dit bericht was niet bedoeld voor deze geheime sleutel';
+$labels['signature_match'] = 'Handtekening komt overeen met publieke sleutel';
+$labels['signature_mismatch'] = 'WAARSCHUWING! Handtekening komt niet overeen met publieke sleutel!';

@@ -28,3 +28,5 @@ $labels['import_failed'] = 'Could not import key, possibly wrong format';
 $labels['enter_pass'] = 'Please enter passphrase';
 $labels['no_key_imported'] = 'Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the key manager!';
 $labels['key_mismatch'] = 'This message was not intended for this private key';
+$labels['signature_match'] = 'Signature matches public key';
+$labels['signature_mismatch'] = 'WARNING! Signature doesn\'t match public key!';
