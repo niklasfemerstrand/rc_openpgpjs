@@ -67,6 +67,18 @@ class rc_openpgpjs extends rcube_plugin
                         "classact"   => "button active key_manager",
                         "class"      => "button key_manager");
           $this->api->add_content($this->api->output->button($opts), "toolbar");
+          
+          // add encrypt and sign checkboxes to composeoptions
+          $encrypt = new html_inputfield(array('id' => 'openpgpjs_encrypt', 'type' => 'checkbox', 'checked' => 'checked'));
+          $this->api->add_content(
+            html::span('composeoption', html::label(null, $encrypt->show() . $this->gettext('encrypt'))),
+            "composeoptions"
+          );
+          $encrypt = new html_inputfield(array('id' => 'openpgpjs_sign', 'type' => 'checkbox', 'checked' => 'checked'));
+          $this->api->add_content(
+            html::span('composeoption', html::label(null, $encrypt->show() . $this->gettext('sign'))),
+            "composeoptions"
+          );
         }
 			}
 		}
