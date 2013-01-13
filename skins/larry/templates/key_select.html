@@ -1,0 +1,14 @@
+<div id='openpgpjs_key_select' class="propform popupdialog">
+  <fieldset>
+    <div id="key_select_error" class="ui-state-error ui-corner-all hidden">
+      <span class="ui-icon ui-icon-alert"></span>
+      <p></p>
+    </div>
+    <div id='openpgpjs_key_select_list'></div>
+    <label for="passphrase"><roundcube:label name="rc_openpgpjs.passphrase" />:</label> <input type='password' id='passphrase' /><br />
+    <label><input type='checkbox' id='openpgpjs_rememberpass' /> <roundcube:label name="rc_openpgpjs.remember_5_min" /></label>
+    <div class="formbuttons">
+      <input type='button' class='button mainaction' value='OK' onclick='set_passphrase($("#openpgpjs_selected_id").val(), $("#passphrase").val());' />
+    </div>
+  </fieldset>
+</div>

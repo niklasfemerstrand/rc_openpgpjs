@@ -1,15 +1,53 @@
-#openpgpjs_key_manager { display:none; }
-#openpgpjs_key_select { display:none; }
-.openpgpjs_keys { width: 60%; float:left; position:relative; margin:0px; padding: 0px; }
-#openpgpjs_import { width: 40%; float:left; position:relative; margin:0px; padding: 0px; text-align: right; }
-#openpgpjs_import textarea { width: 75%; height: 100px; margin-left: 15%; }
-#openpgpjs_tabs { overflow: scroll; height: 500px; border: 0px; }
-#openpgpjs_import .button { float: right; }
+.hidden {
+  display: none; 
+  visibility: hidden;
+}
+
+ul.toolbarmenu li span.icon.key_manager {
+	background-image: url(images/key_manager.png);
+	background-position: -2px -1px;
+}
+.button#openpgp_js {
+  background: url("images/lock.png") no-repeat; 
+	background-position: center -3px;
+}
+
+
+#openpgpjs_key_manager .ui-dialog .ui-dialog-content { 
+  padding: 0;
+}
+
+#openpgpjs_tabs {
+  min-height: 400px;
+}
+#openpgpjs_tabs .ui-tabs { 
+  padding: 0;
+}
+#openpgpjs_tabs .ui-tabs-panel {
+  background: transparent;
+  padding: 0;
+}
+#openpgpjs_tabs .ui-state-error.ui-corner-all, #openpgpjs_key_select .ui-state-error.ui-corner-all {
+  padding: 5px;
+  width: 400px;
+  margin-bottom: 5px;
+}
+#openpgpjs_tabs .ui-icon.ui-icon-alert, #openpgpjs_key_select .ui-icon.ui-icon-alert {
+  float: left;
+  margin-right: 5px;
+  margin-top: 10px;
+}
+#openpgpjs_key_select .ui-state-error.ui-corner-all {
+  width: 275px;
+}
+
+#openpgpjs_import textarea {
+  width: 555px;
+  height: 175px;
+}
+
 #openpgpjs_search_results { text-align: left; width: 75%; height: 100px; overflow: scroll; margin-left: 25%; } 
-.hidden { visibility: hidden; }
-.clickme { cursor: pointer; }
-.clickme:hover { background-color: #000; color: #fff; }
+.clickme { cursor: pointer !important; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; font-size: 7pt; }
 .search_row { cursor: pointer; }
 .odd { background-color: #ccc; } /* kaos kommunikation */
-.button#openpgp_js { background: url("images/lock.png") no-repeat; background-position: center; }
