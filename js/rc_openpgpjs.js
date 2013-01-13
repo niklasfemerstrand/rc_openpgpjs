@@ -55,7 +55,7 @@ if(window.rcmail)
 		if (rcmail.env.action === "compose" || rcmail.env.action === "preview") {
 			rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
 
-			$("#mailtoolbar").append("<a href='#' class='button' id='openpgp_js' onclick=\"return rcmail.command('open-key-manager','',this,event)\">" + rcmail.gettext('key_manager', 'rc_openpgpjs') + "</a>");
+			$("#mailtoolbar").append("<a href=\"#\" class=\"button\" id=\"openpgp_js\" onclick=\"return rcmail.command('open-key-manager','',this,event)\">" + rcmail.gettext('key_manager', 'rc_openpgpjs') + "</a>");
 			$("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
 		} else if (rcmail.env.action === 'show') {
 			decrypt($('#messagebody div.message-part pre').html());
