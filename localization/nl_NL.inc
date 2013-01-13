@@ -26,5 +26,5 @@ $labels['select_key'] = 'Selecteer een sleutel';
 $labels['incorrect_pass'] = 'Incorrect wachtwoord';
 $labels['import_failed'] = 'Kan sleutel niet importeren, mogelijk verkeerd formaat';
 $labels['enter_pass'] = 'Geef een wachtwoord op';
-$labels['no_key_imported'] = 'PGP versleutelde inhoud gevonden, maar er zijn "Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the OpenPGP key manager!';
+$labels['no_key_imported'] = 'PGP versleutelde inhoud gevonden, maar er zijn geen geheime sleutels geimporteerd. Importeer je geheime sleutels via Sleutel beheer!';
 $labels['key_mismatch'] = 'Dit bericht was niet bedoeld voor deze geheime sleutel';
