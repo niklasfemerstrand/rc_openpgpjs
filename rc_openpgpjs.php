@@ -49,16 +49,25 @@ class rc_openpgpjs extends rcube_plugin
 			// load css
 			$this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
 
-			// add key manager item to message menu
 			if ($this->api->output->type == 'html') {
+        // add key manager item to message menu
 				$opts = array("command"    => "open-key-manager",
 				              "label"      => "rc_openpgpjs.key_manager",
 				              "type"       => "link",
 				              "classact"   => "icon active",
 				              "class"      => "icon",
 				              "innerclass" => "icon key_manager");
-
 				$this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
+        
+        if ($this->rc->action == 'compose') {
+          // add key manager button to compose toolbar
+          $opts = array("command"    => "open-key-manager",
+                        "label"      => "rc_openpgpjs.key_manager",
+                        "type"       => "link",
+                        "classact"   => "button active key_manager",
+                        "class"      => "button key_manager");
+          $this->api->add_content($this->api->output->button($opts), "toolbar");
+        }
 			}
 		}
 	}
