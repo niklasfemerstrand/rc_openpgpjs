@@ -50,4 +50,5 @@ ul.toolbarmenu li span.icon.key_manager {
 .clickme { cursor: pointer !important; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; font-size: 7pt; }
 .search_row { cursor: pointer; }
-.odd { background-color: #ccc; } /* kaos kommunikation */
+.odd { background-color: #ccc; }
+.clickme:hover { background-color: #ccc; }
