@@ -56,7 +56,7 @@ if(window.rcmail)
       rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
 
       $("#mailtoolbar").append("<a href=\"#\" class=\"button\" id=\"openpgp_js\" onclick=\"return rcmail.command('open-key-manager','',this,event)\">" + rcmail.gettext('key_manager', 'rc_openpgpjs') + "</a>");
-      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
+      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' checked='checked' type='checkbox' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
     } else if (rcmail.env.action === 'show') {
       decrypt($('#messagebody div.message-part pre').html());
     }
@@ -66,7 +66,7 @@ if(window.rcmail)
   {
     if($('#gen_passphrase').val() == '') {
       $('#generate_key_error').removeClass("hidden");
-      $('#generate_key_error p').html(rcmail.gettext('specify_pass', 'rc_openpgpjs'));
+      $('#generate_key_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
       return false;
     } else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val()) {
       $('#generate_key_error').removeClass("hidden");
@@ -142,7 +142,7 @@ if(window.rcmail)
         return false;
       } else if(openpgp.keyring.privateKeys.length === 0 || openpgp.keyring.publicKeys.length === 0)
       {
-        alert("Please generate or import keys in the OpenPGP key manager!");
+        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
         return false;
       }
 
@@ -201,7 +201,7 @@ if(window.rcmail)
         $("#openpgpjs_key_select").dialog('open');
         return false;
       } else if(openpgp.keyring.privateKeys.length === 0 || openpgp.keyring.publicKeys.length === 0) {
-        alert("Please generate or import keys in the OpenPGP key manager!");
+        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
         return false;
       }
 
@@ -319,7 +319,7 @@ if(window.rcmail)
   function select_key(i)
   {
     fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
-    $("#openpgpjs_selected").html("<strong>Selected:</strong> " + fingerprint);
+    $("#openpgpjs_selected").html("<strong>" + rcmail.gettext('selected', 'rc_openpgpjs') + ":</strong> " + fingerprint);
     $("#openpgpjs_selected_id").val(i);
     $("#passphrase").val("");
   }
@@ -346,7 +346,7 @@ if(window.rcmail)
         }
       }
 
-      $("#openpgpjs_key_select_list").append("<div id=\"openpgpjs_selected\"><strong>Selected:</strong> <i>None</i></div>");
+      $("#openpgpjs_key_select_list").append("<div id=\"openpgpjs_selected\"><strong>" + rcmail.gettext('selected', 'rc_openpgpjs') + ":</strong> <i>" + rcmail.gettext('none', 'rc_openpgpjs') + "</i></div>");
     }
 
     // Fills OpenPGP key manager tables
@@ -364,9 +364,9 @@ if(window.rcmail)
              "</td><td>" +
              getAlgorithmString(openpgp.keyring.publicKeys[i].obj) +
              "</td><td>" +
-             (status ? "Valid" : "Invalid") + 
+             (status ? rcmail.gettext('valid', 'rc_openpgpjs') : rcmail.gettext('invalid', 'rc_openpgpjs')) + 
              "</td><td>" +
-             "<a href='#' onclick='if(confirm(\"Delete this public key?\")) { openpgp.keyring.removePublicKey(" + i + "); update_tables(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>" +
+             "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePublicKey(" + i + "); update_tables(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>" +
              "</td></tr>";
       $('#openpgpjs_pubkeys tbody').append(result);
     }
@@ -387,7 +387,7 @@ if(window.rcmail)
         "</td><td>" +
         getAlgorithmString(openpgp.keyring.privateKeys[i].obj) +
         "</td><td>" +
-        "<a href='#' onclick='if(confirm(\"Delete this private key?\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>" +
+        "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>" +
         "</td></tr>");
       }
     }
@@ -455,15 +455,15 @@ if(window.rcmail)
       var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
 
       if(msg[0].verifySignature(pubkey))
-        rcmail.display_message("Signature matches pubkey", "confirmation");
+        rcmail.display_message(rcmail.gettext('signature_match', 'rc_openpgpjs'), "confirmation");
       else
-        rcmail.display_message("WARNING! Signature doesn't match pubkey!", "error");
+        rcmail.display_message(rcmail.gettext('signature_mismatch', 'rc_openpgpjs'), "error");
       return;
     }
 
     if(!openpgp.keyring.hasPrivateKey())
     {
-      alert(rcmail.gettext('no_key_imported', 'rc_openpgpjs'));
+      rcmail.display_message(rcmail.gettext('no_key_imported', 'rc_openpgpjs'), "error");
       return false;
     }
 
@@ -520,7 +520,7 @@ if(window.rcmail)
       }
       catch (e)
       {
-        alert("Failed to decrypt secret MPIs");
+        alert(rcmail.gettext('failed_mpi', 'rc_openpgpjs'));
         return false;
       }
 
