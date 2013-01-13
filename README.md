@@ -1,16 +1,16 @@
-Roundcube OpenPGP 
+rc_openpgpjs 
 ================
 
 ATTENTION
 ---------
-Roundcube OpenPGP is currently in development stage only.
-Don't expect anything just yet!
+rc_openpgpjs is currently in development stage only. Don't expect anything just
+yet!
 
 INTRODUCTION
 ------------
-Roundcube OpenPGP is an extension adding OpenPGP.js functionality to the Roundcube
-webmail project. See [Why do you need PGP? ][why], [OpenPGP.js][openpgpjs] and [Roundcube][roundcube] for more
-info.
+rc_openpgpjs is an extension adding OpenPGPs functionality to the Roundcube
+webmail project. See [Why do you need PGP? ][why], [OpenPGP.js][openpgpjs] and
+[Roundcube][roundcube] for more info.
 
 FEATURES
 --------
