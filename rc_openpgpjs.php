@@ -58,7 +58,7 @@ class rc_openpgpjs extends rcube_plugin
             'type'     => 'link',
             'classact' => 'icon active',
             'class'    => 'icon',
-            'innerclass' => 'icon',
+            'innerclass' => 'icon key_manager',
           ))),
           'messagemenu');
       }

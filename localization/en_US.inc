@@ -1,8 +1,8 @@
 <?php
 
 $labels = array();
-$labels['key_manager'] = 'OpenPGP key manager';
-$labels['key_selector'] = 'OpenPGP key select';
+$labels['key_manager'] = 'Key manager';
+$labels['select_key'] = 'Select key';
 $labels['generate_keys'] = 'Generate keys';
 $labels['private_keys'] = 'Private keys';
 $labels['public_keys'] = 'Public keys';
