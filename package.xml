@@ -3,11 +3,11 @@
 http://pear.php.net/dtd/tasks-1.0.xsd
 http://pear.php.net/dtd/package-2.0
 http://pear.php.net/dtd/package-2.0.xsd">
-    <name>Roundcube OpenPGP</name>
+    <name>rc_openpgpjs</name>
     <uri>https://github.com/qnrq/rc_openpgpjs</uri>
     <summary>Security plugin for Roundcube</summary>
     <description>
-    Roundcube OpenPGP is an extension adding OpenPGP.js functionality to the Roundcube webmail project
+    rc_openpgpjs is an extension adding OpenPGP functionality to the Roundcube webmail project.
     </description>
     <lead>
         <name>Niklas Femerstrand</name>
