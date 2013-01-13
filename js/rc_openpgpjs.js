@@ -66,7 +66,7 @@ if(window.rcmail)
   {
     if($('#gen_passphrase').val() == '') {
       $('#generate_key_error').removeClass("hidden");
-      $('#generate_key_error p').html(rcmail.gettext('enter_passFw', 'rc_openpgpjs'));
+      $('#generate_key_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
       return false;
     } else if($("#gen_passphrase").val() != $("#gen_passphrase_verify").val()) {
       $('#generate_key_error').removeClass("hidden");
