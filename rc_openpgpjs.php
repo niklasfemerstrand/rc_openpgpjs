@@ -56,7 +56,7 @@ class rc_openpgpjs extends rcube_plugin
 				              "type"       => "link",
 				              "classact"   => "icon active",
 				              "class"      => "icon",
-				              "innerclass" => "icon");
+				              "innerclass" => "icon key_manager");
 
 				$this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
 			}
