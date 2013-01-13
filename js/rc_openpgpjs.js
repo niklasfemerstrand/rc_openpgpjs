@@ -52,12 +52,12 @@ if(window.rcmail)
       rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
       rcmail.enable_command('open-key-manager', true);
 
-    if (rcmail.env.action === "compose" || rcmail.env.action === "preview") {
+    if (rcmail.env.action === "compose") {
       rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
 
       $("#mailtoolbar").append("<a href=\"#\" class=\"button\" id=\"openpgp_js\" onclick=\"return rcmail.command('open-key-manager','',this,event)\">" + rcmail.gettext('key_manager', 'rc_openpgpjs') + "</a>");
       $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> Encrypt <input id='openpgpjs_sign' checked='checked' type='checkbox' /> Sign");
-    } else if (rcmail.env.action === 'show') {
+    } else if (rcmail.env.action === 'show' || rcmail.env.action === "preview") {
       decrypt($('#messagebody div.message-part pre').html());
     }
   });
