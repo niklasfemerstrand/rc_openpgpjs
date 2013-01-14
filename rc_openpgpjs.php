@@ -23,7 +23,7 @@
 
 class rc_openpgpjs extends rcube_plugin
 {
-  public $task = 'mail';
+  public $task = 'mail|settings';
 	public $rc;
 
 	/**
@@ -36,11 +36,11 @@ class rc_openpgpjs extends rcube_plugin
 		$this->add_hook('user_create', array($this, 'user_create'));
 		$this->register_action('plugin.pks_search', array($this, 'pks_search'));
 
+    // make localization available on the client
+    $this->add_texts('localization/', true);
+      
 		if ($this->rc->task == 'mail') {
 			$this->add_hook('render_page', array($this, 'render_page'));
-
-			// make localization available on the client
-			$this->add_texts('localization/', true);
 
 			// load js
 			$this->include_script('js/openpgp.min.js');
@@ -69,19 +69,33 @@ class rc_openpgpjs extends rcube_plugin
           $this->api->add_content($this->api->output->button($opts), "toolbar");
           
           // add encrypt and sign checkboxes to composeoptions
-          $encrypt = new html_inputfield(array('id' => 'openpgpjs_encrypt', 'type' => 'checkbox', 'checked' => 'checked'));
+          $encrypt_opts = array('id' => 'openpgpjs_encrypt', 
+                                'type' => 'checkbox'); 
+          if($this->rc->config->get('encrypt', true)) {
+             $encrypt_opts['checked'] = 'checked';
+          }
+          $encrypt = new html_inputfield($encrypt_opts);
           $this->api->add_content(
             html::span('composeoption', html::label(null, $encrypt->show() . $this->gettext('encrypt'))),
             "composeoptions"
           );
-          $encrypt = new html_inputfield(array('id' => 'openpgpjs_sign', 'type' => 'checkbox', 'checked' => 'checked'));
+          $sign_opts = array('id' => 'openpgpjs_sign', 
+                             'type' => 'checkbox'); 
+          if($this->rc->config->get('sign', true)) {
+             $sign_opts['checked'] = 'checked';
+          }
+          $sign = new html_inputfield($sign_opts);
           $this->api->add_content(
-            html::span('composeoption', html::label(null, $encrypt->show() . $this->gettext('sign'))),
+            html::span('composeoption', html::label(null, $sign->show() . $this->gettext('sign'))),
             "composeoptions"
           );
         }
 			}
-		}
+		} elseif ($this->rc->task == 'settings') {
+      // add hooks for OpenPGP settings
+      $this->add_hook('preferences_list', array($this, 'preferences_list'));
+      $this->add_hook('preferences_save', array($this, 'preferences_save'));
+    }
 	}
 
 	/**
@@ -144,4 +158,53 @@ class rc_openpgpjs extends rcube_plugin
 		$this->rc->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
 		return;
 	}
+  
+  /**
+   * Handler for preferences_list hook.
+   * Adds options blocks into Compose settings sections in Preferences.
+   *
+   * @param array Original parameters
+   * @return array Modified parameters
+   */
+  function preferences_list($p)
+  {
+    if ($p['section'] == 'compose') {
+      $p['blocks']['openpgp']['name'] = $this->gettext('openpgp_options');
+
+      $field_id = 'rcmfd_encrypt';
+      $encrypt = new html_checkbox(array('name' => '_encrypt', 'id' => $field_id, 'value' => 1));
+      $p['blocks']['openpgp']['options']['encrypt'] = array(
+        'title' => html::label($field_id, Q($this->gettext('always_encrypt'))),
+        'content' => $encrypt->show($this->rc->config->get('encrypt', true)?1:0),
+      );
+      
+      $field_id = 'rcmfd_sign';
+      $sign = new html_checkbox(array('name' => '_sign', 'id' => $field_id, 'value' => 1));
+      $p['blocks']['openpgp']['options']['sign'] = array(
+        'title' => html::label($field_id, Q($this->gettext('always_sign'))),
+        'content' => $sign->show($this->rc->config->get('sign', true)?1:0),
+      );
+    }
+
+    return $p;
+  }
+
+  /**
+   * Handler for preferences_save hook.
+   * Executed on Compose settings form submit.
+   *
+   * @param array Original parameters
+   * @return array Modified parameters
+   */
+  function preferences_save($p)
+  {
+    if ($p['section'] == 'compose') {
+      $p['prefs'] = array(
+        'encrypt'     => get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false,
+        'sign'     => get_input_value('_sign', RCUBE_INPUT_POST) ? true : false,
+      );
+    }
+
+    return $p;
+  }
 }
