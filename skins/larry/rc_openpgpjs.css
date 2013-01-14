@@ -7,11 +7,10 @@ ul.toolbarmenu li span.icon.key_manager {
 	background-image: url(images/key_manager.png);
 	background-position: -2px -1px;
 }
-.button#openpgp_js {
+.toolbar a.button.key_manager {
   background: url("images/lock.png") no-repeat; 
-	background-position: center -3px;
+	background-position: center -2px;
 }
-
 
 #openpgpjs_key_manager .ui-dialog .ui-dialog-content { 
   padding: 0;
