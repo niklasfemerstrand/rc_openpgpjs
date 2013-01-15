@@ -40,3 +40,6 @@ $labels['no_keys'] = 'Genereer of importeer sleutels in sleutel beheer!';
 $labels['failed_mpi'] = 'Ontsleutelen geheime MPIs mislukt';
 $labels['encrypt'] = 'Versleutel';
 $labels['sign'] = 'Signeer';
+$labels['openpgp_options'] = 'OpenPGP Opties';
+$labels['always_encrypt'] = 'Berichten altijd versleutelen';
+$labels['always_sign'] = 'Berichten altijd signeren';
