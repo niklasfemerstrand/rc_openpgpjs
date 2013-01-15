@@ -19,6 +19,12 @@ ul.toolbarmenu li span.icon.key_manager {
 #openpgpjs_tabs {
   min-height: 400px;
 }
+#openpgpjs_tabs tr {
+  cursor: pointer !important;
+}
+#openpgpjs_tabs tr:hover {
+  background-color: #ccc;
+}
 #openpgpjs_tabs.ui-tabs { 
   padding: 0;
 }
@@ -44,8 +50,6 @@ ul.toolbarmenu li span.icon.key_manager {
 }
 
 #openpgpjs_search_results { text-align: left; width: 75%; height: 100px; overflow: scroll; margin-left: 25%; } 
-.clickme { cursor: pointer !important; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; font-size: 7pt; }
 .search_row { cursor: pointer; }
 .odd { background-color: #ccc; }
-.clickme:hover { background-color: #ccc; }
