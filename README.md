@@ -19,6 +19,10 @@ FEATURES
 - secure key storage
 - key  generation
 
+REQUIREMENTS
+------------
+This plugin requires Roundcube 0.9-beta or later.
+
 INSTALLATION
 ------------
 1. Copy plugin to 'plugins' folder
