@@ -51,6 +51,7 @@ if(window.rcmail)
       // register open key manager command
       rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
       rcmail.enable_command('open-key-manager', true);
+      rcmail.env.compose_commands.push('open-key-manager');
 
     if (rcmail.env.action === "compose") {
       rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
