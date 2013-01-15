@@ -20,16 +20,14 @@
 +-------------------------------------------------------------------------+
 */
 
-if(window.rcmail)
-{
-  rcmail.addEventListener('init', function(evt)
-  {
+if (window.rcmail) {
+  rcmail.addEventListener('init', function (evt) {
     openpgp.init();
 //  openpgp.config.debug = true
     rcmail.addEventListener('plugin.pks_search', pks_search_callback);
     rcmail.enable_command("savedraft", false);
 
-    if(sessionStorage.length > 0) {
+    if (sessionStorage.length > 0) {
       this.passphrase = sessionStorage[0];
     }
 
@@ -38,19 +36,23 @@ if(window.rcmail)
                                          title: rcmail.gettext('select_key', 'rc_openpgpjs'),
                                          width: "30%",
                                          open: function(event, ui) {
-                                                  update_tables();
+                                                  updateKeySelector();
                                                }
                                        });
-      $('#openpgpjs_tabs').tabs();
-      $('#openpgpjs_key_manager').dialog({ modal: true,
-                                           autoOpen: false,
-                                           title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
-                                           width: "90%" });
-      update_tables();
-
-      // register open key manager command
-      rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
-      rcmail.enable_command('open-key-manager', true);
+    $('#openpgpjs_tabs').tabs();
+    $('#openpgpjs_key_manager').dialog({ modal: true,
+                                         autoOpen: false,
+                                         title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
+                                         width: "90%",
+                                         open: function(event, ui) {
+                                                  updateKeyManager();
+                                               }
+                                        });
+    
+    // register open-key-manager command
+    rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
+    rcmail.enable_command('open-key-manager', true);
+    rcmail.env.compose_commands.push('open-key-manager');
 
     if (rcmail.env.action === "compose") {
       rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) return false; });
@@ -258,7 +260,7 @@ if(window.rcmail)
     try {
       openpgp.keyring.importPublicKey(key);
       openpgp.keyring.store();
-      update_tables();
+      updateKeyManager();
       $('#importPubkeyField').val("");
       $('#import_pub_error').addClass("hidden");
     } catch(e) {
@@ -342,7 +344,7 @@ if(window.rcmail)
 
     openpgp.keyring.importPrivateKey(key, passphrase);
     openpgp.keyring.store();
-    update_tables();
+    updateKeyManager();
     $('#importPrivkeyField').val("");
     $('#passphrase').val("");
     $('#import_priv_error').addClass("hidden");
@@ -363,25 +365,19 @@ if(window.rcmail)
   }
   
   /**
-   * Updates the public and private key tables in the key manager
+   * Updates the key list for key selection
    */  
-  //TODO: This function is _really_ messy and ugly, refactor it when it's proven functional.
-  //       Especially the fingerprint part...
-  function update_tables()
-  {
-    // Fills key_select key list
+  function updateKeySelector() {
+    // fill key list for key selection
     $("#openpgpjs_key_select_list").html("<input type=\"hidden\" id=\"openpgpjs_selected_id\" value=\"-1\" />");
 
-    // Only one key in keyring, nothing to select from
-    if(openpgp.keyring.privateKeys.length == 1)
-    {
+    // only one key in keyring, nothing to select from
+    if(openpgp.keyring.privateKeys.length == 1) {
       $("#openpgpjs_selected_id").val(0);
     } else {
       // Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
-      for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
-      {
-        for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
-        {
+      for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
+        for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
           fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
           person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
           $("#openpgpjs_key_select_list").append("<div class=\"clickme\" onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
@@ -390,51 +386,55 @@ if(window.rcmail)
 
       $("#openpgpjs_key_select_list").append("<div id=\"openpgpjs_selected\"><strong>" + rcmail.gettext('selected', 'rc_openpgpjs') + ":</strong> <i>" + rcmail.gettext('none', 'rc_openpgpjs') + "</i></div>");
     }
-
-    // Fills OpenPGP key manager tables
+  }
+  
+  /**
+   * Updates the public and private key tables in the key manager
+   */  
+  function updateKeyManager() {
+    // fill key manager public key table
     $('#openpgpjs_pubkeys tbody').empty();
-
-    for (var i = 0; i < openpgp.keyring.publicKeys.length; i++)
-    {
-      var status = openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures();
-      var result = "<tr class='clickme' onclick='displayPub(" + i + ");'><td>0x" +
-             util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8) +
-             "</td><td>" + 
-             util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ") +
-             "</td><td>" +
-             escapeHtml(openpgp.keyring.publicKeys[i].obj.userIds[0].text) +
-             "</td><td>" +
-             getAlgorithmString(openpgp.keyring.publicKeys[i].obj) +
-             "</td><td>" +
-             (status ? rcmail.gettext('valid', 'rc_openpgpjs') : rcmail.gettext('invalid', 'rc_openpgpjs')) + 
-             "</td><td>" +
-             "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePublicKey(" + i + "); update_tables(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>" +
-             "</td></tr>";
+    for (var i = 0; i < openpgp.keyring.publicKeys.length; i++) {
+      var key_id = "0x" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+      var fingerprint = util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+      var person = escapeHtml(openpgp.keyring.publicKeys[i].obj.userIds[0].text);
+      var length_alg = getAlgorithmString(openpgp.keyring.publicKeys[i].obj);
+      var status = (openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures() ? rcmail.gettext('valid', 'rc_openpgpjs') : rcmail.gettext('invalid', 'rc_openpgpjs'));
+      var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePublicKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
+      
+      var result = "<tr onclick='displayPub(" + i + ");'>" +
+        "<td>" + key_id      + "</td>" +
+        "<td>" + fingerprint + "</td>" +
+        "<td>" + person      + "</td>" +
+        "<td>" + length_alg  + "</td>" +
+        "<td>" + status      + "</td>" +
+        "<td>" + del         + "</td>" +
+        "</tr>";
       $('#openpgpjs_pubkeys tbody').append(result);
     }
     
+    // fill key manager private key table
     $('#openpgpjs_privkeys tbody').empty();
-
-    for (var i = 0; i < openpgp.keyring.privateKeys.length; i++)
-    {
-      for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
-      {
-        $("#openpgpjs_privkeys tbody").append("<tr class='clickme' onclick='displayPriv(" + i + ");'><td>0x" +
-        util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8) +
-        "</td><td>" +
-                util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ") +
-        "</td><td>" +
-        escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text) +
-//        "</td><td>" +
-        "</td><td>" +
-        getAlgorithmString(openpgp.keyring.privateKeys[i].obj) +
-        "</td><td>" +
-        "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>" +
-        "</td></tr>");
+    for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
+      for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
+        var key_id = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+        var fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+        var person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
+        var length_alg = getAlgorithmString(openpgp.keyring.privateKeys[i].obj);
+        var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
+        
+        var result = "<tr onclick='displayPriv(" + i + ");'>" +
+          "<td>" + key_id      + "</td>" +
+          "<td>" + fingerprint + "</td>" +
+          "<td>" + person      + "</td>" +
+          "<td>" + length_alg  + "</td>" +
+          "<td>" + del         + "</td>" +
+          "</tr>";
+        
+        $('#openpgpjs_privkeys tbody').append(result);
       }
     }
   }
-
 
   /**
    * Displays the armored version of a public key
