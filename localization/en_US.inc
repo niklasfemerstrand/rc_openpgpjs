@@ -40,4 +40,6 @@ $labels['no_keys'] = 'Please generate or import keys in the key manager!';
 $labels['failed_mpi'] = 'Failed to decrypt secret MPIs';
 $labels['encrypt'] = 'Encrypt';
 $labels['sign'] = 'Sign';
-
+$labels['openpgp_options'] = 'OpenPGP Options';
+$labels['always_encrypt'] = 'Always encrypt messages';
+$labels['always_sign'] = 'Always sign messages';
