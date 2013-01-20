@@ -34,7 +34,7 @@ class rc_openpgpjs extends rcube_plugin
     $this->rc = rcube::get_instance();
 
     $this->add_hook('user_create', array($this, 'user_create'));
-    $this->register_action('plugin.pks_search', array($this, 'pks_search'));
+    $this->register_action('plugin.pks_search', array($this, 'hkp'));
 
     if ($this->rc->task == 'mail') {
       $this->add_hook('render_page', array($this, 'render_page'));
@@ -97,33 +97,62 @@ class rc_openpgpjs extends rcube_plugin
 
   /**
    * This Public Key Server proxy is written to circumvent Access-Control-Allow-Origin
-   * limitations. It also provides a layer of security as HTTP PKS normally
-   * doesn't support HTTPS; essentially preventing MITM if the Roundcube installation
-   * is configured to use HTPS. For more details see the following doc:
-   * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00.
+   * limitations. It also provides a layer of security as HKP normally doesn't
+   * support HTTPS; essentially preventing MITM if the Roundcube installation
+   * is configured to use HTTPS.
+   *
+   * For more details see the following:
+   *   http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00
+   *   http://sks-keyservers.net/
    */
-  // TODO Add cache and slowly roll over to HTTP PKS directly in Roundcube
-  function pks_search()
+  function hkp()
   {
-    if(!isset($_POST['op']))
+    $return = "";
+
+    if(!isset($_POST['op']) || !isset($_POST['search']))
     {
-      $this->rc->output->command('plugin.pks_search', array('message' => "ERR: Missing param"));
-      return;
+      $return .= "ERR: Missing param";
     }
 
+    if($_POST['op'] != "get" &&
+       $_POST['op'] != "index" &&
+       $_POST['op'] != "vindex") {
+      $return .= "ERR: Invalid operation";
+    }
 
-    //TODO switch to curl, read http status code
     if($_POST['op'] == "index") {
-      $return = "";
-      $result = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=index&search={$_POST['search']}");
-      preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=index&search={$_POST["search"]}");
+      $result = curl_exec($ch);
+      $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      curl_close($ch);
 
-      if(count($m > 0)) {
-        for($i = 0; $i < count($m[0]); $i++)
-          $return .= "{$m[1][$i]}:{$m[2][$i]}\n";
+      if($status == 200) {
+        preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
+        $found = array();
+
+        if(count($m) > 0) {
+          for($i = 0; $i < count($m[0]); $i++)
+            $found[] = array($m[1][$i], $m[2][$i]);
+          $return .= json_encode($found);
+        }
+      } else {
+        preg_match("/Error handling request: (.*)<\/body>/", $result, $m);
+        $return .= "ERR: {$m[1]}";
       }
     } elseif($_POST['op'] == "get") {
-      $return = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST['search']}");
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST["search"]}");
+      $result = curl_exec($ch);
+      $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      curl_close($ch);
+
+      if($status == 200) {
+        preg_match_all("/-----BEGIN PGP PUBLIC KEY BLOCK-----(.*)-----END PGP PUBLIC KEY BLOCK-----/s", $result, $m);
+        $return .= json_encode($m);
+      }
     }
 
     $this->rc->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
