@@ -34,7 +34,8 @@ class rc_openpgpjs extends rcube_plugin
     $this->rc = rcube::get_instance();
 
     $this->add_hook('user_create', array($this, 'user_create'));
-    $this->register_action('plugin.pks_search', array($this, 'hkp'));
+    $this->register_action('plugin.pks_search', array($this, 'hkp_search'));
+    $this->register_action('plugin.hkp_add', array($this, 'hkp_add'));
 
     if ($this->rc->task == 'mail') {
       $this->add_hook('render_page', array($this, 'render_page'));
@@ -105,20 +106,23 @@ class rc_openpgpjs extends rcube_plugin
    *   http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00
    *   http://sks-keyservers.net/
    */
-  function hkp()
+  function hkp_search()
   {
-    $return = "";
-
     if(!isset($_POST['op']) || !isset($_POST['search']))
     {
-      $return .= "ERR: Missing param";
+      return $this->rc->output->command(
+        'plugin.pks_search',
+        array('message' => "ERR: Missing param",
+              'op' => htmlspecialchars($_POST['op'])));
     }
 
     if($_POST['op'] != "get" &&
        $_POST['op'] != "index" &&
-       $_POST['op'] != "vindex") {
-      $return .= "ERR: Invalid operation";
-    }
+       $_POST['op'] != "vindex")
+      return $this->rc->output->command(
+        'plugin.pks_search',
+        array('message' => "ERR: Invalid operation",
+              'op' => htmlspecialchars($_POST['op'])));
 
     if($_POST['op'] == "index") {
       $ch = curl_init();
@@ -130,18 +134,37 @@ class rc_openpgpjs extends rcube_plugin
 
       if($status == 200) {
         preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
-        $found = array();
 
         if(count($m) > 0) {
+          $found = array();
           for($i = 0; $i < count($m[0]); $i++)
             $found[] = array($m[1][$i], $m[2][$i]);
-          $return .= json_encode($found);
+          return $this->rc->output->command(
+            'plugin.pks_search',
+            array('message' => json_encode($found),
+                  'op' => htmlspecialchars($_POST['op'])));
         }
       } else {
         preg_match("/Error handling request: (.*)<\/body>/", $result, $m);
-        $return .= "ERR: {$m[1]}";
+        return $this->rc->output->command(
+          'plugin.pks_search',
+          array('message' => "ERR: " . htmlspecialchars($m[1]),
+                'op' => htmlspecialchars($_POST['op'])));
       }
     } elseif($_POST['op'] == "get") {
+      if(preg_match("/^0x[0-9A-Fa-f]{8}$/", $_POST["search"])) {
+        define("32_BIT_KEY", true);
+        define("64_BIT_KEY", false);
+      } elseif(preg_match("/^0x[0-9A-Fa-f]{16}$/", $_POST["search"])) {
+        define("32_BIT_KEY", false);
+        define("64_BIT_KEY", true);
+      } else {
+        return $this->rc->output->command(
+          'plugin.pks_search',
+          array('message' => "ERR: Incorrect search format for this operation",
+                'op' => htmlspecialchars($_POST['op'])));
+      }
+
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
       curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST["search"]}");
@@ -151,11 +174,15 @@ class rc_openpgpjs extends rcube_plugin
 
       if($status == 200) {
         preg_match_all("/-----BEGIN PGP PUBLIC KEY BLOCK-----(.*)-----END PGP PUBLIC KEY BLOCK-----/s", $result, $m);
-        $return .= json_encode($m);
+        return $this->rc->output->command(
+          'plugin.pks_search',
+          array('message' => json_encode($m),
+                'op' => htmlspecialchars($_POST['op'])));
       }
     }
+  }
 
-    $this->rc->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
+  function hkp_add() {
     return;
   }
 }

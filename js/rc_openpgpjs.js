@@ -237,14 +237,41 @@ if(window.rcmail)
     }
   }
 
-  function pubkey_search(val, op)
+  /**
+   * op: (get|index|vindex) string operation to perform
+   * search: string phrase to pass to HKP
+   *
+   * To retrieve all matching keys: pubkey_search("foo@bar", "index")
+   * To retrieve armored key of specific id: pubkey_search("0xF00", "get")
+   *
+   * If op is get then search should be either 32-bit or 64-bit. See
+   * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00#section-3.1.1.1
+   * for more details.
+   *
+   */
+  // TODO: Version 3 fingerprint search
+  function pubkey_search(search, op)
   {
-    if(val.length > 1)
-      rcmail.http_post('plugin.pks_search', 'search=' + val + '&op=' + op);
+    if(search.length === 0)
+      return false;
+    rcmail.http_post('plugin.pks_search', 'search=' + search + '&op=' + op);
   }
 
   function pks_search_callback(response)
   {
+	if(response.message === "ERR: Missing param") {
+		console.log("Missing param");
+		return false;
+	}
+
+	if(response.message === "ERR: Invalid operation") {
+		console.log("Invalid operation");
+		return false;
+	}
+
+	console.log("response: ");
+	console.log(response);
+
     if(response.op === "index")
     {
       var results = "";
