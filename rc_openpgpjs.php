@@ -24,41 +24,41 @@
 class rc_openpgpjs extends rcube_plugin
 {
   public $task = 'mail';
-	public $rc;
+  public $rc;
 
-	/**
-	 * Plugin initialization.
-	 */
-	function init()
-	{
-		$this->rc = rcube::get_instance();
+  /**
+   * Plugin initialization.
+   */
+  function init()
+  {
+    $this->rc = rcube::get_instance();
 
-		$this->add_hook('user_create', array($this, 'user_create'));
-		$this->register_action('plugin.pks_search', array($this, 'pks_search'));
+    $this->add_hook('user_create', array($this, 'user_create'));
+    $this->register_action('plugin.pks_search', array($this, 'pks_search'));
 
-		if ($this->rc->task == 'mail') {
-			$this->add_hook('render_page', array($this, 'render_page'));
+    if ($this->rc->task == 'mail') {
+      $this->add_hook('render_page', array($this, 'render_page'));
 
-			// make localization available on the client
-			$this->add_texts('localization/', true);
+      // make localization available on the client
+      $this->add_texts('localization/', true);
 
-			// load js
-			$this->include_script('js/openpgp.min.js');
-			$this->include_script('js/rc_openpgpjs.js');
+      // load js
+      $this->include_script('js/openpgp.min.js');
+      $this->include_script('js/rc_openpgpjs.js');
 
-			// load css
-			$this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
+      // load css
+      $this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
 
-			if ($this->api->output->type == 'html') {
+      if ($this->api->output->type == 'html') {
         // add key manager item to message menu
-				$opts = array("command"    => "open-key-manager",
-				              "label"      => "rc_openpgpjs.key_manager",
-				              "type"       => "link",
-				              "classact"   => "icon active",
-				              "class"      => "icon",
-				              "innerclass" => "icon key_manager");
-				$this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
-        
+        $opts = array("command"    => "open-key-manager",
+                      "label"      => "rc_openpgpjs.key_manager",
+                      "type"       => "link",
+                      "classact"   => "icon active",
+                      "class"      => "icon",
+                      "innerclass" => "icon key_manager");
+        $this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
+
         if ($this->rc->action == 'compose') {
           // add key manager button to compose toolbar
           $opts = array("command"    => "open-key-manager",
@@ -68,68 +68,65 @@ class rc_openpgpjs extends rcube_plugin
                         "class"      => "button key_manager");
           $this->api->add_content($this->api->output->button($opts), "toolbar");
         }
-			}
-		}
-	}
+      }
+    }
+  }
 
-	/**
-	 * Add key manager and key selector to html output
-	 */
-	function render_page($params)
-	{
-		$template_path = $this->home . '/'. $this->local_skin_path();
-		$this->rc->output->add_footer($this->rc->output->just_parse(
-			file_get_contents($template_path . '/templates/key_manager.html') .
-			file_get_contents($template_path . '/templates/key_select.html')));
-    
-		return $params;
-	}
+  /**
+   * Add key manager and key selector to html output
+   */
+  function render_page($params)
+  {
+    $template_path = $this->home . '/'. $this->local_skin_path();
+    $this->rc->output->add_footer($this->rc->output->just_parse(
+      file_get_contents($template_path . '/templates/key_manager.html') .
+      file_get_contents($template_path . '/templates/key_select.html')));
 
-	/**
-	 * Create default identity, required as pubkey metadata
-	 */
-	function user_create($params)
-	{
-		$params['user_name'] = preg_replace("/@.*$/", "", $params['user']);
-		$params['user_email'] = $params['user'];
-		return $params;
-	}
+    return $params;
+  }
 
-	/**
-	 * This Public Key Server proxy is written to circumvent Access-Control-Allow-Origin
-	 * limitations. It also provides a layer of security as HTTP PKS normally
-	 * doesn't support HTTPS; essentially preventing MITM if the Roundcube installation
-	 * is configured to use HTPS. For more details see the following doc:
-	 * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00.
-	 */
-	// TODO Add cache and slowly roll over to HTTP PKS directly in Roundcube
-	function pks_search()
-	{
-		if(!isset($_POST['op']))
-		{
-			$this->rc->output->command('plugin.pks_search', array('message' => "ERR: Missing param"));
-			return;
-		}
+  /**
+   * Create default identity, required as pubkey metadata
+   */
+  function user_create($params)
+  {
+    $params['user_name'] = preg_replace("/@.*$/", "", $params['user']);
+    $params['user_email'] = $params['user'];
+    return $params;
+  }
 
-		//TODO switch to curl, read http status code
-		if($_POST['op'] == "index")
-		{
-			$return = "";
-			$result = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=index&search={$_POST['search']}");
-			preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
+  /**
+   * This Public Key Server proxy is written to circumvent Access-Control-Allow-Origin
+   * limitations. It also provides a layer of security as HTTP PKS normally
+   * doesn't support HTTPS; essentially preventing MITM if the Roundcube installation
+   * is configured to use HTPS. For more details see the following doc:
+   * http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00.
+   */
+  // TODO Add cache and slowly roll over to HTTP PKS directly in Roundcube
+  function pks_search()
+  {
+    if(!isset($_POST['op']))
+    {
+      $this->rc->output->command('plugin.pks_search', array('message' => "ERR: Missing param"));
+      return;
+    }
 
-			if(count($m > 0))
-			{
-				for($i = 0; $i < count($m[0]); $i++)
-					$return .= "{$m[1][$i]}:{$m[2][$i]}\n";
-			}
-		}
-		elseif($_POST['op'] == "get")
-		{
-			$return = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST['search']}");
-		}
 
-		$this->rc->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
-		return;
-	}
+    //TODO switch to curl, read http status code
+    if($_POST['op'] == "index") {
+      $return = "";
+      $result = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=index&search={$_POST['search']}");
+      preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
+
+      if(count($m > 0)) {
+        for($i = 0; $i < count($m[0]); $i++)
+          $return .= "{$m[1][$i]}:{$m[2][$i]}\n";
+      }
+    } elseif($_POST['op'] == "get") {
+      $return = file_get_contents("http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST['search']}");
+    }
+
+    $this->rc->output->command('plugin.pks_search', array('message' => $return, 'op' => $_POST['op']));
+    return;
+  }
 }
