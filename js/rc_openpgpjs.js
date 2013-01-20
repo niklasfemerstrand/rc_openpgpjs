@@ -353,7 +353,7 @@ if(window.rcmail)
     for (var i = 0; i < openpgp.keyring.publicKeys.length; i++)
     {
       var status = openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures();
-      var result = "<tr class='clickme' onclick='displayPub(" + i + ");'><td>0x" +
+      var result = "<tr><td>0x" +
              util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8) +
              "</td><td>" + 
              util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ") +
@@ -376,7 +376,7 @@ if(window.rcmail)
     {
       for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++)
       {
-        $("#openpgpjs_privkeys tbody").append("<tr class='clickme' onclick='displayPriv(" + i + ");'><td>0x" +
+        $("#openpgpjs_privkeys tbody").append("<tr><td>0x" +
         util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8) +
         "</td><td>" +
                 util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ") +
@@ -391,17 +391,6 @@ if(window.rcmail)
         "</td></tr>");
       }
     }
-  }
-
-  function displayPub(key)
-  {
-    $("#importPubkeyField").val(openpgp.keyring.publicKeys[key].armored);
-  }
-
-  function displayPriv(key)
-  {
-    var keyid = openpgp.keyring.privateKeys[key].obj.getKeyId();
-    $("#importPrivkeyField").val(openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored);
   }
 
   function getAlgorithmString(key)
