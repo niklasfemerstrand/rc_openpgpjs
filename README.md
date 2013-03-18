@@ -24,6 +24,12 @@ INSTALLATION
 1. Copy plugin to 'plugins' folder
 2. Add 'rc_openpgpjs' to plugins array in your Roundcube config (config/main.inc.php)
 
+KEY STORAGE
+-----------
+The keys are stored client side using HTML5 web storage. 
+Existing keyrings can not be imported, but existing keys can. 
+There's no server sided key storage.
+
 CONTACT
 -------
 For any bug reports or feature requests please refer to the [tracking system][issues].
