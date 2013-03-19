@@ -28,7 +28,7 @@ KEY STORAGE
 -----------
 The keys are stored client side using HTML5 web storage. 
 Existing keyrings can not be imported, but existing keys can. 
-There's no server sided key storage.
+There's no server sided key storage yet.
 
 CONTACT
 -------
