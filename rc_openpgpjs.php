@@ -133,6 +133,7 @@ class rc_openpgpjs extends rcube_plugin
       curl_close($ch);
 
       if($status == 200) {
+        // TODO Fix search regex to match 32/64-bit str
         preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
 
         if(count($m) > 0) {
