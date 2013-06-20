@@ -25,6 +25,7 @@ if(window.rcmail)
   rcmail.addEventListener('init', function(evt)
   {
     openpgp.init();
+    this.passphrase = "";
 //  openpgp.config.debug = true
     rcmail.addEventListener('plugin.pks_search', pks_search_callback);
     rcmail.enable_command("savedraft", false);
@@ -215,7 +216,7 @@ if(window.rcmail)
 
       $("textarea#composebody").val(openpgp.write_encrypted_message(pubkeys, $("textarea#composebody").val()));
     } else if($("#openpgpjs_encrypt").not(":checked") && $("#openpgpjs_sign").is(":checked")) {
-      if(passphrase == null && openpgp.keyring.privateKeys.length > 0)
+      if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0)
       {
         $("#openpgpjs_key_select").dialog('open');
         return false;
@@ -224,7 +225,7 @@ if(window.rcmail)
         return false;
       }
 
-      passobj = JSON.parse(passphrase);
+      passobj = JSON.parse(this.passphrase);
       var pubkeys = new Array();
       var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
       var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
