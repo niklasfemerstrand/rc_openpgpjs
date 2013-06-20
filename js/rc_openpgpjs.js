@@ -272,7 +272,7 @@ if(window.rcmail)
     {
       $('#import_pub_error').removeClass("hidden");
       $('#import_pub_error p').html(rcmail.gettext('import_failed', 'rc_openpgpjs'));
-      alert("Import fail: " + e);
+      alert(rcmail.gettext('import_fail', 'rc_openpgpjs'));
       return false;
     }
 
@@ -315,7 +315,7 @@ if(window.rcmail)
 	}
 
     if(response.message === "ERR: No keys found") {
-        alert("No keys found!");
+        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
         return false;
     }
 
@@ -323,7 +323,7 @@ if(window.rcmail)
       try {
         result = JSON.parse(response.message);
       } catch(e) {
-        alert("No keys found!");
+        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
         return false;
       }
       $("#openpgpjs_search_results").html("");
@@ -334,7 +334,7 @@ if(window.rcmail)
       k = JSON.parse(response.message);
       $("#importPubkeyField").val(k[0]);
       if(importPubKey($("#importPubkeyField").val())) {
-        alert("Pubkey imported successfully.");
+        alert(rcmail.gettext('pubkey_import_success', 'rc_openpgpjs'));
       }
     }
   }
