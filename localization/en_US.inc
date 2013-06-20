@@ -11,6 +11,7 @@ $labels['failed_mpi'] = 'Failed to decrypt secret MPIs';
 $labels['fingerprint'] = 'Fingerprint';
 $labels['generate'] = 'Generate';
 $labels['generate_keys'] = 'Generate keys';
+$labels['ident'] = 'Identity';
 $labels['import'] = 'Import';
 $labels['import_fail'] = "Import fail";
 $labels['import_failed'] = 'Could not import key, possibly wrong format';

@@ -55,8 +55,11 @@ if(window.rcmail)
       $('#openpgpjs_key_manager').dialog({ modal: true,
                                            autoOpen: false,
                                            title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
-                                           width: "90%" });
-      update_tables();
+                                           width: "90%",
+                                           open: function(event, ui) {
+                                                    update_tables();
+                                                 }
+                                         });
 
       // register open key manager command
       rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
@@ -84,7 +87,8 @@ if(window.rcmail)
     }
 
     // TODO Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
-    var keys = openpgp.generate_key_pair(1, bits, $("#_from option[value='" + $('#_from option:selected').val() + "']").text(), $('#gen_passphrase').val());
+    var ident = $("#gen_ident option:selected").text();
+    var keys = openpgp.generate_key_pair(1, bits, ident, $('#gen_passphrase').val());
     $('#generated_keys').html("<pre id='generated_private'>" + keys.privateKeyArmored + "</pre><pre id='generated_public'>" + keys.publicKeyArmored  +  "</pre>");
     $('#generate_key_error').addClass("hidden");
     $('#import_button').removeClass("hidden");
@@ -453,6 +457,13 @@ if(window.rcmail)
         "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); update_tables(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>" +
         "</td></tr>");
       }
+    }
+
+    // Fills key manager generation ident select
+    $("#gen_ident").html("");
+    identities = JSON.parse($("#openpgpjs_identities").html());
+    for (var i = 0; i < identities.length; i++) {
+        $("#gen_ident").append("<option value='" + i + "'>" + escapeHtml(identities[i].name + " <" + identities[i].email + ">") + "</option>"); 
     }
   }
 

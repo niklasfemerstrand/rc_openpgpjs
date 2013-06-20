@@ -32,6 +32,7 @@ class rc_openpgpjs extends rcube_plugin
   function init()
   {
     $this->rc = rcube::get_instance();
+    $this->rm = rcmail::get_instance();
 
     $this->add_hook('user_create', array($this, 'user_create'));
     $this->register_action('plugin.pks_search', array($this, 'hkp_search'));
@@ -82,6 +83,9 @@ class rc_openpgpjs extends rcube_plugin
       file_get_contents($template_path . '/templates/key_manager.html') .
       file_get_contents($template_path . '/templates/key_search.html') .
       file_get_contents($template_path . '/templates/key_select.html')));
+    $this->rc->output->add_footer(html::div(array('style' => "visibility: hidden;",
+                                                  'id' => "openpgpjs_identities"),
+                                  json_encode($this->rm->user->list_identities())));
 
     return $params;
   }
