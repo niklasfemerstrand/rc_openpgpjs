@@ -28,6 +28,7 @@
         <textarea id='importPubkeyField'></textarea>
         <div class="formbuttons">
           <input type='button' class='button mainaction' value='<roundcube:label name="import" />' onclick='importPubKey($("#importPubkeyField").val());' />
+          <input type='button' class='button mainaction' value='<roundcube:label name="search" />' onclick='$("#openpgpjs_key_search").dialog("open");' />
         </div>
       </fieldset>
     </div>
@@ -65,6 +66,7 @@
           <span class="ui-icon ui-icon-alert"></span>
           <p></p>
         </div>
+        <label for="gen_ident"><roundcube:label name="rc_openpgpjs.ident" />:</label> <select id='gen_ident' /></select>
         <label for="gen_passphrase"><roundcube:label name="rc_openpgpjs.passphrase" />:</label> <input type='password' id='gen_passphrase' /> 
         <label for="gen_passphrase_verify"><roundcube:label name="rc_openpgpjs.verify" />:</label> <input type='password' id='gen_passphrase_verify' /> 
         <label for="gen_bits"><roundcube:label name="rc_openpgpjs.bits" />:</label> 

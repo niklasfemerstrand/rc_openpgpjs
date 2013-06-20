@@ -45,9 +45,9 @@ ul.toolbarmenu li span.icon.key_manager {
   height: 175px;
 }
 
-#openpgpjs_search_results { text-align: left; width: 75%; height: 100px; overflow: scroll; margin-left: 25%; } 
 .clickme { cursor: pointer !important; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; font-size: 7pt; }
-.search_row { cursor: pointer; }
 .odd { background-color: #ccc; }
-.clickme:hover { background-color: #ccc; }
+#openpgpjs_search_results { width: 99%; overflow: scroll; }
+#openpgpjs_search_results tr:hover { background-color: #fff; }
+.clickme:hover { background-color: #fff; }
