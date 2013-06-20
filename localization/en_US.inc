@@ -1,6 +1,7 @@
 <?php
 $labels = array();
 $labels['key_manager'] = 'Key manager';
+$labels['key_search'] = 'Key search';
 $labels['select_key'] = 'Select key';
 $labels['generate_keys'] = 'Generate keys';
 $labels['private_keys'] = 'Private keys';

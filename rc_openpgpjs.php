@@ -76,11 +76,11 @@ class rc_openpgpjs extends rcube_plugin
   /**
    * Add key manager and key selector to html output
    */
-  function render_page($params)
-  {
+  function render_page($params) {
     $template_path = $this->home . '/'. $this->local_skin_path();
     $this->rc->output->add_footer($this->rc->output->just_parse(
       file_get_contents($template_path . '/templates/key_manager.html') .
+      file_get_contents($template_path . '/templates/key_search.html') .
       file_get_contents($template_path . '/templates/key_select.html')));
 
     return $params;
@@ -106,28 +106,31 @@ class rc_openpgpjs extends rcube_plugin
    *   http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00
    *   http://sks-keyservers.net/
    */
-  function hkp_search()
-  {
-    if(!isset($_POST['op']) || !isset($_POST['search']))
-    {
+  function hkp_search() {
+    if(!isset($_POST['op']) || !isset($_POST['search'])) {
       return $this->rc->output->command(
         'plugin.pks_search',
         array('message' => "ERR: Missing param",
               'op' => htmlspecialchars($_POST['op'])));
+        $op = "";
+        $search = "";
+    } else {
+      $op = $_POST["op"];
+      $search = $_POST["search"];
     }
 
-    if($_POST['op'] != "get" &&
-       $_POST['op'] != "index" &&
-       $_POST['op'] != "vindex")
+    if($op != "get" &&
+       $op != "index" &&
+       $op != "vindex")
       return $this->rc->output->command(
         'plugin.pks_search',
         array('message' => "ERR: Invalid operation",
-              'op' => htmlspecialchars($_POST['op'])));
+              'op' => htmlspecialchars($op)));
 
-    if($_POST['op'] == "index") {
+    if($op == "index") {
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=index&search={$_POST["search"]}");
+      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=index&search={$search}");
       $result = curl_exec($ch);
       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
@@ -143,32 +146,32 @@ class rc_openpgpjs extends rcube_plugin
           return $this->rc->output->command(
             'plugin.pks_search',
             array('message' => json_encode($found),
-                  'op' => htmlspecialchars($_POST['op'])));
+                  'op' => htmlspecialchars($op)));
         }
       } else {
         preg_match("/Error handling request: (.*)<\/body>/", $result, $m);
         return $this->rc->output->command(
           'plugin.pks_search',
           array('message' => "ERR: " . htmlspecialchars($m[1]),
-                'op' => htmlspecialchars($_POST['op'])));
+                'op' => htmlspecialchars($op)));
       }
-    } elseif($_POST['op'] == "get") {
-      if(preg_match("/^0x[0-9A-Fa-f]{8}$/", $_POST["search"])) {
+    } elseif($op == "get") {
+      if(preg_match("/^0x[0-9A-F]{8}$/i", $search)) {
         define("32_BIT_KEY", true);
         define("64_BIT_KEY", false);
-      } elseif(preg_match("/^0x[0-9A-Fa-f]{16}$/", $_POST["search"])) {
+      } elseif(preg_match("/^0x[0-9A-F]{16}$/i", $search)) {
         define("32_BIT_KEY", false);
         define("64_BIT_KEY", true);
       } else {
         return $this->rc->output->command(
           'plugin.pks_search',
           array('message' => "ERR: Incorrect search format for this operation",
-                'op' => htmlspecialchars($_POST['op'])));
+                'op' => htmlspecialchars($op)));
       }
 
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=get&search={$_POST["search"]}");
+      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=get&search={$search}");
       $result = curl_exec($ch);
       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
@@ -178,12 +181,15 @@ class rc_openpgpjs extends rcube_plugin
         return $this->rc->output->command(
           'plugin.pks_search',
           array('message' => json_encode($m),
-                'op' => htmlspecialchars($_POST['op'])));
+                'op' => htmlspecialchars($op)));
       }
     }
   }
 
+// TODO: Store pubkeys in rc storage
+// Don't sync upstream, it hurts decentralization
   function hkp_add() {
-    return;
+    header("HTTP/1.1 501 Not Implemented");
+    die();
   }
 }

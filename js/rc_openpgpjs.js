@@ -42,6 +42,15 @@ if(window.rcmail)
                                                }
                                        });
       $('#openpgpjs_tabs').tabs();
+      $('#openpgpjs_key_search').dialog({ modal: true,
+                                          autoOpen: false,
+                                          title: rcmail.gettext('key_search', 'rc_openpgpjs'),
+                                          width: "60%",
+                                          open: function(event, ui) {
+                                                   $("#openpgpjs_search_results").html("");
+                                                   $("#openpgpjs_search_input").val("");
+                                                }
+                                        });
       $('#openpgpjs_key_manager').dialog({ modal: true,
                                            autoOpen: false,
                                            title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
@@ -190,7 +199,18 @@ if(window.rcmail)
       {
         var recipient = recipients[i].replace(/(.+?<)/, '').replace(/>/, '');
         var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
-        pubkeys.push(pubkey[0].obj);
+        if(typeof(pubkey[0]) != "undefined") {
+          pubkeys.push(pubkey[0].obj);
+        } else {
+          // Querying PKS for recipient pubkey
+          if(confirm("Couldn't find a public key for " + recipient + ". If you already have it you can import it into the key manager. Would you like to query the key server for the missing key?")) {
+            rcmail.http_post("plugin.pks_search", "search=" + recipient + "&op=index");
+            $("#openpgpjs_search_input").attr('disabled', 'disabled');
+            $("#openpgpjs_search_submit").attr('disabled', 'disabled');
+            $("#openpgpjs_key_search").dialog('open');
+            return false;
+          }
+        }
       }
 
       $("textarea#composebody").val(openpgp.write_encrypted_message(pubkeys, $("textarea#composebody").val()));
@@ -219,6 +239,11 @@ if(window.rcmail)
     return true;
   }
 
+  function importFromSKS(id) {
+    rcmail.http_post('plugin.pks_search', 'search=' + id + '&op=get');
+    return;
+  }
+
   function importPubKey(key)
   {
     try
@@ -233,8 +258,11 @@ if(window.rcmail)
     {
       $('#import_pub_error').removeClass("hidden");
       $('#import_pub_error p').html(rcmail.gettext('import_failed', 'rc_openpgpjs'));
+      alert("Import fail: " + e);
       return false;
     }
+
+    return true;
   }
 
   /**
@@ -259,6 +287,9 @@ if(window.rcmail)
 
   function pks_search_callback(response)
   {
+    $("#openpgpjs_search_input").removeAttr("disabled");
+    $("#openpgpjs_search_submit").removeAttr("disabled");
+
 	if(response.message === "ERR: Missing param") {
 		console.log("Missing param");
 		return false;
@@ -269,38 +300,28 @@ if(window.rcmail)
 		return false;
 	}
 
-	console.log("response: ");
-	console.log(response);
+    if(response.message === "ERR: No keys found") {
+        alert("No keys found!");
+        return false;
+    }
 
-    if(response.op === "index")
-    {
-      var results = "";
-      var rows = response.message.split("\n");
-      for(var i = 0; i < rows.length; i++)
-      {
-        var split = rows[i].split(":");
-        if(split[0] != '')
-          results += "<div id='" + split[0] + "' class='search_row" + (i%2 != 0 ? " odd" : "") + "' onclick='pubkey_search(this.id, \"get\");'>" + split[1] + "</div>";
+    if(response.op === "index") {
+      try {
+        result = JSON.parse(response.message);
+      } catch(e) {
+        alert("No keys found!");
+        return false;
       }
-
-      if(results != '')
-      {
-        $("#openpgpjs_search_results").removeClass("hidden");
-        $("#openpgpjs_search_results").html(results);
+      $("#openpgpjs_search_results").html("");
+      for(var i = 0; i < result.length; i++) {
+        $("#openpgpjs_search_results").append("<tr class='" + (i%2 != 0 ? " odd" : "") + "'><td><a href='#' onclick='importFromSKS(\"" + result[i][0] + "\");'>Import</a></td><td>" + result[i][0] + "</td>" + "<td>" + result[i][1] + "</td></tr>");
       }
     } else if(response.op === "get") {
-      var parsed = "";
-      var rows   = response.message.split("\n");
-      for(var i = 0; i < rows.length; i++)
-      {
-        if(rows[i] === "-----BEGIN PGP PUBLIC KEY BLOCK-----")
-          var parse = true;
-        if(parse === true)
-          parsed += rows[i] + "\n";
-        if(rows[i].match(/-----END PGP PUBLIC KEY BLOCK-----/))
-          var parse = false;
+      k = JSON.parse(response.message);
+      $("#importPubkeyField").val(k[0]);
+      if(importPubKey($("#importPubkeyField").val())) {
+        alert("Pubkey imported successfully.");
       }
-      $("#importPubkeyField").html(parsed);
     }
   }
 
