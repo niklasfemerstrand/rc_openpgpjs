@@ -197,6 +197,9 @@ if(window.rcmail) {
       {
         $("#openpgpjs_key_select").dialog('open');
         return false;
+      } else if(!encrypt && openpgp.keyring.privateKeys.length === 0) {
+        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
+        return false;         
       } else if(openpgp.keyring.privateKeys.length === 0 || openpgp.keyring.publicKeys.length === 0) {
         alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
         return false;
@@ -225,7 +228,7 @@ if(window.rcmail) {
         var recipient = recipients[i].replace(/(.+?<)/, '').replace(/>/, '');
         var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
         pubkeys.push(pubkey[0].obj);
-        // TODO: For some reason signing can only be made with one pubkey, gotta investigate
+        // TODO: For some reason signing can only be made with one recipient pubkey, gotta investigate
         break;
       }
 
@@ -260,6 +263,8 @@ if(window.rcmail) {
         return true;
       }
     }
+
+    return true;
   }
 
   function importFromSKS(id) {
@@ -470,25 +475,37 @@ if(window.rcmail) {
       var sw = key.privateKeyPacket.publicKey.publicKeyAlgorithm;
     }
 
-    switch(sw) {
+    result += typeToStr(sw);
+
+    return result;
+  }
+
+  // Converts an integer (1/2/3/16/17) to corresponding algorithm type (str)
+  function typeToStr(id) {
+    var r = ""
+
+    switch(id) {
       case 1:
-        result += "RSA(S/E)";
+        r = "RSA(S/E)";
         break;
       case 2:
-        result += "RSA(E)";
+        r = "RSA(E)";
         break;
       case 3:
-        result += "RSA(S)";
+        r = "RSA(S)";
         break;
       case 16:
-        result += "Elg";
+        r = "Elg";
         break;
       case 17:
-        result += "DSA";
+        r = "DSA";
+        break;
+      defaut:
+        r = "UNKNOWN";
         break;
     }
 
-    return result;
+    return(r);
   }
   
   function decrypt(data) {
@@ -502,11 +519,25 @@ if(window.rcmail) {
       return false;
     }
 
+    var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
+    var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
+    var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+
+    if(typeof(this.getinfo) == "undefined") {
+      $(".headers-table").css( "float", "left" );
+      $(".headers-table").after("<div id='openpgpjs_info'><table><tbody></tbody></table></div>");
+
+      // Carefully escape anything that is appended to the info table, otherwise
+      // anyone clever enough to write arbitrary data to their pubkey has a clear
+      // exploitation path.
+      $("#openpgpjs_info table tbody").append("<tr><td>Key algo:</td><td>" + typeToStr(msg[0].type) + "</td></tr>");
+      $("#openpgpjs_info table tbody").append("<tr><td>Created:</td><td>" + escapeHtml(String(msg[0].messagePacket.creationTime))  + "</td></tr>");
+      $("#openpgpjs_info table tbody").append("<tr><td>Fingerprint:</td><td>" + fingerprint + "</td></tr>");
+      this.getinfo = false;
+    }
+
     // msg is only signed, so verify it
     if(!("sessionKeys" in msg[0])) {
-      var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
-      var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
-
       if(msg[0].verifySignature(pubkey)) {
         rcmail.display_message(rcmail.gettext('signature_match', 'rc_openpgpjs'), "confirmation");
       } else {
