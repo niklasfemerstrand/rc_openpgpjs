@@ -475,25 +475,37 @@ if(window.rcmail) {
       var sw = key.privateKeyPacket.publicKey.publicKeyAlgorithm;
     }
 
-    switch(sw) {
+    result += typeToStr(sw);
+
+    return result;
+  }
+
+  // Converts an integer (1/2/3/16/17) to corresponding algorithm type (str)
+  function typeToStr(id) {
+    var r = ""
+
+    switch(id) {
       case 1:
-        result += "RSA(S/E)";
+        r = "RSA(S/E)";
         break;
       case 2:
-        result += "RSA(E)";
+        r = "RSA(E)";
         break;
       case 3:
-        result += "RSA(S)";
+        r = "RSA(S)";
         break;
       case 16:
-        result += "Elg";
+        r = "Elg";
         break;
       case 17:
-        result += "DSA";
+        r = "DSA";
+        break;
+      defaut:
+        r = "UNKNOWN";
         break;
     }
 
-    return result;
+    return(r);
   }
   
   function decrypt(data) {
