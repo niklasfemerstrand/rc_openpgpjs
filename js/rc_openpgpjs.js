@@ -260,6 +260,8 @@ if(window.rcmail) {
         return true;
       }
     }
+
+    return true;
   }
 
   function importFromSKS(id) {
