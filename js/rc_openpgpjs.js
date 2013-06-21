@@ -519,6 +519,10 @@ if(window.rcmail) {
       return false;
     }
 
+    var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
+    var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
+    var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+
     $(".headers-table").css( "float", "left" );
     $(".headers-table").after("<div id='openpgpjs_info'><table><tbody></tbody></table></div>");
 
@@ -527,12 +531,10 @@ if(window.rcmail) {
     // exploitation path.
     $("#openpgpjs_info table tbody").append("<tr><td>Key algo:</td><td>" + typeToStr(msg[0].type) + "</td></tr>");
     $("#openpgpjs_info table tbody").append("<tr><td>Created:</td><td>" + escapeHtml(String(msg[0].messagePacket.creationTime))  + "</td></tr>");
+    $("#openpgpjs_info table tbody").append("<tr><td>Fingerprint:</td><td>" + fingerprint + "</td></tr>");
 
     // msg is only signed, so verify it
     if(!("sessionKeys" in msg[0])) {
-      var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
-      var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
-
       if(msg[0].verifySignature(pubkey)) {
         rcmail.display_message(rcmail.gettext('signature_match', 'rc_openpgpjs'), "confirmation");
       } else {
