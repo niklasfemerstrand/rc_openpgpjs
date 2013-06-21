@@ -228,7 +228,7 @@ if(window.rcmail) {
         var recipient = recipients[i].replace(/(.+?<)/, '').replace(/>/, '');
         var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
         pubkeys.push(pubkey[0].obj);
-        // TODO: For some reason signing can only be made with one pubkey, gotta investigate
+        // TODO: For some reason signing can only be made with one recipient pubkey, gotta investigate
         break;
       }
 
