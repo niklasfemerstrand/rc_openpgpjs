@@ -72,8 +72,15 @@ if(window.rcmail) {
     }
   });
 
-  function generate_keypair(bits, algo)
-  {
+
+  /**
+   * Generate key pair
+   *
+   * Params:
+   *   bits: int, key size
+   *   algo: str, algorithm type (currently only RSA)
+   */
+  function generate_keypair(bits, algo) {
     if($('#gen_passphrase').val() === '') {
       $('#generate_key_error').removeClass("hidden");
       $('#generate_key_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
@@ -84,7 +91,7 @@ if(window.rcmail) {
       return false;
     }
 
-    // TODO Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
+    // TODO: Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
     var ident = $("#gen_ident option:selected").text();
     var keys = openpgp.generate_key_pair(1, bits, ident, $('#gen_passphrase').val());
     $('#generated_keys').html("<pre id='generated_private'>" + keys.privateKeyArmored + "</pre><pre id='generated_public'>" + keys.publicKeyArmored  +  "</pre>");
@@ -94,8 +101,11 @@ if(window.rcmail) {
     return true;
   }
 
-  function importGenerated()
-  {
+
+  /**
+   * Import generated key pair
+   */
+  function importGenerated() {
     $('#import_button').addClass("hidden");
     importPubKey($("#generated_public").html());
 
@@ -107,22 +117,21 @@ if(window.rcmail) {
     $("#gen_passphrase_verify").val("");
   }
 
-  /*
+  /**
+   * Set passphrase
+   *
    * Params:
    *   i: int, used as openpgp.keyring[private|public]Keys[i]
    *   p: str, the passphrase
    */
-  function set_passphrase(i, p)
-  {
-    if(i === "-1")
-    {
+  function set_passphrase(i, p) {
+    if(i === "-1") {
       $('#key_select_error').removeClass("hidden");
       $('#key_select_error p').html(rcmail.gettext('select_key', 'rc_openpgpjs'));
       return false;
     }
 
-    if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p))
-    {
+    if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p)) {
       $('#key_select_error').removeClass("hidden");
       $('#key_select_error p').html(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
       return false;
@@ -130,8 +139,7 @@ if(window.rcmail) {
 
     this.passphrase = JSON.stringify({ "id" : i, "passphrase" : p } );
 
-    if($('#messagebody div.message-part pre').length > 0)
-    {
+    if($('#messagebody div.message-part pre').length > 0) {
       if(!decrypt($('#messagebody div.message-part pre').html())) {
         return false;
       }
@@ -149,6 +157,9 @@ if(window.rcmail) {
     $('#openpgpjs_key_select').dialog('close');
   }
 
+  /**
+   * Encrypt a message
+   */
   function encrypt() {
     var pubkeys = new Array();
 
@@ -192,9 +203,14 @@ if(window.rcmail) {
     return false;
   }
 
+  /**
+   * Sign a message (and encrypt)
+   * 
+   * Params:
+   *   encrypt: bool, encrypt message after signing
+   */
   function sign(encrypt) {
-      if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0)
-      {
+      if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0) {
         $("#openpgpjs_key_select").dialog('open');
         return false;
       } else if(!encrypt && openpgp.keyring.privateKeys.length === 0) {
@@ -240,20 +256,25 @@ if(window.rcmail) {
       return false;
   }
 
+  /**
+   * Sign and / or encrypt a message before sending
+   */
   function encryptAndSend() {
+    // encrypt
     if($("#openpgpjs_encrypt").is(":checked") && !$("#openpgpjs_sign").is(":checked")) {
       encrypted = encrypt();
       if(!encrypted) {
         return false;
       }
-
       $("textarea#composebody").val(encrypted);
       return true;
     }
 
     if($("#openpgpjs_sign").is(":checked")) {
+      // sign and encrypt
       if($("#openpgpjs_encrypt").is(":checked")) {
         signed = sign(encrypt = true);
+      // sign
       } else {
         signed = sign(encrypt = false);
       }
@@ -272,6 +293,12 @@ if(window.rcmail) {
     return;
   }
 
+  /**
+   * Import public key
+   * 
+   * Params:
+   *   key: str, public key
+   */
   function importPubKey(key) {
     try {
       openpgp.keyring.importPublicKey(key);
@@ -351,6 +378,13 @@ if(window.rcmail) {
     }
   }
 
+  /**
+   * Import private key
+   * 
+   * Params:
+   *   key: str, private key
+   *   passphrase: str, private key passphrase
+   */
   function importPrivKey(key, passphrase) {
     if(passphrase === '') {
       $('#import_priv_error').removeClass("hidden");
@@ -465,6 +499,12 @@ if(window.rcmail) {
     }
   }
 
+  /**
+   * Detect algorithm type of key
+   * 
+   * Param:
+   *   key: object, OpenPGP.js key object
+   */
   function getAlgorithmString(key) {
     if(typeof(key.publicKeyPacket) !== "undefined") {
       var result = key.publicKeyPacket.MPIs[0].mpiByteLength * 8 + "/";
@@ -496,6 +536,12 @@ if(window.rcmail) {
     return result;
   }
   
+  /**
+   * Decrypt a message
+   * 
+   * Params:
+   *   data: str, raw message data
+   */
   function decrypt(data) {
     var msg = openpgp.read_message(data);
     
@@ -580,6 +626,12 @@ if(window.rcmail) {
     }
   }
 
+  /**
+   * Escape unsafe characters as html
+   * 
+   * Params:
+   *   unsafe: str, unsafe input to be escaped
+   */
   function escapeHtml(unsafe) {
         return unsafe.replace(/&/g, "&amp;")
                      .replace(/</g, "&lt;")
