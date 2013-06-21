@@ -500,7 +500,7 @@ if(window.rcmail) {
       case 17:
         r = "DSA";
         break;
-      defaut:
+      default:
         r = "UNKNOWN";
         break;
     }
