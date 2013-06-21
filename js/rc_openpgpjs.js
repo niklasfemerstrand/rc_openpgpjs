@@ -519,6 +519,15 @@ if(window.rcmail) {
       return false;
     }
 
+    $(".headers-table").css( "float", "left" );
+    $(".headers-table").after("<div id='openpgpjs_info'><table><tbody></tbody></table></div>");
+
+    // Carefully escape anything that is appended to the info table, otherwise
+    // anyone clever enough to write arbitrary data to their pubkey has a clear
+    // exploitation path.
+    $("#openpgpjs_info table tbody").append("<tr><td>Key algo:</td><td>" + typeToStr(msg[0].type) + "</td></tr>");
+    $("#openpgpjs_info table tbody").append("<tr><td>Created:</td><td>" + escapeHtml(String(msg[0].messagePacket.creationTime))  + "</td></tr>");
+
     // msg is only signed, so verify it
     if(!("sessionKeys" in msg[0])) {
       var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
