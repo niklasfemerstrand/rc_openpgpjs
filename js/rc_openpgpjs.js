@@ -197,6 +197,9 @@ if(window.rcmail) {
       {
         $("#openpgpjs_key_select").dialog('open');
         return false;
+      } else if(!encrypt && openpgp.keyring.privateKeys.length === 0) {
+        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
+        return false;         
       } else if(openpgp.keyring.privateKeys.length === 0 || openpgp.keyring.publicKeys.length === 0) {
         alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
         return false;
