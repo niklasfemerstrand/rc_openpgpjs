@@ -523,15 +523,18 @@ if(window.rcmail) {
     var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
     var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
 
-    $(".headers-table").css( "float", "left" );
-    $(".headers-table").after("<div id='openpgpjs_info'><table><tbody></tbody></table></div>");
+    if(typeof(this.getinfo) == "undefined") {
+      $(".headers-table").css( "float", "left" );
+      $(".headers-table").after("<div id='openpgpjs_info'><table><tbody></tbody></table></div>");
 
-    // Carefully escape anything that is appended to the info table, otherwise
-    // anyone clever enough to write arbitrary data to their pubkey has a clear
-    // exploitation path.
-    $("#openpgpjs_info table tbody").append("<tr><td>Key algo:</td><td>" + typeToStr(msg[0].type) + "</td></tr>");
-    $("#openpgpjs_info table tbody").append("<tr><td>Created:</td><td>" + escapeHtml(String(msg[0].messagePacket.creationTime))  + "</td></tr>");
-    $("#openpgpjs_info table tbody").append("<tr><td>Fingerprint:</td><td>" + fingerprint + "</td></tr>");
+      // Carefully escape anything that is appended to the info table, otherwise
+      // anyone clever enough to write arbitrary data to their pubkey has a clear
+      // exploitation path.
+      $("#openpgpjs_info table tbody").append("<tr><td>Key algo:</td><td>" + typeToStr(msg[0].type) + "</td></tr>");
+      $("#openpgpjs_info table tbody").append("<tr><td>Created:</td><td>" + escapeHtml(String(msg[0].messagePacket.creationTime))  + "</td></tr>");
+      $("#openpgpjs_info table tbody").append("<tr><td>Fingerprint:</td><td>" + fingerprint + "</td></tr>");
+      this.getinfo = false;
+    }
 
     // msg is only signed, so verify it
     if(!("sessionKeys" in msg[0])) {
