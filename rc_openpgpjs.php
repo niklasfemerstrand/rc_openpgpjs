@@ -46,6 +46,7 @@ class rc_openpgpjs extends rcube_plugin
 
       // load js
       $this->include_script('js/openpgp.min.js');
+      $this->include_script('js/rc_openpgpjs.crypto.js');
       $this->include_script('js/rc_openpgpjs.js');
 
       // load css

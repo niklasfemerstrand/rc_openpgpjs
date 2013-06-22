@@ -32,7 +32,13 @@
  */
 function encrypt(pubkeys, text, sign, privkey) {
   sign = (typeof sign === "undefined") ? 0 : 1;
-  privkey = (typeof privkey === "undefined") ? 0 : privkey;
+  if(sign) {
+    privkey = (typeof privkey === "undefined") ? 0 : privkey;
+    if(!privkey) {
+      alert("missing privkey");
+     return false;
+    }
+  }
 
   try {
     encrypted = openpgp.write_encrypted_message(pubkeys, text);

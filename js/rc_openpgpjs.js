@@ -65,8 +65,8 @@ if(window.rcmail) {
 
     if (rcmail.env.action === "compose") {
       rcmail.env.compose_commands.push('open-key-manager');
-      rcmail.addEventListener("beforesend", function(e) { if(!encryptAndSend()) { return false; } });
-      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' checked='checked' type='checkbox' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
+      rcmail.addEventListener("beforesend", function(e) { if(!beforeSend()) { return false; } });
+      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' type='checkbox' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
     } else if (rcmail.env.action === 'show' || rcmail.env.action === "preview") {
       decrypt($('#messagebody div.message-part pre').html());
     }
@@ -149,49 +149,6 @@ if(window.rcmail) {
     $('#openpgpjs_key_select').dialog('close');
   }
 
-  function encrypt() {
-    var pubkeys = new Array();
-
-    var c = 0;
-    var recipients = [];
-    var matches = "";
-    var fields = ["_to", "_cc", "_bcc"];
-    var re = /[a-zA-Z0-9\._%+-]+@[a-zA-Z0-9\._%+-]+\.[a-zA-Z]{2,4}/g;
-
-    for(field in fields) {
-      matches = $("#" + fields[field]).val().match(re);
-
-      for(key in matches) {
-        recipients[c] = matches[key];
-        c++;
-      }
-    }
-
-    for (var i = 0; i < recipients.length; i++) {
-      var recipient = recipients[i].replace(/(.+?<)/, '').replace(/>/, '');
-      var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
-      if(typeof(pubkey[0]) != "undefined") {
-        pubkeys.push(pubkey[0].obj);
-      } else {
-        // Querying PKS for recipient pubkey
-       if(confirm("Couldn't find a public key for " + recipient + ". If you already have it you can import it into the key manager. Would you like to query the key server for the missing key?")) {
-          rcmail.http_post("plugin.pks_search", "search=" + recipient + "&op=index");
-          $("#openpgpjs_search_input").attr('disabled', 'disabled');
-          $("#openpgpjs_search_submit").attr('disabled', 'disabled');
-          $("#openpgpjs_key_search").dialog('open');
-        }
-        return false;
-      }
-    }
-
-    encrypted = openpgp.write_encrypted_message(pubkeys, $("textarea#composebody").val());
-    if(encrypted) {
-      return encrypted;
-    }
-
-    return false;
-  }
-
   function sign(encrypt) {
       if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0)
       {
@@ -240,12 +197,68 @@ if(window.rcmail) {
       return false;
   }
 
-  function encryptAndSend() {
-	if(!$("#openpgpjs_encrypt").is(":checked") && !$("#openpgpjs_sign").is("checked")) {
+  function fetchRecipientPubkeys() {
+    var pubkeys = new Array();
+
+    var c = 0;
+    var recipients = [];
+    var matches = "";
+    var fields = ["_to", "_cc", "_bcc"];
+    var re = /[a-zA-Z0-9\._%+-]+@[a-zA-Z0-9\._%+-]+\.[a-zA-Z]{2,4}/g;
+
+    for(field in fields) {
+      matches = $("#" + fields[field]).val().match(re);
+
+      for(key in matches) {
+        recipients[c] = matches[key];
+        c++;
+      }
+    }
+
+    for (var i = 0; i < recipients.length; i++) {
+      var recipient = recipients[i].replace(/(.+?<)/, '').replace(/>/, '');
+      var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
+      if(typeof(pubkey[0]) != "undefined") {
+        pubkeys.push(pubkey[0].obj);
+      } else {
+        // Querying PKS for recipient pubkey
+       if(confirm("Couldn't find a public key for " + recipient + ". If you already have it you can import it into the key manager. Would you like to query the key server for the missing key?")) {
+          rcmail.http_post("plugin.pks_search", "search=" + recipient + "&op=index");
+          $("#openpgpjs_search_input").attr('disabled', 'disabled');
+          $("#openpgpjs_search_submit").attr('disabled', 'disabled');
+          $("#openpgpjs_key_search").dialog('open');
+        }
+        return false;
+      }
+    }
+
+    return pubkeys;
+  }
+
+  function beforeSend() {
+	if(!$("#openpgpjs_encrypt").is(":checked") &&
+       !$("#openpgpjs_sign").is("checked")) {
 		return true;
 	}
 
+    // Only encrypt, don't sign
+    if($("#openpgpjs_encrypt").is(":checked") &&
+       !$("#openpgpjs_sign").is(":checked")) {
+      // Fetch recipient pubkeys
+      var pubkeys = fetchRecipientPubkeys();
+      if(pubkeys.length === 0) {
+        return false;
+      }
+      var text = $("textarea#composebody").val();
+      var encrypted = encrypt(pubkeys, text);
+      $("textarea#composebody").val(encrypted);
+      this.finished_treating = 1;
+      return true;
+    }
+    return false;
+  }
 
+  function encryptAndSend() {
     if($("#openpgpjs_encrypt").is(":checked") && !$("#openpgpjs_sign").is(":checked")) {
       encrypted = encrypt();
       if(!encrypted) {
