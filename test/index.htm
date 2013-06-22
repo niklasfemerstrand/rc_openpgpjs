@@ -44,7 +44,8 @@
 			resetDebug();
 
 			function testDecrypt() {
-				return decrypt($("#encrypted").html(), $("#privkey").html(), $("#gen_passphrase").val());
+				var msg = openpgp.read_message($("#encrypted").html());
+				return decrypt(msg, $("#privkey").html(), $("#gen_passphrase").val());
 			}
 
 			function testGenerateKeys() {
