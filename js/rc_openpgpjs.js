@@ -241,6 +241,11 @@ if(window.rcmail) {
   }
 
   function encryptAndSend() {
+	if(!$("#openpgpjs_encrypt").is(":checked") && !$("#openpgpjs_sign").is("checked")) {
+		return true;
+	}
+
+
     if($("#openpgpjs_encrypt").is(":checked") && !$("#openpgpjs_sign").is(":checked")) {
       encrypted = encrypt();
       if(!encrypted) {
