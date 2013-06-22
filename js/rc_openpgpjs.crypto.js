@@ -65,13 +65,7 @@ function generateKeys(bits, algo, ident, passphrase) {
   }
 }
 
-function decrypt(data, privkey_armored, passphrase) {
-  var msg = openpgp.read_message(data);
-    
-  if(!msg) {
-    return false;
-  }
-
+function decrypt(msg, privkey_armored, passphrase) {
   if(!("decrypt" in msg[0])) {
     return false;
   }
