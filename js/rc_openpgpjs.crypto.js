@@ -50,15 +50,15 @@ function encrypt(pubkeys, text, sign, privkey) {
 
 /**
  * Returns array:
- *   ["privateKey"] = privkey (armored)
- *   ["publicKey"] = pubkey (armored)
+ *   ["private"] = privkey (armored)
+ *   ["public"] = pubkey (armored)
  */
 function generateKeys(bits, algo, ident, passphrase) {
   try {
     keys = openpgp.generate_key_pair(1, bits, ident, passphrase);
     arr = new Array();
-    arr["privateKey"] = keys.privateKeyArmored;
-    arr["publicKey"] = keys.publicKeyArmored;
+    arr["private"] = keys.privateKeyArmored;
+    arr["public"] = keys.publicKeyArmored;
     return(arr);
   } catch(e) {
     return false;

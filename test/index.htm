@@ -52,8 +52,8 @@
 				try {
 					bits = $("#gen_bits option:selected").text();
 					keys = generateKeys(bits, 1, "test <test@foo.bar>", $("#gen_passphrase").val());
-					$("#privkey").html(keys["privateKey"]);
-					$("#pubkey").html(keys["publicKey"]);
+					$("#privkey").html(keys["private"]);
+					$("#pubkey").html(keys["public"]);
 					return true;
 				} catch(e) {
 					return false;
