@@ -66,7 +66,7 @@ if(window.rcmail) {
     if (rcmail.env.action === "compose") {
       rcmail.env.compose_commands.push('open-key-manager');
       rcmail.addEventListener("beforesend", function(e) { if(!beforeSend()) { return false; } });
-      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' type='checkbox' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
+      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' type='checkbox' disabled='disabled' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
     } else if (rcmail.env.action === 'show' || rcmail.env.action === "preview") {
       processReceived();
     }
