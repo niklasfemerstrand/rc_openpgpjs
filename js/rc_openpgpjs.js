@@ -66,7 +66,7 @@ if(window.rcmail) {
     if (rcmail.env.action === "compose") {
       rcmail.env.compose_commands.push('open-key-manager');
       rcmail.addEventListener("beforesend", function(e) { if(!beforeSend()) { return false; } });
-      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' checked='checked' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' type='checkbox' disabled='disabled' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
+      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' type='checkbox' checked='checked' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
     } else if (rcmail.env.action === 'show' || rcmail.env.action === "preview") {
       processReceived();
     }
@@ -81,9 +81,14 @@ if(window.rcmail) {
       return;
     }
 
+    // msg[0].type: 2 == signed only
+    // msg[0].type: 3 == encrypted only
+
     showKeyInfo(msg);
 
-    // Successfully parsed OpenPGP message
+    // TODO fix signature verification
+    if(msg[0].type === 2) return;
+
     if(!openpgp.keyring.hasPrivateKey()) {
       rcmail.display_message(rcmail.gettext('no_key_imported', 'rc_openpgpjs'), "error");
       return false;
@@ -198,54 +203,14 @@ if(window.rcmail) {
 
     $('#key_select_error').addClass("hidden");
     $('#openpgpjs_key_select').dialog('close');
-  }
 
-  function sign(encrypt) {
-      if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0)
-      {
-        $("#openpgpjs_key_select").dialog('open');
-        return false;
-      } else if(!encrypt && openpgp.keyring.privateKeys.length === 0) {
-        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
-        return false;         
-      } else if(openpgp.keyring.privateKeys.length === 0 || openpgp.keyring.publicKeys.length === 0) {
-        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
-        return false;
-      }
-
-      passobj = JSON.parse(this.passphrase);
-      var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
-      var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
-      var priv_key = openpgp.read_privateKey(privkey_armored);
-
-      if(!priv_key[0].decryptSecretMPIs(passobj.passphrase)) {
-        alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
-      }
-
-      if(!encrypt) {
-        signed = openpgp.write_signed_message(priv_key[0], $("textarea#composebody").val());
-        if(signed) {
-          return signed;
-        }
-      }
-
-      var pubkeys = new Array();
-      var recipients = $("#_to").val().split(",");
-
-      for (var i = 0; i < recipients.length; i++) {
-        var recipient = recipients[i].replace(/(.+?<)/, '').replace(/>/, '');
-        var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
-        pubkeys.push(pubkey[0].obj);
-        // TODO: For some reason signing can only be made with one recipient pubkey, gotta investigate
-        break;
-      }
-
-      signed = openpgp.write_signed_and_encrypted_message(priv_key[0], pubkey[0].obj, $("textarea#composebody").val());
-      if(signed) {
-        return signed;
-      }
-
-      return false;
+    // This is required when sending emails and private keys are required for
+    // sending an email (when signing a message). These lines makes the client
+    // jump right back into beforeSend() allowing key sign and message send to
+    // be made as soon as the passphrase is correct and available.
+    if(typeof(this.sendmail) !== "undefined") {
+      rcmail.command('send','',this,event)
+    }
   }
 
   function fetchRecipientPubkeys() {
@@ -287,16 +252,16 @@ if(window.rcmail) {
   }
 
   function beforeSend() {
-	if(!$("#openpgpjs_encrypt").is(":checked") &&
-       !$("#openpgpjs_sign").is("checked")) {
-		return true;
-	}
+    if(!$("#openpgpjs_encrypt").is(":checked") &&
+       !$("#openpgpjs_sign").is(":checked")) {
+      return true;
+    }
 
     if(typeof(this.finished_treating) !== "undefined") {
       return true;
     }
 
-    // Only encrypt, don't sign
+    // Encrypt only
     if($("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
       // Fetch recipient pubkeys
@@ -311,9 +276,43 @@ if(window.rcmail) {
         this.finished_treating = 1;
         return true;
       }
+    }
+
+    // Sign only
+    if($("#openpgpjs_sign").is(":checked") &&
+       !$("#openpgpjs_encrypt").is(":checked")) {
+
+      if(this.passphrase === "" &&
+         openpgp.keyring.privateKeys.length > 0) {
+        this.sendmail = true; // Global var to notify set_passphrase
+        $("#openpgpjs_key_select").dialog('open');
+        return false;
+      }
+
+      if(openpgp.keyring.privateKeys.length === 0) {
+        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
+        return false;
+      }
+
+      var passobj = JSON.parse(this.passphrase);
+      var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
+      var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
+      var privkey = openpgp.read_privateKey(privkey_armored);
+
+      if(!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
+        alert("WRONG PASS");
+      }
+
+      signed = openpgp.write_signed_message(privkey[0], "hej");
+
+      if(signed) {
+        $("textarea#composebody").val(signed);
+        return true;
+      }
 
       return false;
     }
+
     return false;
   }
 

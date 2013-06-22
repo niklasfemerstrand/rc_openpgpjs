@@ -30,13 +30,33 @@
  * Return:
  *   Encrypted message (str)
  */
-function encrypt(pubkeys, text, sign, privkey) {
+// TODO: Feed key armored and do openpgp.read_* here
+function encrypt(pubkeys, text, sign, privkey, passphrase) {
   sign = (typeof sign === "undefined") ? 0 : 1;
   if(sign) {
     privkey = (typeof privkey === "undefined") ? 0 : privkey;
+    passphrase = (typeof passphrase === "undefined") ? 0 : passphrase;
+
     if(!privkey) {
       alert("missing privkey");
-     return false;
+      return false;
+    }
+
+    if(!passphrase) {
+      alert("missing passphrase");
+      return false;
+    }
+
+    if (!privkey[0].decryptSecretMPIs(passphrase)) {
+        alert("Password for secrect key was incorrect!");
+        return;
+	}
+
+    try {
+      encrypted = openpgp.write_signed_and_encrypted_message(privkey[0], pubkeys, text);
+      return(encrypted);
+    } catch (e) {
+      return false;
     }
   }
 
@@ -60,6 +80,21 @@ function generateKeys(bits, algo, ident, passphrase) {
     arr["private"] = keys.privateKeyArmored;
     arr["public"] = keys.publicKeyArmored;
     return(arr);
+  } catch(e) {
+    return false;
+  }
+}
+
+function sign(msg, privkey_armored, passphrase) {
+  var priv_key = openpgp.read_privateKey(privkey_armored);
+
+  if(!priv_key[0].decryptSecretMPIs(passphrase)) {
+	alert("WRONG PASS");
+  }
+
+  try {
+    var signed = openpgp.write_signed_message(priv_key[0], msg);
+	return(signed);
   } catch(e) {
     return false;
   }

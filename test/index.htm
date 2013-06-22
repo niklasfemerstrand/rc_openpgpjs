@@ -11,11 +11,14 @@
 		<div id="container" style="float:left;">
 			<div id="keygen">
 				<h2>Keygen</h2>
+				Bits: 
 				<select id="gen_bits">
 					<option value="1024">1024</option>
 					<option value="2048">2048</option>
 					<option value="4096">4096</option>
 				</select>
+				Passphrase: 
+				<input type="text" id="gen_passphrase" value="test" />
 				<input type="submit" onclick="testGenerateKeys();" value="Generate keypair" />
 				<div>
 					<textarea id="privkey"></textarea>
@@ -28,8 +31,18 @@
 				<h2>Encrypt</h2>
 				<input type="text" id="string_to_encrypt" value="String to encrypt..." />
 				<input type="button" value="Encrypt" onclick="testEncrypt();" />
+				<input type="button" value="Encrypt & sign" onclick="testEncryptAndSign();" />
 				<div>
 					<textarea id="encrypted"></textarea>
+				</div>
+			</div>
+
+			<div id="sign">
+				<h2>Sign</h2>
+				<input type="text" id="string_to_sign" value="String to sign..." />
+				<input type="button" value="Sign" onclick="testSign();" />
+				<div>
+					<textarea id="signed"></textarea>
 				</div>
 			</div>
 		</div>
@@ -74,11 +87,37 @@
 				}
 			}
 
+			function testSign() {
+				try {
+					signed = sign($("#string_to_sign").val(), $("#privkey").html(), $("#gen_passphrase").val());
+					$("#signed").html(signed);
+					return true;
+				} catch(e) {
+					return false;
+				}
+			}
+
+			function testEncryptAndSign() {
+				var pubkeys = new Array();
+				// read armored keys
+				var priv_key = openpgp.read_privateKey($("#privkey").html());
+				var pub_key = openpgp.read_publicKey($("#pubkey").html());
+				pubkeys.push(pub_key[0]);
+
+				try {
+					encrypted = encrypt(pubkeys, $("#string_to_encrypt").val(), 1, priv_key, $("#gen_passphrase").val());
+					$("#encrypted").html(encrypted);
+					return true;
+				} catch(e) {
+					return false;
+				}
+			}
+
 			function runAll() {
 				resetDebug();
 				var fail = new Array();
 				var success = new Array();
-				var tests = new Array("testGenerateKeys", "testEncrypt", "testDecrypt");
+				var tests = new Array("testGenerateKeys", "testEncrypt", "testDecrypt", "testEncryptAndSign", "testSign");
 				for(var i = 0; i < tests.length; i++)
 				{
 					if(window[tests[i]]()) {
