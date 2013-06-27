@@ -1,0 +1,7 @@
+<div id='openpgpjs_key_search' class="propform popupdialog">
+  <div>Use this search to find and import public keys into your local key manager.</div><br />
+  <div>E-mail address: <input type="text" id="openpgpjs_search_input" /> <input type="submit" value="Search" id="openpgpjs_search_submit" onclick='rcmail.http_post("plugin.pks_search", "search=" + $("#openpgpjs_search_input").val() + "&op=index"); $("#openpgpjs_search_input").attr("disabled", "disabled"); $(this).attr("disabled", "disabled");' /><textarea id='importPubkeyField' style='visibility:hidden;'></textarea></div>
+  <table id="openpgpjs_search_results">
+  </table>
+</div>
+
