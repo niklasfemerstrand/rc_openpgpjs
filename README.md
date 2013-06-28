@@ -1,17 +1,17 @@
 rc_openpgpjs
 ================
 
-ATTENTION
+Attention
 ---------
 rc_openpgpjs is currently in an early development stage.
 
-INTRODUCTION
+Introduction
 ------------
 rc_openpgpjs is an extension adding OpenPGPs functionality to the Roundcube
 webmail project. See [Why do you need PGP?][why], [OpenPGP.js][openpgpjs] and
 [Roundcube][roundcube] for more info.
 
-FEATURES
+Features
 --------
 - E-mail PGP signing
 - E-mail PGP encryption and decryption
@@ -19,24 +19,24 @@ FEATURES
 - Key generation
 - Key lookups against PGP Secure Key Servers
 
-KEY STORAGE
+Key storage
 -----------
 The keys are stored client side using HTML5 web storage. Private keys are never
 transferred from the user's local HTML5 web storage. Private and public keys can
 however be exported from the web storage and be used outside of Roundcbe.
 
-KEY LOOKUPS
+Key lookups
 -----------
 Public keys can be imported from PGP Secure Key Servers like pgp.mit.edu and
 any other Public Key Server which follows the [OpenPGP HTTP Keyserver Protocol 
 (HKP)][draft].
 
-INSTALLATION
+Installation
 ------------
 1. Copy plugin to 'plugins' folder
 2. Add 'rc_openpgpjs' to plugins array in your Roundcube config (config/main.inc.php)
 
-CONTACT
+Contact
 -------
 For any bug reports or feature requests please refer to the [tracking system][issues].
 
