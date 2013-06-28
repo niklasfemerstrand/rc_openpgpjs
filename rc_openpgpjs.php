@@ -23,7 +23,7 @@
 
 class rc_openpgpjs extends rcube_plugin
 {
-  public $task = 'mail';
+  public $task = 'mail|settings';
   public $rc;
 
   /**
@@ -70,13 +70,45 @@ class rc_openpgpjs extends rcube_plugin
                         "classact"   => "button active key_manager",
                         "class"      => "button key_manager");
           $this->api->add_content($this->api->output->button($opts), "toolbar");
+          
+          // add encrypt and sign checkboxes to composeoptions
+          $encrypt_opts = array('id' => 'openpgpjs_encrypt',
+                                'type' => 'checkbox');
+          if($this->rc->config->get('encrypt', true)) {
+             $encrypt_opts['checked'] = 'checked';
+          }
+          $encrypt = new html_inputfield($encrypt_opts);
+          $this->api->add_content(
+            html::span('composeoption', html::label(null, $encrypt->show() . $this->gettext('encrypt'))),
+            "composeoptions"
+          );
+          $sign_opts = array('id' => 'openpgpjs_sign',
+                             'type' => 'checkbox');
+          if($this->rc->config->get('sign', true)) {
+             $sign_opts['checked'] = 'checked';
+          }
+          $sign = new html_inputfield($sign_opts);
+          $this->api->add_content(
+            html::span('composeoption', html::label(null, $sign->show() . $this->gettext('sign'))),
+            "composeoptions"
+          );
         }
       }
-    }
+    } elseif ($this->rc->task == 'settings') {
+      // load localization
+      $this->add_texts('localization/', false);
+      
+      // add hooks for OpenPGP settings
+      $this->add_hook('preferences_list', array($this, 'preferences_list'));
+      $this->add_hook('preferences_save', array($this, 'preferences_save'));
+    } 
   }
 
   /**
    * Add key manager and key selector to html output
+   *
+   * @param array Original parameters
+   * @return array Modified parameters
    */
   function render_page($params) {
     $template_path = $this->home . '/'. $this->local_skin_path();
@@ -197,4 +229,53 @@ class rc_openpgpjs extends rcube_plugin
     header("HTTP/1.1 501 Not Implemented");
     die();
   }
+ 
+  /**
+   * Handler for preferences_list hook.
+   * Adds options blocks into Compose settings sections in Preferences.
+   *
+   * @param array Original parameters
+   * @return array Modified parameters
+   */
+  function preferences_list($p)
+  {
+    if ($p['section'] == 'compose') {
+      $p['blocks']['openpgp']['name'] = $this->gettext('openpgp_options');
+
+      $field_id = 'rcmfd_encrypt';
+      $encrypt = new html_checkbox(array('name' => '_encrypt', 'id' => $field_id, 'value' => 1));
+      $p['blocks']['openpgp']['options']['encrypt'] = array(
+        'title' => html::label($field_id, Q($this->gettext('always_encrypt'))),
+        'content' => $encrypt->show($this->rc->config->get('encrypt', true)?1:0),
+      );
+      
+      $field_id = 'rcmfd_sign';
+      $sign = new html_checkbox(array('name' => '_sign', 'id' => $field_id, 'value' => 1));
+      $p['blocks']['openpgp']['options']['sign'] = array(
+        'title' => html::label($field_id, Q($this->gettext('always_sign'))),
+        'content' => $sign->show($this->rc->config->get('sign', true)?1:0),
+      );
+    }
+
+    return $p;
+  }
+
+  /**
+   * Handler for preferences_save hook.
+   * Executed on Compose settings form submit.
+   *
+   * @param array Original parameters
+   * @return array Modified parameters
+   */
+  function preferences_save($p)
+  {
+    if ($p['section'] == 'compose') {
+      $p['prefs'] = array(
+        'encrypt'     => get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false,
+        'sign'     => get_input_value('_sign', RCUBE_INPUT_POST) ? true : false,
+      );
+    }
+
+    return $p;
+  } 
 }
