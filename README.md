@@ -23,7 +23,7 @@ Key storage
 -----------
 The keys are stored client side using HTML5 web storage. Private keys are never
 transferred from the user's local HTML5 web storage. Private and public keys can
-however be exported from the web storage and be used outside of Roundcbe.
+however be exported from the web storage and be used outside of Roundcube.
 
 Key lookups
 -----------
