@@ -66,7 +66,37 @@ if(window.rcmail) {
     if (rcmail.env.action === "compose") {
       rcmail.env.compose_commands.push('open-key-manager');
       rcmail.addEventListener("beforesend", function(e) { if(!beforeSend()) { return false; } });
-      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' type='checkbox' checked='checked' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
+      $("#composebuttons").prepend("<input id='openpgpjs_encrypt' type='checkbox' /> " + rcmail.gettext('encrypt', 'rc_openpgpjs') + " <input id='openpgpjs_sign' type='checkbox' /> " + rcmail.gettext('sign', 'rc_openpgpjs') + "");
+
+      // Read encrypt & sign settings
+      if(typeof(localStorage.encrypt) != "undefined") {
+        if(localStorage.encrypt == 1) {
+          $("#openpgpjs_encrypt").prop("checked", true);
+        }
+      }
+
+      if(typeof(localStorage.sign) != "undefined") {
+        if(localStorage.sign == 1) {
+          $("#openpgpjs_sign").prop("checked", true);
+        }
+      }
+
+      // Store encrypt & sign settings
+      $("#openpgpjs_encrypt").click(function() {
+        if($("#openpgpjs_encrypt").is(":checked")) {
+          localStorage.encrypt = 1;
+        } else {
+          localStorage.encrypt = 0;
+        }
+      });
+
+      $("#openpgpjs_sign").click(function() {
+        if($("#openpgpjs_sign").is(":checked")) {
+          localStorage.sign = 1;
+        } else {
+          localStorage.sign = 0;
+        }
+      });
     } else if (rcmail.env.action === 'show' || rcmail.env.action === "preview") {
       processReceived();
     }
@@ -254,7 +284,11 @@ if(window.rcmail) {
   function beforeSend() {
     if(!$("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
-      return true;
+      if(confirm("Continue sending unencrypted and unsigned email?")) {
+        return true;
+      } else {
+        return false;
+      }
     }
 
     if(typeof(this.finished_treating) !== "undefined") {
