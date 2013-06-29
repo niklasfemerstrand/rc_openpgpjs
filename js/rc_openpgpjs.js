@@ -306,7 +306,7 @@ if(window.rcmail) {
         alert("WRONG PASS");
       }
 
-      signed = openpgp.write_signed_message(privkey[0], "hej");
+      signed = openpgp.write_signed_message(privkey[0], $("textarea#composebody").val());
 
       if(signed) {
         $("textarea#composebody").val(signed);
