@@ -253,7 +253,7 @@ if(window.rcmail) {
   function beforeSend() {
     if(!$("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
-      if(confirm("Continue sending unencrypted and unsigned email?")) {
+      if(confirm(rcmail.gettext('continue_unencrypted', 'rc_openpgpjs'))) {
         return true;
       } else {
         return false;
