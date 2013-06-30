@@ -26,7 +26,10 @@ if(window.rcmail) {
     this.passphrase = "";
 //  openpgp.config.debug = true
     rcmail.addEventListener('plugin.pks_search', pks_search_callback);
+    
+    // disable save draft button
     rcmail.enable_command("savedraft", false);
+    $("a.button.savedraft").addClass("disabled");
 
     if(sessionStorage.length > 0) {
       this.passphrase = sessionStorage[0];
@@ -58,7 +61,7 @@ if(window.rcmail) {
                                                     updateKeyManager();
                                                  }
                                          });
-
+      
       // register open key manager command
       rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
       rcmail.enable_command('open-key-manager', true);
