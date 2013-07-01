@@ -2,20 +2,16 @@
   display: none; 
   visibility: hidden;
 }
-
 ul.toolbarmenu li span.icon.key_manager {
-	background-image: url(images/key_manager.png);
-	background-position: -2px -1px;
+  background: url(images/key_manager.png) -2px -1px no-repeat;
 }
 .toolbar a.button.key_manager {
-  background: url("images/lock.png") no-repeat; 
-	background-position: center -2px;
+  background: url("images/lock.png") center -2px no-repeat; 
 }
-
-#openpgpjs_key_manager .ui-dialog .ui-dialog-content { 
+#openpgpjs_key_manager.popupdialog,
+#openpgpjs_key_manager.ui-dialog-content {
   padding: 0;
 }
-
 #openpgpjs_tabs {
   min-height: 400px;
 }
@@ -26,12 +22,14 @@ ul.toolbarmenu li span.icon.key_manager {
   background: transparent;
   padding: 0;
 }
-#openpgpjs_tabs .ui-state-error.ui-corner-all, #openpgpjs_key_select .ui-state-error.ui-corner-all {
+#openpgpjs_tabs .ui-state-error.ui-corner-all,
+#openpgpjs_key_select .ui-state-error.ui-corner-all {
   padding: 5px;
   width: 400px;
   margin-bottom: 5px;
 }
-#openpgpjs_tabs .ui-icon.ui-icon-alert, #openpgpjs_key_select .ui-icon.ui-icon-alert {
+#openpgpjs_tabs .ui-icon.ui-icon-alert,
+#openpgpjs_key_select .ui-icon.ui-icon-alert {
   float: left;
   margin-right: 5px;
   margin-top: 10px;
@@ -39,15 +37,13 @@ ul.toolbarmenu li span.icon.key_manager {
 #openpgpjs_key_select .ui-state-error.ui-corner-all {
   width: 275px;
 }
-
 #openpgpjs_import textarea {
   width: 555px;
   height: 175px;
 }
-
 .clickme { cursor: pointer !important; }
+.clickme:hover { background-color: #fff; }
 #generated_private, #generated_public { width: 45%; float: left; text-align: left; font-size: 7pt; }
 .odd { background-color: #ccc; }
 #openpgpjs_search_results { width: 99%; overflow: scroll; }
 #openpgpjs_search_results tr:hover { background-color: #fff; }
-.clickme:hover { background-color: #fff; }
