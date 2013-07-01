@@ -1,9 +1,9 @@
 <?php
 $labels = array();
 $labels['action'] = 'Aktion';
-$labels['always_encrypt'] = 'Mails immer verschlüsseln';
-$labels['always_sign'] = 'Mails immer signieren';
-$labels['bits'] = 'Bits';
+$labels['always_encrypt'] = 'E-Mails immer verschlüsseln';
+$labels['always_sign'] = 'E-Mails immer signieren';
+$labels['bits'] = 'Bit';
 $labels['continue_unencrypted'] = 'E-Mails weiterhin unverschlüsselt und unsigniert versenden??';
 $labels['delete'] = 'löschen';
 $labels['delete_priv'] = 'Diesen privaten Schlüssel wirklich entfernen?';
