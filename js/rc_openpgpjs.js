@@ -61,7 +61,7 @@ if(window.rcmail) {
                                                     updateKeyManager();
                                                  }
                                          });
-      
+
       // register open key manager command
       rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
       rcmail.enable_command('open-key-manager', true);
