@@ -27,10 +27,6 @@ if(window.rcmail) {
 //  openpgp.config.debug = true
     rcmail.addEventListener('plugin.pks_search', pks_search_callback);
     
-    // disable save draft button
-    rcmail.enable_command("savedraft", false);
-    $("a.button.savedraft").addClass("disabled");
-
     if(sessionStorage.length > 0) {
       this.passphrase = sessionStorage[0];
     }
@@ -67,6 +63,18 @@ if(window.rcmail) {
       rcmail.enable_command('open-key-manager', true);
 
     if (rcmail.env.action === "compose") {
+      // Disable draft autosave and prompt user when saving plaintext message as draft
+      rcmail.env.draft_autosave = 0;
+      rcmail.addEventListener("beforesavedraft", function(e) {
+        if($("#openpgpjs_encrypt").is(":checked")) {
+          if(!confirm("You have enabled encryption, are you sure that you want to draft this message? By doing so you save an unencrypted copy on the Roundcube server.")) {
+            return false;
+          }
+        }
+
+          return true;
+      });
+
       rcmail.env.compose_commands.push('open-key-manager');
       rcmail.addEventListener("beforesend", function(e) { if(!beforeSend()) { return false; } });
     } else if (rcmail.env.action === 'show' || rcmail.env.action === "preview") {
