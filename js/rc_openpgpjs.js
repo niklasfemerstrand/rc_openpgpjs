@@ -24,50 +24,53 @@ if(window.rcmail) {
   rcmail.addEventListener('init', function(evt) {
     openpgp.init();
     this.passphrase = "";
-//  openpgp.config.debug = true
+    // openpgp.config.debug = true
     rcmail.addEventListener('plugin.pks_search', pks_search_callback);
-    
+
     if(sessionStorage.length > 0) {
       this.passphrase = sessionStorage[0];
     }
 
-    $("#openpgpjs_key_select" ).dialog({ modal: true,
-                                         autoOpen: false,
-                                         title: rcmail.gettext('select_key', 'rc_openpgpjs'),
-                                         width: "30%",
-                                         open: function(event, ui) {
-                                                  updateKeySelector();
-                                               }
-                                       });
-      $('#openpgpjs_tabs').tabs();
-      $('#openpgpjs_key_search').dialog({ modal: true,
-                                          autoOpen: false,
-                                          title: rcmail.gettext('key_search', 'rc_openpgpjs'),
-                                          width: "60%",
-                                          open: function(event, ui) {
-                                                   $("#openpgpjs_search_results").html("");
-                                                   $("#openpgpjs_search_input").val("");
-                                                }
-                                        });
-      $('#openpgpjs_key_manager').dialog({ modal: true,
-                                           autoOpen: false,
-                                           title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
-                                           width: "90%",
-                                           open: function(event, ui) {
-                                                    updateKeyManager();
-                                                 }
-                                         });
+    $("#openpgpjs_key_select" ).dialog({
+      modal: true,
+      autoOpen: false,
+      title: rcmail.gettext('select_key', 'rc_openpgpjs'),
+      width: "30%",
+      open: function(event, ui) {
+        updateKeySelector();
+      }
+    });
+    $('#openpgpjs_key_search').dialog({
+      modal: true,
+      autoOpen: false,
+      title: rcmail.gettext('key_search', 'rc_openpgpjs'),
+      width: "60%",
+      open: function(event, ui) {
+        $("#openpgpjs_search_results").html("");
+        $("#openpgpjs_search_input").val("");
+      }
+    });
+    $('#openpgpjs_key_manager').dialog({
+      modal: true,
+      autoOpen: false,
+      title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
+      width: "90%",
+      open: function(event, ui) {
+        updateKeyManager();
+      }
+    });
+    $('#openpgpjs_tabs').tabs();
 
-      // register open key manager command
-      rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
-      rcmail.enable_command('open-key-manager', true);
+    // register open key manager command
+    rcmail.register_command('open-key-manager', function() { $("#openpgpjs_key_manager").dialog("open"); });
+    rcmail.enable_command('open-key-manager', true);
 
     if (rcmail.env.action === "compose") {
       // Disable draft autosave and prompt user when saving plaintext message as draft
       rcmail.env.draft_autosave = 0;
       rcmail.addEventListener("beforesavedraft", function(e) {
         if($("#openpgpjs_encrypt").is(":checked")) {
-          if(!confirm("You have enabled encryption, are you sure that you want to draft this message? By doing so you save an unencrypted copy on the Roundcube server.")) {
+          if(!confirm(rcmail.gettext('save_draft_confirm', 'rc_openpgpjs'))) {
             return false;
           }
         }
@@ -82,7 +85,9 @@ if(window.rcmail) {
     }
   });
 
-  // Processes received email
+  /**
+   * Processes received messages
+   */
   function processReceived() {
     var msg = openpgp.read_message($("#messagebody div.message-part pre").html());
 
@@ -127,6 +132,8 @@ if(window.rcmail) {
 
   /**
    * Extracts public key info from parsed OpenPGP message.
+   *
+   * @param string Parsed OpenPGP message
    */
   function showKeyInfo(msg) {
     var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
@@ -147,8 +154,14 @@ if(window.rcmail) {
     }
   }
 
-  function generate_keypair(bits, algo)
-  {
+  /**
+   * Generates an OpenPGP key pair by calling the necessary crypto
+   * functions from openpgp.js and shows them to the user
+   *
+   * @param bits {Integer} Number of bits for the key creation
+   * @param algo {Integer} To indicate what type of key to make. RSA is 1
+   */
+  function generate_keypair(bits, algo) {
     if($('#gen_passphrase').val() === '') {
       $('#generate_key_error').removeClass("hidden");
       $('#generate_key_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
@@ -169,8 +182,10 @@ if(window.rcmail) {
     return true;
   }
 
-  function importGenerated()
-  {
+  /**
+   * Import generated key pair.
+   */
+  function importGenerated() {
     $('#import_button').addClass("hidden");
     importPubKey($("#generated_public").html());
 
@@ -182,23 +197,21 @@ if(window.rcmail) {
     $("#gen_passphrase_verify").val("");
   }
 
-  /*
-   * Params:
-   *   i: int, used as openpgp.keyring[private|public]Keys[i]
-   *   p: str, the passphrase
+  /**
+   * Set passphrase.
+   *
+   * @param i {Integer} Used as openpgp.keyring[private|public]Keys[i]
+   * @param p {String}  The passphrase
    */
   // TODO: move passphrase checks from old decrypt() to here
-  function set_passphrase(i, p)
-  {
-    if(i === "-1")
-    {
+  function set_passphrase(i, p) {
+    if(i === "-1") {
       $('#key_select_error').removeClass("hidden");
       $('#key_select_error p').html(rcmail.gettext('select_key', 'rc_openpgpjs'));
       return false;
     }
 
-    if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p))
-    {
+    if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p)) {
       $('#key_select_error').removeClass("hidden");
       $('#key_select_error p').html(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
       return false;
@@ -261,6 +274,9 @@ if(window.rcmail) {
     return pubkeys;
   }
 
+  /**
+   * Processes messages before sending
+   */
   function beforeSend() {
     if(!$("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
@@ -314,7 +330,7 @@ if(window.rcmail) {
       var privkey = openpgp.read_privateKey(privkey_armored);
 
       if(!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
-        alert("WRONG PASS");
+        alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
       }
 
       signed = openpgp.write_signed_message(privkey[0], $("textarea#composebody").val());
@@ -335,6 +351,12 @@ if(window.rcmail) {
     return;
   }
 
+  /**
+   * Imports armored public key into the key manager
+   *
+   * @param key {String} The armored public key
+   * @return {Bool} Import successful
+   */
   function importPubKey(key) {
     try {
       openpgp.keyring.importPublicKey(key);
@@ -378,15 +400,15 @@ if(window.rcmail) {
     $("#openpgpjs_search_input").removeAttr("disabled");
     $("#openpgpjs_search_submit").removeAttr("disabled");
 
-	if(response.message === "ERR: Missing param") {
-		console.log("Missing param");
-		return false;
-	}
+  if(response.message === "ERR: Missing param") {
+    console.log("Missing param");
+    return false;
+  }
 
-	if(response.message === "ERR: Invalid operation") {
-		console.log("Invalid operation");
-		return false;
-	}
+  if(response.message === "ERR: Invalid operation") {
+    console.log("Invalid operation");
+    return false;
+  }
 
     if(response.message === "ERR: No keys found") {
         alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
@@ -414,6 +436,13 @@ if(window.rcmail) {
     }
   }
 
+  /**
+   * Imports armored private key into the key manager
+   *
+   * @param key        {String} The armored private key
+   * @param passphrase {String} The corresponding passphrase
+   * @return {Bool} Import successful
+   */
   function importPrivKey(key, passphrase) {
     if(passphrase === '') {
       $('#import_priv_error').removeClass("hidden");
@@ -445,7 +474,11 @@ if(window.rcmail) {
     return true;
   }
 
-  // Param i: int, used as openpgp.keyring[private|public]Keys[i]
+  /**
+   * Select a private key.
+   *
+   * @param i {Integer} Used as openpgp.keyring[private|public]Keys[i]
+   */
   function select_key(i) {
     fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
     $("#openpgpjs_selected").html("<strong>" + rcmail.gettext('selected', 'rc_openpgpjs') + ":</strong> " + fingerprint);
@@ -453,6 +486,9 @@ if(window.rcmail) {
     $("#passphrase").val("");
   }
 
+  /**
+   * Update key selector dialog.
+   */
   function updateKeySelector() {
     // Fills key_select key list
     $("#openpgpjs_key_select_list").html("<input type=\"hidden\" id=\"openpgpjs_selected_id\" value=\"-1\" />");
@@ -476,6 +512,10 @@ if(window.rcmail) {
     return true;
   }
 
+  /**
+   * Updates key manager public keys table, private keys table
+   * and identy selector.
+   */
   function updateKeyManager() {
     // fill key manager public key table
     $('#openpgpjs_pubkeys tbody').empty();
@@ -522,7 +562,7 @@ if(window.rcmail) {
       }
     }
 
-    // Fills key manager generation ident select
+    // fill key manager generation identity selector
     $("#gen_ident").html("");
     identities = JSON.parse($("#openpgpjs_identities").html());
     for (var i = 0; i < identities.length; i++) {
@@ -530,6 +570,13 @@ if(window.rcmail) {
     }
   }
 
+  /**
+   * Extract the algorithm string from a key and
+   * return the algorithm type.
+   *
+   * @param key {String} Key
+   * @return {String} Algorithm type
+   */
   function getAlgorithmString(key) {
     if(typeof(key.publicKeyPacket) !== "undefined") {
       var result = key.publicKeyPacket.MPIs[0].mpiByteLength * 8 + "/";
@@ -545,7 +592,13 @@ if(window.rcmail) {
     return result;
   }
 
-  // Converts an integer (1/2/3/16/17) to corresponding algorithm type (str)
+  /**
+   * Converts an algorithm id (1/2/3/16/17) to the
+   * corresponding algorithm type
+   *
+   * @param id {Integer} Algorithm id
+   * @return {String} Algorithm type
+   */
   function typeToStr(id) {
     var r = ""
 
@@ -572,7 +625,12 @@ if(window.rcmail) {
 
     return(r);
   }
-  
+
+  /**
+   * Escape some unsafe characters into their html entities.
+   *
+   * @param unsafe {String} Unsafe string to escape
+   */
   function escapeHtml(unsafe) {
         return unsafe.replace(/&/g, "&amp;")
                      .replace(/</g, "&lt;")
@@ -580,6 +638,6 @@ if(window.rcmail) {
                      .replace(/"/g, "&quot;")
                      .replace(/'/g, "&#039;");
   }
-  
+
   function showMessages(msg) { console.log(msg); }
 }
