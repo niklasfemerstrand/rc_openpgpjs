@@ -40,6 +40,7 @@ $labels['pubkey_import_success'] = 'Publieke sleutel is geimporteerd';
 $labels['pubkey_import_success'] = "Publieke sleutel is geimporteerd";
 $labels['public_keys'] = 'Publieke sleutels';
 $labels['remember_this_session'] = 'Onthoud voor deze sessie';
+$labels['save_draft_confirm'] = 'Versleuteling is ingeschakeld, weet je zeker dat je dit concept wil opslaan? Hierdoor wordt er een onversleutelde kopie opgeslagen op de server.';
 $labels['search_description'] = 'Gebruik deze zoekfunctie om publieke sleutels te vinden en te importeren in je lokale sleutel beheer.';
 $labels['selected'] = 'Geselecteerd';
 $labels['select_key'] = 'Selecteer sleutel';

@@ -67,7 +67,7 @@ if(window.rcmail) {
       rcmail.env.draft_autosave = 0;
       rcmail.addEventListener("beforesavedraft", function(e) {
         if($("#openpgpjs_encrypt").is(":checked")) {
-          if(!confirm("You have enabled encryption, are you sure that you want to draft this message? By doing so you save an unencrypted copy on the Roundcube server.")) {
+          if(!confirm(rcmail.gettext('save_draft_confirm', 'rc_openpgpjs'))) {
             return false;
           }
         }
@@ -314,7 +314,7 @@ if(window.rcmail) {
       var privkey = openpgp.read_privateKey(privkey_armored);
 
       if(!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
-        alert("WRONG PASS");
+        alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
       }
 
       signed = openpgp.write_signed_message(privkey[0], $("textarea#composebody").val());
