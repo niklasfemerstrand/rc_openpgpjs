@@ -22,13 +22,13 @@
  * */
 
 /**
- * Params:
- *   pubkeys : Array containing public keys
- *   text    : String to encrypt
- *   sign    : Optional bool, if sign and encrypt set to 1
- *   privkey : Required if sign is set
- * Return:
- *   Encrypted message (str)
+ * Encrypt (and sign) a meesage
+ *
+ * @param pubkeys {Array}  Public keys
+ * @param text    {String} Message to encrypt
+ * @param sign    {Bool}   Sign and encrypt the message?
+ * @param privkey (String} Required if sign is True
+ * @return {String} Encrypted message
  */
 // TODO: Feed key armored and do openpgp.read_* here
 function encrypt(pubkeys, text, sign, privkey, passphrase) {
@@ -85,6 +85,14 @@ function generateKeys(bits, algo, ident, passphrase) {
   }
 }
 
+/**
+ * Sign a meesage
+ *
+ * @param msg             {String} Message to sign
+ * @param privkey_armored (String} Armored private key to sign message
+ * @param passphrase      (String} Passphrase of private key
+ * @return {String} Signed message
+ */
 function sign(msg, privkey_armored, passphrase) {
   var priv_key = openpgp.read_privateKey(privkey_armored);
 
@@ -100,6 +108,14 @@ function sign(msg, privkey_armored, passphrase) {
   }
 }
 
+/**
+ * Decrypt a meesage
+ *
+ * @param msg             {String} Message to decrypt
+ * @param privkey_armored (String} Armored private key to decrypt message
+ * @param passphrase      (String} Passphrase of private key
+ * @return {String} Decrypted message
+ */
 function decrypt(msg, privkey_armored, passphrase) {
   if(!("decrypt" in msg[0])) {
     return false;
