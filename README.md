@@ -1,6 +1,8 @@
 rc_openpgpjs
 ================
 
+[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=qnrq&url=https://github.com/qnrq/rc_openpgpjs/&title=rc_openpgpjs&language=&tags=github&category=software)
+
 Attention
 ---------
 rc_openpgpjs is currently in an early development stage.
