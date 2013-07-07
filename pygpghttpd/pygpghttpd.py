@@ -33,7 +33,7 @@
 # NOTE: In order for Internet Explorer to work with this httpd it must have TLSv1.1 and TLSv1.2 enabled.
 # This is set in Internet Options -> Advanced, or HKEY_CURRENT_USER\Software\Classes\Local Settings\MuiCache\
 
-import re, socket, ssl, sys, gnupg
+import re, socket, ssl, sys, gnupg, json
 import _thread as thread
 
 gpg = gnupg.GPG(gnupghome="~/")
@@ -62,7 +62,7 @@ def deal_with_client(connstream):
 			if m:
 				referer = m.groups()[0].rstrip("\n").rstrip("\r")
 
-			if "=" in header and "&" in header:
+			if "=" in header:
 				cmdstr = header
 
 		# Fall back on referer
@@ -107,11 +107,16 @@ def do_something(connstream, data, origin, cmdstr):
 
 def do_gpg(cmdstr):
 	c       = {}
-	cmds    = cmdstr.split("&")
-	cmds_ok = ["keygen"]
+	cmds_ok = ["keygen", "keylist"]
 
-	for cmd in cmds:
-		cc = cmd.split("=")
+	if "&" in cmdstr: # Multiple params
+		cmds = cmdstr.split("&")
+		for cmd in cmds:
+			cc = cmd.split("=")
+			if cc[0] and cc[1]:
+				c[cc[0]] = cc[1]
+	else: # Single param
+		cc = cmdstr.split("=")
 		if cc[0] and cc[1]:
 			c[cc[0]] = cc[1]
 
@@ -123,7 +128,15 @@ def do_gpg(cmdstr):
 
 	if c["cmd"] == "keygen":
 		return keygen(c)
+
+	if c["cmd"] == "keylist":
+		return keylist()
+
 	return("return")
+
+def keylist(private = False):
+	keys = gpg.list_keys(private)
+	return(json.dumps(keys))
 
 def keygen(cmd):
 	required    = ["key_type", "key_length", "name_real", "name_email", "passphrase"]
