@@ -78,7 +78,7 @@ function encrypt(pubkeys, text, sign, privkey, passphrase) {
  * @param algo       {Integer} Key algorithm type. Currently unused and set to 1 (RSA)
  * @param ident      {String}  Key identity formatted as "Firstname Lastname <foo@bar.com>"
  * @param passphrase {String} Passphrase of private key
- * @return {Array} Key pair
+ * @return {Array} Armored key pair
  */
 function generateKeys(bits, algo, ident, passphrase) {
   try {
@@ -159,4 +159,108 @@ function decrypt(msg, privkey_armored, passphrase) {
   } catch (e) {
     return false;
   }
+}
+
+function parseMsg(msg) {
+	return openpgp.read_message(msg);
+}
+
+function hasPrivateKey() {
+	return openpgp.keyring.hasPrivateKey();
+}
+
+function getPrivkeyCount() {
+	return openpgp.keyring.privateKeys.length;
+}
+
+function getPubkeyCount() {
+	return openpgp.keyring.publicKeys.length;
+}
+
+function getFingerprint(i, private, niceformat) {
+	if(typeof(private) !== "undefined") {
+		private = false;
+	}
+
+	if(typeof(niceformat) == "undefined") {
+		niceformat = true;
+	}
+
+	if(private == false) {
+		fingerprint = util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(0, 8);
+	} else {
+		fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(0, 8);
+	}
+
+	if(niceformat) {
+		fingerprint = fingerprint.replace(/(.{2})/g, "$1 ");
+	} else {
+		fingerprint = "0x" + fingerprint.substring(0, 8);
+	}
+
+	return fingerprint;
+}
+
+function getPubkeyForAddress(address) {
+	var pubkey = openpgp.keyring.getPublicKeyForAddress(address);
+	return pubkey;
+}
+
+function getFingerprintForSender(sender) {
+	var pubkey = getPubkeyForAddress(sender);
+	var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+	return fingerprint;
+}
+
+function getPrivkeyArmored(id) {
+	var keyid = openpgp.keyring.privateKeys[id].obj.getKeyId();
+	var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
+	return privkey_armored;
+}
+
+// Gets privkey obj from armored
+function getPrivkey(armored) {
+	var privkey = openpgp.read_privateKey(armored);
+	return privkey;
+}
+
+function decryptSecretMPIs(i, p) {
+	return openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p);
+}
+
+function decryptSecretMPIsForId(id, passphrase) {
+	var keyid = openpgp.keyring.privateKeys[id].obj.getKeyId();
+	var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
+	var privkey = getPrivkey(privkey_armored);
+	return privkey[0].decryptSecretMPIs(passphrase);
+}
+
+function importPubkey(key) {
+	try {
+		openpgp.keyring.importPublicKey(key);
+		openpgp.keyring.store();
+	} catch(e) {
+		console.log(e);
+		return false;
+	}
+	return true;
+}
+
+function importPrivkey(key, passphrase) {
+	try {
+		openpgp.keyring.importPrivateKey(key, passphrase);
+		openpgp.keyring.store();
+	} catch(e) {
+		return false;
+	}
+
+	return true;
+}
+
+function parsePrivkey(key) {
+	try {
+		return openpgp.read_privateKey(key)[0];
+	} catch(e) {
+		return false;
+	}
 }
