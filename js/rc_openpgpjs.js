@@ -215,7 +215,7 @@ if(window.rcmail) {
       return false;
     }
 
-    if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p)) {
+    if(!decryptSecretMPIs(i, p)) {
       $("#key_select_error").removeClass("hidden");
       $("#key_select_error p").html(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));
       return false;
@@ -363,8 +363,7 @@ if(window.rcmail) {
    */
   function importPubKey(key) {
     try {
-      openpgp.keyring.importPublicKey(key);
-      openpgp.keyring.store();
+      importPubkey(key);
       updateKeyManager();
       $("#importPubkeyField").val("");
       $("#import_pub_error").addClass("hidden");
@@ -372,6 +371,7 @@ if(window.rcmail) {
       $("#import_pub_error").removeClass("hidden");
       $("#import_pub_error p").html(rcmail.gettext("import_failed", "rc_openpgpjs"));
       alert(rcmail.gettext("import_fail", "rc_openpgpjs"));
+	alert(e);
       return false;
     }
 
@@ -455,7 +455,7 @@ if(window.rcmail) {
     }
 
     try {
-      privkey_obj = openpgp.read_privateKey(key)[0];
+      privkey_obj = parsePrivkey(key);
     } catch(e) {
       $("#import_priv_error").removeClass("hidden");
       $("#import_priv_error p").html(rcmail.gettext("import_failed", "rc_openpgpjs"));
@@ -468,8 +468,7 @@ if(window.rcmail) {
       return false;
     }
 
-    openpgp.keyring.importPrivateKey(key, passphrase);
-    openpgp.keyring.store();
+	importPrivkey(key, passphrase);
     updateKeyManager();
     $("#importPrivkeyField").val("");
     $("#passphrase").val("");
@@ -498,11 +497,11 @@ if(window.rcmail) {
     $("#openpgpjs_key_select_list").html("<input type=\"hidden\" id=\"openpgpjs_selected_id\" value=\"-1\" />");
 
     // Only one key in keyring, nothing to select from
-    if(openpgp.keyring.privateKeys.length === 1) {
+    if(getPrivkeyCount() === 1) {
       $("#openpgpjs_selected_id").val(0);
     } else {
       // Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
-      for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
+      for (var i = 0; i < getPrivkeyCount(); i++) {
         for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
           fingerprint = getFingerprint(i, true, false);
           person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
@@ -523,7 +522,7 @@ if(window.rcmail) {
   function updateKeyManager() {
     // fill key manager public key table
     $("#openpgpjs_pubkeys tbody").empty();
-    for (var i = 0; i < openpgp.keyring.publicKeys.length; i++) {
+    for (var i = 0; i < getPubkeyCount(); i++) {
       var key_id = "0x" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8);
       var fingerprint = getFingerprint(i);
       var person = escapeHtml(openpgp.keyring.publicKeys[i].obj.userIds[0].text);
@@ -545,7 +544,7 @@ if(window.rcmail) {
 
     // fill key manager private key table
     $("#openpgpjs_privkeys tbody").empty();
-    for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
+    for (var i = 0; i < getPrivkeyCount(); i++) {
       for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
         var key_id = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
         var fingerprint = getFingerprint(i, true);
