@@ -1,17 +1,12 @@
 rc_openpgpjs
 ================
-
 [![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=qnrq&url=https://github.com/qnrq/rc_openpgpjs/&title=rc_openpgpjs&language=&tags=github&category=software)
 
-Attention
----------
-rc_openpgpjs is currently in an early development stage.
-
-Introduction
-------------
-rc_openpgpjs is an extension adding OpenPGPs functionality to the Roundcube
-webmail project. See [Why do you need PGP?][why], [OpenPGP.js][openpgpjs] and
-[Roundcube][roundcube] for more info.
+rc_openpgpjs is an open source (GPLv2) extension adding OpenPGPs functionality
+to the Roundcube webmail project. rc_openpgpjs is written with the intention to
+be as user friendly as possible for everyday PGP use. See
+[Why do you need PGP?][why], [OpenPGP.js][openpgpjs] and [Roundcube][roundcube]
+for more info.
 
 Features
 --------
@@ -24,8 +19,9 @@ Features
 Key storage
 -----------
 The keys are stored client side using HTML5 web storage. Private keys are never
-transferred from the user's local HTML5 web storage. Private and public keys can
-however be exported from the web storage and be used outside of Roundcube.
+transferred from the user's local storage. Private and public keys can be
+exported from the web storage and be used outside of Roundcube and equally
+externally generated keys can be imported and used inside Roundcube.
 
 Key lookups
 -----------
