@@ -22,9 +22,7 @@
 
 if(window.rcmail) {
   rcmail.addEventListener("init", function() {
-    openpgp.init();
     this.passphrase = "";
-    // openpgp.config.debug = true
     rcmail.addEventListener("plugin.pks_search", pks_search_callback);
 
     if(sessionStorage.length > 0) {
