@@ -39,6 +39,7 @@ $labels['private_keys'] = 'Private keys';
 $labels['pubkey_import_success'] = 'Public key imported successfully';
 $labels['public_keys'] = 'Public keys';
 $labels['remember_this_session'] = 'Remember for this session';
+$labels['save_draft_confirm'] = 'Encryption is enabled, are you sure that you want to save this draft? By doing so you save an unencrypted copy on the server.';
 $labels['search_description'] = 'Use this search to find and import public keys into your local key manager.';
 $labels['selected'] = 'Selected';
 $labels['select_key'] = 'Please select a key';
