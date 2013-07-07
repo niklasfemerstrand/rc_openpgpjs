@@ -96,7 +96,7 @@ if(window.rcmail) {
    * Processes received messages
    */
   function processReceived() {
-    var msg = openpgp.read_message($("#messagebody div.message-part pre").html());
+    var msg = parseMsg($("#messagebody div.message-part pre").html());
 
     // OpenPGP failed parsing the message, no action required.
     if(!msg) {
@@ -111,27 +111,25 @@ if(window.rcmail) {
     // TODO fix signature verification
     if(msg[0].type === 2) return;
 
-    if(!openpgp.keyring.hasPrivateKey()) {
+    if(!hasPrivateKey()) {
       rcmail.display_message(rcmail.gettext("no_key_imported", "rc_openpgpjs"), "error");
       return false;
     }
 
-    if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0) {
+    if(this.passphrase === "" && getPrivkeyCount() > 0) {
       $("#openpgpjs_key_select").dialog("open");
       return false;
     }
 
     // json string from set_passphrase, obj.id = privkey id, obj.passphrase = privkey passphrase
     var passobj = JSON.parse(this.passphrase);
-
-    var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
-    var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
-
+    var privkey_armored = getPrivkeyArmored(passobj.id);
     decrypted = decrypt(msg, privkey_armored, passobj.passphrase);
+
     if(decrypted) {
       $("#messagebody div.message-part pre").html("<strong>********* *BEGIN ENCRYPTED or SIGNED PART* *********</strong>\n" + escapeHtml(decrypted) + "\n<strong>********** *END ENCRYPTED or SIGNED PART* **********</strong>");
     } else {
-      alert("Failed decrypt, this happens because set_passphrase is still missing some stuff.");
+      alert("Failed decrypt");
     }
 
     return true;
@@ -144,8 +142,7 @@ if(window.rcmail) {
    */
   function showKeyInfo(msg) {
     var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
-    var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
-    var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+    var fingerprint = getFingerprintForSender(sender);
 
     if(typeof(this.getinfo) === "undefined") {
       $(".headers-table").css( "float", "left" );
@@ -263,7 +260,7 @@ if(window.rcmail) {
 
     for (var i = 0; i < recipients.length; i++) {
       var recipient = recipients[i].replace(/(.+?<)/, "").replace(/>/, "");
-      var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
+      var pubkey = getPubkeyForAddress(recipient);
       if(typeof(pubkey[0]) != "undefined") {
         pubkeys.push(pubkey[0].obj);
       } else {
@@ -320,13 +317,13 @@ if(window.rcmail) {
        !$("#openpgpjs_encrypt").is(":checked")) {
 
       if(this.passphrase === "" &&
-         openpgp.keyring.privateKeys.length > 0) {
+         getPrivkeyCount() > 0) {
         this.sendmail = true; // Global var to notify set_passphrase
         $("#openpgpjs_key_select").dialog("open");
         return false;
       }
 
-      if(openpgp.keyring.privateKeys.length === 0) {
+      if(getPrivkeyCount() === 0) {
         alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
         return false;
       }
@@ -487,7 +484,7 @@ if(window.rcmail) {
    * @param i {Integer} Used as openpgp.keyring[private|public]Keys[i]
    */
   function select_key(i) {
-    fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+    fingerprint = getFingerprint(i, true, false);
     $("#openpgpjs_selected").html("<strong>" + rcmail.gettext("selected", "rc_openpgpjs") + ":</strong> " + fingerprint);
     $("#openpgpjs_selected_id").val(i);
     $("#passphrase").val("");
@@ -507,7 +504,7 @@ if(window.rcmail) {
       // Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
       for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
         for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
-          fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+          fingerprint = getFingerprint(i, true, false);
           person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
           $("#openpgpjs_key_select_list").append("<div class=\"clickme\" onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
         }
@@ -528,7 +525,7 @@ if(window.rcmail) {
     $("#openpgpjs_pubkeys tbody").empty();
     for (var i = 0; i < openpgp.keyring.publicKeys.length; i++) {
       var key_id = "0x" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8);
-      var fingerprint = util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+      var fingerprint = getFingerprint(i);
       var person = escapeHtml(openpgp.keyring.publicKeys[i].obj.userIds[0].text);
       var length_alg = getAlgorithmString(openpgp.keyring.publicKeys[i].obj);
       var status = (openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures() ? rcmail.gettext("valid", "rc_openpgpjs") : rcmail.gettext("invalid", "rc_openpgpjs"));
@@ -551,7 +548,7 @@ if(window.rcmail) {
     for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
       for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
         var key_id = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
-        var fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+        var fingerprint = getFingerprint(i, true);
         var person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
         var length_alg = getAlgorithmString(openpgp.keyring.privateKeys[i].obj);
         var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
