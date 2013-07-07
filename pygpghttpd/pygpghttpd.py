@@ -28,7 +28,7 @@
 ###############################################################################
 # openssl req -new -x509 -days 365 -nodes -out cert.pem -keyout cert.pem
 #
-# curl -i -k --data "cmd=keygen&key_type=RSA&key_length=2048&name_real=realname&name_email=email" -H "Origin: https://localhost" https://localhost:11337/
+# curl -i -k --data "cmd=keygen&key_type=RSA&key_length=2048&name_real=realname&name_email=email&passphrase=passphrase" -H "Origin: https://localhost" https://localhost:11337/
 #
 # NOTE: In order for Internet Explorer to work with this httpd it must have TLSv1.1 and TLSv1.2 enabled.
 # This is set in Internet Options -> Advanced, or HKEY_CURRENT_USER\Software\Classes\Local Settings\MuiCache\
@@ -36,7 +36,7 @@
 import re, socket, ssl, sys, gnupg
 import _thread as thread
 
-gpg = gnupg.GPG(gnupghome="./.gpg")
+gpg = gnupg.GPG(gnupghome="~/")
 gpg.encoding = "utf-8"
 
 def deal_with_client(connstream):
@@ -88,8 +88,7 @@ def do_something(connstream, data, origin, cmdstr):
 		response = "Illegal origin"
 	else:
 		allow_request = 1
-		print("NOW TREAT CMDSTR")
-		response = "allowed"
+		response = do_gpg(cmdstr)
 
 	content_length = str(len(response))
 
@@ -105,6 +104,48 @@ def do_something(connstream, data, origin, cmdstr):
 		connstream.write(("Access-Control-Allow-Origin: " + origin + "\r\n").encode())
 	connstream.write("\r\n".encode())
 	connstream.write(response.encode())
+
+def do_gpg(cmdstr):
+	c       = {}
+	cmds    = cmdstr.split("&")
+	cmds_ok = ["keygen"]
+
+	for cmd in cmds:
+		cc = cmd.split("=")
+		if cc[0] and cc[1]:
+			c[cc[0]] = cc[1]
+
+	if not c["cmd"]:
+		return("Missing cmdstr for GPG op")
+
+	if c["cmd"] not in cmds_ok:
+		return("Unsupported cmdstr")
+
+	if c["cmd"] == "keygen":
+		return keygen(c)
+	return("return")
+
+def keygen(cmd):
+	required    = ["key_type", "key_length", "name_real", "name_email", "passphrase"]
+	key_types   = ["RSA", "DSA"]
+	key_lengths = ["2048", "4096"]
+
+	for req in required:
+		if req not in cmd:
+			return("Insufficient parameters: %s" % (req))
+
+	if cmd["key_type"] not in key_types:
+		return("Incorrect: key_type")
+
+	if cmd["key_length"] not in key_lengths:
+		return("Incorrect: key_length")
+
+	input_data = gpg.gen_key_input(key_type = cmd["key_type"], key_length = cmd["key_length"], name_real = cmd["name_real"], name_email = cmd["name_email"], passphrase = cmd["passphrase"], name_comment = "PyGPG HTTPD")
+	keys = gpg.gen_key(input_data)
+
+	if keys:
+		return "y"
+	return "n"
 
 def threadHandler(client, addr):
 	connstream = ""
