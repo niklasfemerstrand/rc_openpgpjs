@@ -40,10 +40,10 @@ gpg = gnupg.GPG(gnupghome="~/")
 gpg.encoding = "utf-8"
 
 def deal_with_client(connstream):
-	data = connstream.recv(1024).decode("utf-8")
+	data = connstream.recv(8192).decode("utf-8")
 	m = re.search("^(GET|POST)", data)
 	if not m:
-		data += connstream.recv(1024).decode("utf-8")
+		data += connstream.recv(8192).decode("utf-8")
 
 	while data:
 		dd      = data.split("\n")
