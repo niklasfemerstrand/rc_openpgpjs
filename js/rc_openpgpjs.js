@@ -487,7 +487,7 @@ if(window.rcmail) {
    * @param i {Integer} Used as openpgp.keyring[private|public]Keys[i]
    */
   function select_key(i) {
-    fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+    fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
     $("#openpgpjs_selected").html("<strong>" + rcmail.gettext("selected", "rc_openpgpjs") + ":</strong> " + fingerprint);
     $("#openpgpjs_selected_id").val(i);
     $("#passphrase").val("");
@@ -507,7 +507,7 @@ if(window.rcmail) {
       // Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
       for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
         for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
-          fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+          fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
           person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
           $("#openpgpjs_key_select_list").append("<div class=\"clickme\" onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
         }
