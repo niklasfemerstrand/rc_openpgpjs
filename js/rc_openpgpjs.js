@@ -70,7 +70,7 @@ if(window.rcmail) {
     });
     rcmail.enable_command("open-key-manager", true);
 
-    if (rcmail.env.action === "compose") {
+    if(rcmail.env.action === "compose") {
       // Disable draft autosave and prompt user when saving plaintext message as draft
       rcmail.env.draft_autosave = 0;
       rcmail.addEventListener("beforesavedraft", function() {
@@ -89,7 +89,7 @@ if(window.rcmail) {
           return false;
         }
       });
-    } else if (rcmail.env.action === "show" || rcmail.env.action === "preview") {
+    } else if(rcmail.env.action === "show" || rcmail.env.action === "preview") {
       processReceived();
     }
   });
