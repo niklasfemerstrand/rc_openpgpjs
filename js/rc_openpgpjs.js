@@ -20,66 +20,76 @@
 +-------------------------------------------------------------------------+
 */
 
-if (window.rcmail) {
-  rcmail.addEventListener('init', function () {
+if(window.rcmail) {
+  rcmail.addEventListener("init", function() {
     openpgp.init();
     this.passphrase = "";
     // openpgp.config.debug = true
-    rcmail.addEventListener('plugin.pks_search', pks_search_callback);
+    rcmail.addEventListener("plugin.pks_search", pks_search_callback);
 
-    if (sessionStorage.length > 0) {
+    if(sessionStorage.length > 0) {
       this.passphrase = sessionStorage[0];
     }
 
     $("#openpgpjs_key_select").dialog({
       modal: true,
       autoOpen: false,
-      title: rcmail.gettext('select_key', 'rc_openpgpjs'),
+      title: rcmail.gettext("select_key", "rc_openpgpjs"),
       width: "30%",
-      open: function () {
+      open: function() {
         updateKeySelector();
       }
     });
+
     $("#openpgpjs_key_search").dialog({
       modal: true,
       autoOpen: false,
-      title: rcmail.gettext('key_search', 'rc_openpgpjs'),
+      title: rcmail.gettext("key_search", "rc_openpgpjs"),
       width: "60%",
-      open: function () {
+      open: function() {
         $("#openpgpjs_search_results").html("");
         $("#openpgpjs_search_input").val("");
       }
     });
+
     $("#openpgpjs_key_manager").dialog({
       modal: true,
       autoOpen: false,
-      title: rcmail.gettext('key_manager', 'rc_openpgpjs'),
+      title: rcmail.gettext("key_manager", "rc_openpgpjs"),
       width: "90%",
-      open: function () {
+      open: function() {
         updateKeyManager();
       }
     });
-    $('#openpgpjs_tabs').tabs();
+
+    $("#openpgpjs_tabs").tabs();
 
     // register open key manager command
-    rcmail.register_command('open-key-manager', function () { $("#openpgpjs_key_manager").dialog("open"); });
-    rcmail.enable_command('open-key-manager', true);
+    rcmail.register_command("open-key-manager", function() {
+      $("#openpgpjs_key_manager").dialog("open");
+    });
+    rcmail.enable_command("open-key-manager", true);
 
     if (rcmail.env.action === "compose") {
       // Disable draft autosave and prompt user when saving plaintext message as draft
       rcmail.env.draft_autosave = 0;
-      rcmail.addEventListener("beforesavedraft", function (e) {
-        if ($("#openpgpjs_encrypt").is(":checked")) {
-          if (!confirm(rcmail.gettext('save_draft_confirm', 'rc_openpgpjs'))) {
+      rcmail.addEventListener("beforesavedraft", function() {
+        if($("#openpgpjs_encrypt").is(":checked")) {
+          if(!confirm(rcmail.gettext("save_draft_confirm", "rc_openpgpjs"))) {
             return false;
           }
         }
+
         return true;
       });
 
-      rcmail.env.compose_commands.push('open-key-manager');
-      rcmail.addEventListener("beforesend", function () { if (!beforeSend()) { return false; } });
-    } else if (rcmail.env.action === 'show' || rcmail.env.action === "preview") {
+      rcmail.env.compose_commands.push("open-key-manager");
+      rcmail.addEventListener("beforesend", function(e) {
+        if(!beforeSend()) {
+          return false;
+        }
+      });
+    } else if (rcmail.env.action === "show" || rcmail.env.action === "preview") {
       processReceived();
     }
   });
@@ -91,7 +101,7 @@ if (window.rcmail) {
     var msg = openpgp.read_message($("#messagebody div.message-part pre").html());
 
     // OpenPGP failed parsing the message, no action required.
-    if (!msg) {
+    if(!msg) {
       return;
     }
 
@@ -101,17 +111,15 @@ if (window.rcmail) {
     showKeyInfo(msg);
 
     // TODO fix signature verification
-    if (msg[0].type === 2) {
-      return;
-    }
+    if(msg[0].type === 2) return;
 
-    if (!openpgp.keyring.hasPrivateKey()) {
-      rcmail.display_message(rcmail.gettext('no_key_imported', 'rc_openpgpjs'), "error");
+    if(!openpgp.keyring.hasPrivateKey()) {
+      rcmail.display_message(rcmail.gettext("no_key_imported", "rc_openpgpjs"), "error");
       return false;
     }
 
-    if (this.passphrase === "" && openpgp.keyring.privateKeys.length > 0) {
-      $("#openpgpjs_key_select").dialog('open');
+    if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0) {
+      $("#openpgpjs_key_select").dialog("open");
       return false;
     }
 
@@ -122,8 +130,8 @@ if (window.rcmail) {
     var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
 
     decrypted = decrypt(msg, privkey_armored, passobj.passphrase);
-    if (decrypted) {
-      $('#messagebody div.message-part pre').html("<strong>********* *BEGIN ENCRYPTED or SIGNED PART* *********</strong>\n" + escapeHtml(decrypted) + "\n<strong>********** *END ENCRYPTED or SIGNED PART* **********</strong>");
+    if(decrypted) {
+      $("#messagebody div.message-part pre").html("<strong>********* *BEGIN ENCRYPTED or SIGNED PART* *********</strong>\n" + escapeHtml(decrypted) + "\n<strong>********** *END ENCRYPTED or SIGNED PART* **********</strong>");
     } else {
       alert("Failed decrypt, this happens because set_passphrase is still missing some stuff.");
     }
@@ -141,9 +149,9 @@ if (window.rcmail) {
     var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
     var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
 
-    if (typeof (this.getinfo) === "undefined") {
+    if(typeof(this.getinfo) === "undefined") {
       $(".headers-table").css( "float", "left" );
-      $(".headers-table").after("<div id='openpgpjs_info'><table><tbody></tbody></table></div>");
+      $(".headers-table").after("<div id=\"openpgpjs_info\"><table><tbody></tbody></table></div>");
 
       // Carefully escape anything that is appended to the info table, otherwise
       // anyone clever enough to write arbitrary data to their pubkey has a clear
@@ -163,22 +171,22 @@ if (window.rcmail) {
    * @param algo {Integer} To indicate what type of key to make. RSA is 1
    */
   function generate_keypair(bits, algo) {
-    if ($('#gen_passphrase').val() === '') {
-      $('#generate_key_error').removeClass("hidden");
-      $('#generate_key_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
+    if($("#gen_passphrase").val() === "") {
+      $("#generate_key_error").removeClass("hidden");
+      $("#generate_key_error p").html(rcmail.gettext("enter_pass", "rc_openpgpjs"));
       return false;
-    } else if ($("#gen_passphrase").val() !== $("#gen_passphrase_verify").val()) {
-      $('#generate_key_error').removeClass("hidden");
-      $('#generate_key_error p').html(rcmail.gettext('pass_mismatch', 'rc_openpgpjs'));
+    } else if($("#gen_passphrase").val() !== $("#gen_passphrase_verify").val()) {
+      $("#generate_key_error").removeClass("hidden");
+      $("#generate_key_error p").html(rcmail.gettext("pass_mismatch", "rc_openpgpjs"));
       return false;
     }
 
     // TODO Currently only RSA is supported, fix this when OpenPGP.js implements ElGamal & DSA
     var ident = $("#gen_ident option:selected").text();
-    var keys = openpgp.generate_key_pair(1, bits, ident, $('#gen_passphrase').val());
-    $('#generated_keys').html("<pre id='generated_private'>" + keys.privateKeyArmored + "</pre><pre id='generated_public'>" + keys.publicKeyArmored  +  "</pre>");
-    $('#generate_key_error').addClass("hidden");
-    $('#import_button').removeClass("hidden");
+    var keys = openpgp.generate_key_pair(1, bits, ident, $("#gen_passphrase").val());
+    $("#generated_keys").html("<pre id=\"generated_private\">" + keys.privateKeyArmored + "</pre><pre id=\"generated_public\">" + keys.publicKeyArmored  +  "</pre>");
+    $("#generate_key_error").addClass("hidden");
+    $("#import_button").removeClass("hidden");
 
     return true;
   }
@@ -187,11 +195,11 @@ if (window.rcmail) {
    * Import generated key pair.
    */
   function importGenerated() {
-    $('#import_button').addClass("hidden");
+    $("#import_button").addClass("hidden");
     importPubKey($("#generated_public").html());
 
-    if (importPrivKey($("#generated_private").html(), $("#gen_passphrase").val())) {
-      alert(rcmail.gettext('import_gen', 'rc_openpgpjs'));
+    if(importPrivKey($("#generated_private").html(), $("#gen_passphrase").val())) {
+      alert(rcmail.gettext("import_gen", "rc_openpgpjs"));
     }
 
     $("#gen_passphrase").val("");
@@ -206,34 +214,34 @@ if (window.rcmail) {
    */
   // TODO: move passphrase checks from old decrypt() to here
   function set_passphrase(i, p) {
-    if (i === "-1") {
-      $('#key_select_error').removeClass("hidden");
-      $('#key_select_error p').html(rcmail.gettext('select_key', 'rc_openpgpjs'));
+    if(i === "-1") {
+      $("#key_select_error").removeClass("hidden");
+      $("#key_select_error p").html(rcmail.gettext("select_key", "rc_openpgpjs"));
       return false;
     }
 
-    if (!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p)) {
-      $('#key_select_error').removeClass("hidden");
-      $('#key_select_error p').html(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
+    if(!openpgp.keyring.privateKeys[i].obj.decryptSecretMPIs(p)) {
+      $("#key_select_error").removeClass("hidden");
+      $("#key_select_error p").html(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));
       return false;
     }
 
     this.passphrase = JSON.stringify({ "id" : i, "passphrase" : p } );
     processReceived();
 
-    if ($('#openpgpjs_rememberpass').is(':checked')) {
+    if($("#openpgpjs_rememberpass").is(":checked")) {
       sessionStorage.setItem(i, this.passphrase);
     }
 
-    $('#key_select_error').addClass("hidden");
-    $('#openpgpjs_key_select').dialog('close');
+    $("#key_select_error").addClass("hidden");
+    $("#openpgpjs_key_select").dialog("close");
 
     // This is required when sending emails and private keys are required for
     // sending an email (when signing a message). These lines makes the client
     // jump right back into beforeSend() allowing key sign and message send to
     // be made as soon as the passphrase is correct and available.
-    if (typeof (this.sendmail) !== "undefined") {
-      rcmail.command('send','',this.event);
+    if(typeof(this.sendmail) !== "undefined") {
+      rcmail.command("send", "", this, event);
     }
   }
 
@@ -256,17 +264,17 @@ if (window.rcmail) {
     }
 
     for (var i = 0; i < recipients.length; i++) {
-      var recipient = recipients[i].replace(/(.+?<)/, '').replace(/>/, '');
+      var recipient = recipients[i].replace(/(.+?<)/, "").replace(/>/, "");
       var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
-      if (typeof (pubkey[0]) != "undefined") {
+      if(typeof(pubkey[0]) != "undefined") {
         pubkeys.push(pubkey[0].obj);
       } else {
         // Querying PKS for recipient pubkey
-       if (confirm("Couldn't find a public key for " + recipient + ". If you already have it you can import it into the key manager. Would you like to query the key server for the missing key?")) {
+       if(confirm("Couldn't find a public key for " + recipient + ". If you already have it you can import it into the key manager. Would you like to query the key server for the missing key?")) {
           rcmail.http_post("plugin.pks_search", "search=" + recipient + "&op=index");
-          $("#openpgpjs_search_input").attr('disabled', 'disabled');
-          $("#openpgpjs_search_submit").attr('disabled', 'disabled');
-          $("#openpgpjs_key_search").dialog('open');
+          $("#openpgpjs_search_input").attr("disabled", "disabled");
+          $("#openpgpjs_search_submit").attr("disabled", "disabled");
+          $("#openpgpjs_key_search").dialog("open");
         }
         return false;
       }
@@ -279,30 +287,30 @@ if (window.rcmail) {
    * Processes messages before sending
    */
   function beforeSend() {
-    if (!$("#openpgpjs_encrypt").is(":checked") &&
+    if(!$("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
-      if (confirm(rcmail.gettext('continue_unencrypted', 'rc_openpgpjs'))) {
+      if(confirm(rcmail.gettext("continue_unencrypted", "rc_openpgpjs"))) {
         return true;
       } else {
         return false;
       }
     }
 
-    if (typeof (this.finished_treating) !== "undefined") {
+    if(typeof(this.finished_treating) !== "undefined") {
       return true;
     }
 
     // Encrypt only
-    if ($("#openpgpjs_encrypt").is(":checked") &&
+    if($("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
       // Fetch recipient pubkeys
       var pubkeys = fetchRecipientPubkeys();
-      if (pubkeys.length === 0) {
+      if(pubkeys.length === 0) {
         return false;
       }
       var text = $("textarea#composebody").val();
       var encrypted = encrypt(pubkeys, text);
-      if (encrypted) {
+      if(encrypted) {
         $("textarea#composebody").val(encrypted);
         this.finished_treating = 1;
         return true;
@@ -310,18 +318,18 @@ if (window.rcmail) {
     }
 
     // Sign only
-    if ($("#openpgpjs_sign").is(":checked") &&
+    if($("#openpgpjs_sign").is(":checked") &&
        !$("#openpgpjs_encrypt").is(":checked")) {
 
-      if (this.passphrase === "" &&
+      if(this.passphrase === "" &&
          openpgp.keyring.privateKeys.length > 0) {
         this.sendmail = true; // Global var to notify set_passphrase
-        $("#openpgpjs_key_select").dialog('open');
+        $("#openpgpjs_key_select").dialog("open");
         return false;
       }
 
-      if (openpgp.keyring.privateKeys.length === 0) {
-        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
+      if(openpgp.keyring.privateKeys.length === 0) {
+        alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
         return false;
       }
 
@@ -330,13 +338,13 @@ if (window.rcmail) {
       var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
       var privkey = openpgp.read_privateKey(privkey_armored);
 
-      if (!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
-        alert(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
+      if(!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
+        alert(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));
       }
 
       signed = openpgp.write_signed_message(privkey[0], $("textarea#composebody").val());
 
-      if (signed) {
+      if(signed) {
         $("textarea#composebody").val(signed);
         return true;
       }
@@ -348,7 +356,7 @@ if (window.rcmail) {
   }
 
   function importFromSKS(id) {
-    rcmail.http_post('plugin.pks_search', 'search=' + id + '&op=get');
+    rcmail.http_post("plugin.pks_search", "search=" + id + "&op=get");
     return;
   }
 
@@ -363,12 +371,12 @@ if (window.rcmail) {
       openpgp.keyring.importPublicKey(key);
       openpgp.keyring.store();
       updateKeyManager();
-      $('#importPubkeyField').val("");
-      $('#import_pub_error').addClass("hidden");
+      $("#importPubkeyField").val("");
+      $("#import_pub_error").addClass("hidden");
     } catch(e) {
-      $('#import_pub_error').removeClass("hidden");
-      $('#import_pub_error p').html(rcmail.gettext('import_failed', 'rc_openpgpjs'));
-      alert(rcmail.gettext('import_fail', 'rc_openpgpjs'));
+      $("#import_pub_error").removeClass("hidden");
+      $("#import_pub_error p").html(rcmail.gettext("import_failed", "rc_openpgpjs"));
+      alert(rcmail.gettext("import_fail", "rc_openpgpjs"));
       return false;
     }
 
@@ -389,11 +397,11 @@ if (window.rcmail) {
    */
   // TODO: Version 3 fingerprint search
   function pubkey_search(search, op) {
-    if (search.length === 0) {
+    if(search.length === 0) {
       return false;
     }
 
-    rcmail.http_post('plugin.pks_search', 'search=' + search + '&op=' + op);
+    rcmail.http_post("plugin.pks_search", "search=" + search + "&op=" + op);
     return true;
   }
 
@@ -401,26 +409,26 @@ if (window.rcmail) {
     $("#openpgpjs_search_input").removeAttr("disabled");
     $("#openpgpjs_search_submit").removeAttr("disabled");
 
-  if (response.message === "ERR: Missing param") {
+  if(response.message === "ERR: Missing param") {
     console.log("Missing param");
     return false;
   }
 
-  if (response.message === "ERR: Invalid operation") {
+  if(response.message === "ERR: Invalid operation") {
     console.log("Invalid operation");
     return false;
   }
 
-    if (response.message === "ERR: No keys found") {
-        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
+    if(response.message === "ERR: No keys found") {
+        alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
         return false;
     }
 
-    if (response.op === "index") {
+    if(response.op === "index") {
       try {
         result = JSON.parse(response.message);
       } catch(e) {
-        alert(rcmail.gettext('no_keys', 'rc_openpgpjs'));
+        alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
         return false;
       }
 
@@ -428,11 +436,11 @@ if (window.rcmail) {
       for(var i = 0; i < result.length; i++) {
         $("#openpgpjs_search_results").append("<tr class='" + (i%2 !== 0 ? " odd" : "") + "'><td><a href='#' onclick='importFromSKS(\"" + result[i][0] + "\");'>Import</a></td><td>" + result[i][0] + "</td>" + "<td>" + result[i][1] + "</td></tr>");
       }
-    } else if (response.op === "get") {
+    } else if(response.op === "get") {
       k = JSON.parse(response.message);
       $("#importPubkeyField").val(k[0]);
-      if (importPubKey($("#importPubkeyField").val())) {
-        alert(rcmail.gettext('pubkey_import_success', 'rc_openpgpjs'));
+      if(importPubKey($("#importPubkeyField").val())) {
+        alert(rcmail.gettext("pubkey_import_success", "rc_openpgpjs"));
       }
     }
   }
@@ -445,32 +453,32 @@ if (window.rcmail) {
    * @return {Bool} Import successful
    */
   function importPrivKey(key, passphrase) {
-    if (passphrase === '') {
-      $('#import_priv_error').removeClass("hidden");
-      $('#import_priv_error p').html(rcmail.gettext('enter_pass', 'rc_openpgpjs'));
+    if(passphrase === "") {
+      $("#import_priv_error").removeClass("hidden");
+      $("#import_priv_error p").html(rcmail.gettext("enter_pass", "rc_openpgpjs"));
       return false;
     }
 
     try {
       privkey_obj = openpgp.read_privateKey(key)[0];
     } catch(e) {
-      $('#import_priv_error').removeClass("hidden");
-      $('#import_priv_error p').html(rcmail.gettext('import_failed', 'rc_openpgpjs'));
+      $("#import_priv_error").removeClass("hidden");
+      $("#import_priv_error p").html(rcmail.gettext("import_failed", "rc_openpgpjs"));
       return false;
     }
 
-    if (!privkey_obj.decryptSecretMPIs(passphrase)) {
-      $('#import_priv_error').removeClass("hidden");
-      $('#import_priv_error p').html(rcmail.gettext('incorrect_pass', 'rc_openpgpjs'));
+    if(!privkey_obj.decryptSecretMPIs(passphrase)) {
+      $("#import_priv_error").removeClass("hidden");
+      $("#import_priv_error p").html(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));
       return false;
     }
 
     openpgp.keyring.importPrivateKey(key, passphrase);
     openpgp.keyring.store();
     updateKeyManager();
-    $('#importPrivkeyField').val("");
-    $('#passphrase').val("");
-    $('#import_priv_error').addClass("hidden");
+    $("#importPrivkeyField").val("");
+    $("#passphrase").val("");
+    $("#import_priv_error").addClass("hidden");
 
     return true;
   }
@@ -482,7 +490,7 @@ if (window.rcmail) {
    */
   function select_key(i) {
     fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
-    $("#openpgpjs_selected").html("<strong>" + rcmail.gettext('selected', 'rc_openpgpjs') + ":</strong> " + fingerprint);
+    $("#openpgpjs_selected").html("<strong>" + rcmail.gettext("selected", "rc_openpgpjs") + ":</strong> " + fingerprint);
     $("#openpgpjs_selected_id").val(i);
     $("#passphrase").val("");
   }
@@ -495,7 +503,7 @@ if (window.rcmail) {
     $("#openpgpjs_key_select_list").html("<input type=\"hidden\" id=\"openpgpjs_selected_id\" value=\"-1\" />");
 
     // Only one key in keyring, nothing to select from
-    if (openpgp.keyring.privateKeys.length === 1) {
+    if(openpgp.keyring.privateKeys.length === 1) {
       $("#openpgpjs_selected_id").val(0);
     } else {
       // Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
@@ -507,7 +515,7 @@ if (window.rcmail) {
         }
       }
 
-      $("#openpgpjs_key_select_list").append("<div id=\"openpgpjs_selected\"><strong>" + rcmail.gettext('selected', 'rc_openpgpjs') + ":</strong> <i>" + rcmail.gettext('none', 'rc_openpgpjs') + "</i></div>");
+      $("#openpgpjs_key_select_list").append("<div id=\"openpgpjs_selected\"><strong>" + rcmail.gettext("selected", "rc_openpgpjs") + ":</strong> <i>" + rcmail.gettext("none", "rc_openpgpjs") + "</i></div>");
     }
 
     return true;
@@ -519,14 +527,14 @@ if (window.rcmail) {
    */
   function updateKeyManager() {
     // fill key manager public key table
-    $('#openpgpjs_pubkeys tbody').empty();
+    $("#openpgpjs_pubkeys tbody").empty();
     for (var i = 0; i < openpgp.keyring.publicKeys.length; i++) {
       var key_id = "0x" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8);
       var fingerprint = util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
       var person = escapeHtml(openpgp.keyring.publicKeys[i].obj.userIds[0].text);
       var length_alg = getAlgorithmString(openpgp.keyring.publicKeys[i].obj);
-      var status = (openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures() ? rcmail.gettext('valid', 'rc_openpgpjs') : rcmail.gettext('invalid', 'rc_openpgpjs'));
-      var del = "<a href='#' onclick='if (confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePublicKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
+      var status = (openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures() ? rcmail.gettext("valid", "rc_openpgpjs") : rcmail.gettext("invalid", "rc_openpgpjs"));
+      var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePublicKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
       var exp = "<a href=\"data:asc," + encodeURIComponent(openpgp.keyring.publicKeys[i].armored) + "\" download=\"pubkey_" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8) + ".asc\">Export</a> ";
 
       var result = "<tr onclick='displayPub(" + i + ");'>" +
@@ -537,18 +545,18 @@ if (window.rcmail) {
         "<td>" + status      + "</td>" +
         "<td>" + exp + del   + "</td>" +
         "</tr>";
-      $('#openpgpjs_pubkeys tbody').append(result);
+      $("#openpgpjs_pubkeys tbody").append(result);
     }
 
     // fill key manager private key table
-    $('#openpgpjs_privkeys tbody').empty();
+    $("#openpgpjs_privkeys tbody").empty();
     for (var i = 0; i < openpgp.keyring.privateKeys.length; i++) {
       for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
         var key_id = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
         var fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
         var person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
         var length_alg = getAlgorithmString(openpgp.keyring.privateKeys[i].obj);
-        var del = "<a href='#' onclick='if (confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
+        var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
         var exp = "<a href=\"data:asc," + encodeURIComponent(openpgp.keyring.privateKeys[i].armored) + "\" download=\"privkey_" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8) + ".asc\">Export</a> ";
 
         var result = "<tr onclick='displayPriv(" + i + ");'>" +
@@ -559,7 +567,7 @@ if (window.rcmail) {
           "<td>" + exp + del   + "</td>" +
           "</tr>";
 
-        $('#openpgpjs_privkeys tbody').append(result);
+        $("#openpgpjs_privkeys tbody").append(result);
       }
     }
 
@@ -579,7 +587,7 @@ if (window.rcmail) {
    * @return {String} Algorithm type
    */
   function getAlgorithmString(key) {
-    if (typeof (key.publicKeyPacket) !== "undefined") {
+    if(typeof(key.publicKeyPacket) !== "undefined") {
       var result = key.publicKeyPacket.MPIs[0].mpiByteLength * 8 + "/";
       var sw = key.publicKeyPacket.publicKeyAlgorithm;
     } else {
