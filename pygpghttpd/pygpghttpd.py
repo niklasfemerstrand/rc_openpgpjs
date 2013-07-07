@@ -182,7 +182,7 @@ def threadHandler(client, addr):
 try:
 	sock = socket.socket(socket.AF_INET)
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	sock.bind(("localhost", 11337))
+	sock.bind(("127.0.0.1", 11337))
 	sock.listen(5)
 except socket.error:
 	print("Failed to create socket")
