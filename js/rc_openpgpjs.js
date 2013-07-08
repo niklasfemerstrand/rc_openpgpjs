@@ -111,12 +111,12 @@ if(window.rcmail) {
     // TODO fix signature verification
     if(msg[0].type === 2) return;
 
-    if(!openpgp.keyring.hasPrivateKey()) {
+    if(!getPrivkeyCount()) {
       rcmail.display_message(rcmail.gettext("no_key_imported", "rc_openpgpjs"), "error");
       return false;
     }
 
-    if(this.passphrase === "" && openpgp.keyring.privateKeys.length > 0) {
+    if(this.passphrase === "" && getPrivkeyCount() > 0) {
       $("#openpgpjs_key_select").dialog("open");
       return false;
     }
@@ -324,14 +324,13 @@ if(window.rcmail) {
     if($("#openpgpjs_sign").is(":checked") &&
        !$("#openpgpjs_encrypt").is(":checked")) {
 
-      if(this.passphrase === "" &&
-         openpgp.keyring.privateKeys.length > 0) {
+      if(this.passphrase === "" && getPrivkeyCount() > 0) {
         this.sendmail = true; // Global var to notify set_passphrase
         $("#openpgpjs_key_select").dialog("open");
         return false;
       }
 
-      if(openpgp.keyring.privateKeys.length === 0) {
+      if(!getPrivkeyCount()) {
         alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
         return false;
       }
