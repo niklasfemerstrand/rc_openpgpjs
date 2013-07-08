@@ -535,7 +535,7 @@ if(window.rcmail) {
       var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePublicKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
       var exp = "<a href=\"data:asc," + encodeURIComponent(openpgp.keyring.publicKeys[i].armored) + "\" download=\"pubkey_" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8) + ".asc\">Export</a> ";
 
-      var result = "<tr onclick='displayPub(" + i + ");'>" +
+      var result = "<tr>" +
         "<td>" + key_id      + "</td>" +
         "<td>" + fingerprint + "</td>" +
         "<td>" + person      + "</td>" +
@@ -557,7 +557,7 @@ if(window.rcmail) {
         var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
         var exp = "<a href=\"data:asc," + encodeURIComponent(openpgp.keyring.privateKeys[i].armored) + "\" download=\"privkey_" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8) + ".asc\">Export</a> ";
 
-        var result = "<tr onclick='displayPriv(" + i + ");'>" +
+        var result = "<tr>" +
           "<td>" + key_id      + "</td>" +
           "<td>" + fingerprint + "</td>" +
           "<td>" + person      + "</td>" +
