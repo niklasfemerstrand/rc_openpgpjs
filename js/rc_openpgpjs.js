@@ -505,9 +505,9 @@ if(window.rcmail) {
     } else {
       // Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
       for (var i = 0; i < getPrivkeyCount(); i++) {
-        for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
+        for (var j = 0; j < getKeyUserids(i, true).length; j++) {
           fingerprint = getFingerprint(i, true, false);
-          person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
+          person = escapeHtml(getPerson(i, j, true));
           $("#openpgpjs_key_select_list").append("<div class=\"clickme\" onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
         }
       }
@@ -526,13 +526,13 @@ if(window.rcmail) {
     // fill key manager public key table
     $("#openpgpjs_pubkeys tbody").empty();
     for (var i = 0; i < getPubkeyCount(); i++) {
-      var key_id = "0x" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+      var key_id = getKeyID(i);
       var fingerprint = getFingerprint(i);
-      var person = escapeHtml(openpgp.keyring.publicKeys[i].obj.userIds[0].text);
-      var length_alg = getAlgorithmString(openpgp.keyring.publicKeys[i].obj);
-      var status = (openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures() ? rcmail.gettext("valid", "rc_openpgpjs") : rcmail.gettext("invalid", "rc_openpgpjs"));
-      var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePublicKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
-      var exp = "<a href=\"data:asc," + encodeURIComponent(openpgp.keyring.publicKeys[i].armored) + "\" download=\"pubkey_" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8) + ".asc\">Export</a> ";
+      var person = escapeHtml(getPerson(i, 0));
+      var length_alg = getAlgorithmString(i);
+      var status = (verifyBasicSignatures(i) ? rcmail.gettext("valid", "rc_openpgpjs") : rcmail.gettext("invalid", "rc_openpgpjs"));
+      var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_pub', 'rc_openpgpjs') + "\")) { removeKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
+      var exp = "<a href=\"data:asc," + encodeURIComponent(exportArmored(i)) + "\" download=\"pubkey_" + getKeyID(i) + ".asc\">Export</a> ";
 
       var result = "<tr>" +
         "<td>" + key_id      + "</td>" +
@@ -548,13 +548,13 @@ if(window.rcmail) {
     // fill key manager private key table
     $("#openpgpjs_privkeys tbody").empty();
     for (var i = 0; i < getPrivkeyCount(); i++) {
-      for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
-        var key_id = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+      for (var j = 0; j < getKeyUserids(i, true).length; j++) {
+        var key_id = getKeyID(i, true);
         var fingerprint = getFingerprint(i, true);
-        var person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
-        var length_alg = getAlgorithmString(openpgp.keyring.privateKeys[i].obj);
-        var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
-        var exp = "<a href=\"data:asc," + encodeURIComponent(openpgp.keyring.privateKeys[i].armored) + "\" download=\"privkey_" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8) + ".asc\">Export</a> ";
+        var person = escapeHtml(getPerson(i, j, true));
+        var length_alg = getAlgorithmString(i, true);
+        var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { removeKey(" + i + ", true); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
+        var exp = "<a href=\"data:asc," + encodeURIComponent(exportArmored(i, true)) + "\" download=\"privkey_" + getKeyID(i, true) + ".asc\">Export</a> ";
 
         var result = "<tr>" +
           "<td>" + key_id      + "</td>" +
@@ -574,28 +574,6 @@ if(window.rcmail) {
     for (var i = 0; i < identities.length; i++) {
       $("#gen_ident").append("<option value='" + i + "'>" + escapeHtml(identities[i].name + " <" + identities[i].email + ">") + "</option>");
     }
-  }
-
-  /**
-   * Extract the algorithm string from a key and
-   * return the algorithm type.
-   *
-   * @param key {String} Key
-   * @return {String} Algorithm type
-   */
-  function getAlgorithmString(key) {
-    if(typeof(key.publicKeyPacket) !== "undefined") {
-      var result = key.publicKeyPacket.MPIs[0].mpiByteLength * 8 + "/";
-      var sw = key.publicKeyPacket.publicKeyAlgorithm;
-    } else {
-      // For some reason publicKeyAlgorithm doesn't work directly on the privatekeyPacket, heh
-      var result = (key.privateKeyPacket.publicKey.MPIs[0].mpiByteLength * 8 + "/");
-      var sw = key.privateKeyPacket.publicKey.publicKeyAlgorithm;
-    }
-
-    result += typeToStr(sw);
-
-    return result;
   }
 
   /**

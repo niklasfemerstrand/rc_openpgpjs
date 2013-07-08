@@ -201,6 +201,34 @@ function getFingerprint(i, private, niceformat) {
 	return fingerprint;
 }
 
+function getKeyID(i, private) {
+	if(typeof(private) == "undefined") {
+		private = false;
+	}
+
+	if(private == false) {
+		key_id = "0x" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+	} else {
+		key_id = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+	}
+
+	return key_id;
+}
+
+function getPerson(i, j, private) {
+	if(typeof(private) == "undefined") {
+		private = false;
+	}
+
+	if(private == false) {
+		person = openpgp.keyring.publicKeys[i].obj.userIds[j].text;
+	} else {
+		person = openpgp.keyring.privateKeys[i].obj.userIds[j].text;
+	}
+
+	return person;
+}
+
 function getPubkeyForAddress(address) {
 	var pubkey = openpgp.keyring.getPublicKeyForAddress(address);
 	return pubkey;
@@ -267,5 +295,76 @@ function parsePrivkey(key) {
 		return openpgp.read_privateKey(key)[0];
 	} catch(e) {
 		return false;
+	}
+}
+
+function removeKey(i, private) {
+	if(typeof(private) == "undefined") {
+		private = false;
+	}
+
+	if(private) {
+		return openpgp.keyring.removePrivateKey(i);
+	}
+
+	return openpgp.keyring.removePublicKey(i);
+}
+
+function verifyBasicSignatures(i) {
+	return (openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures() ? true : false);
+}
+
+/**
+ * Extract the algorithm string from a key and return the algorithm type.
+ *
+ * @param i {Integer} Key id in keyring
+ * @return {String} Algorithm type
+ */
+
+function getAlgorithmString(i, private) {
+	if(typeof(private) == "undefined") {
+		private = false;
+	}
+
+	if(private) {
+		key = openpgp.keyring.privateKeys[i].obj;
+	} else {
+		key = openpgp.keyring.publicKeys[i].obj;
+	}
+
+	if(typeof(key.publicKeyPacket) !== "undefined") {
+		var result = key.publicKeyPacket.MPIs[0].mpiByteLength * 8 + "/";
+		var sw = key.publicKeyPacket.publicKeyAlgorithm;
+	} else {
+		// For some reason publicKeyAlgorithm doesn't work directly on the privatekeyPacket, heh
+		var result = (key.privateKeyPacket.publicKey.MPIs[0].mpiByteLength * 8 + "/");
+		var sw = key.privateKeyPacket.publicKey.publicKeyAlgorithm;
+	}
+
+	result += typeToStr(sw);
+	return result;
+}
+
+function exportArmored(i, private) {
+	if(typeof(private) == "undefined") {
+		private = false;
+	}
+
+	if(private) {
+		return openpgp.keyring.privateKeys[i].armored;
+	} else {
+		return openpgp.keyring.publicKeys[i].armored;
+	}
+}
+
+function getKeyUserids(i, private) {
+	if(typeof(private) == "undefined") {
+		private = false;
+	}
+
+	if(private) {
+		return openpgp.keyring.privateKeys[i].obj.userIds;
+	} else {
+		return openpgp.keyring.publicKeys[i].obj.userIds;
 	}
 }
