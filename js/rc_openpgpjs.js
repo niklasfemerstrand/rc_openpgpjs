@@ -145,7 +145,12 @@ if(window.rcmail) {
   function showKeyInfo(msg) {
     var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
     var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
-    var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+
+    try {
+      var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+    } catch(e) {
+      return false;
+    }
 
     if(typeof(this.getinfo) === "undefined") {
       $(".headers-table").css( "float", "left" );
