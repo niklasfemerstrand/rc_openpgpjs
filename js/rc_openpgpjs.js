@@ -96,7 +96,7 @@ if(window.rcmail) {
    * Processes received messages
    */
   function processReceived() {
-    var msg = openpgp.read_message($("#messagebody div.message-part pre").html());
+    var msg = parseMsg($("#messagebody div.message-part pre").html());
 
     // OpenPGP failed parsing the message, no action required.
     if(!msg) {
