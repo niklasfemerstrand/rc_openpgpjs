@@ -131,7 +131,7 @@ if(window.rcmail) {
     if(decrypted) {
       $("#messagebody div.message-part pre").html("<strong>********* *BEGIN ENCRYPTED or SIGNED PART* *********</strong>\n" + escapeHtml(decrypted) + "\n<strong>********** *END ENCRYPTED or SIGNED PART* **********</strong>");
     } else {
-      alert("Failed decrypt, this happens because set_passphrase is still missing some stuff.");
+      alert("This message was not meant for the private key that you are using.");
     }
 
     return true;
