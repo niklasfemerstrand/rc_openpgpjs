@@ -244,7 +244,7 @@ if(window.rcmail) {
     // jump right back into beforeSend() allowing key sign and message send to
     // be made as soon as the passphrase is correct and available.
     if(typeof(this.sendmail) !== "undefined") {
-      rcmail.command("send", "", this, event);
+      rcmail.command("send", this);
     }
   }
 
