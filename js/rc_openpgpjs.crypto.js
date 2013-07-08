@@ -25,7 +25,7 @@ openpgp.init();
 // openpgp.config.debug = true
 
 /**
- * Encrypt (and sign) a meesage
+ * Encrypt (and sign) a message
  *
  * @param pubkeys {Array}  Public keys
  * @param text    {String} Message to encrypt

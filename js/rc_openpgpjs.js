@@ -339,7 +339,8 @@ if(window.rcmail) {
         alert(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));
       }
 
-      signed = openpgp.write_signed_message(privkey[0], $("textarea#composebody").val());
+      var privkey_armored = getPrivkeyArmored(passobj.id);
+      signed = sign($("textarea#composebody").val(), privkey_armored, passobj.passphrase);
 
       if(signed) {
         $("textarea#composebody").val(signed);
