@@ -265,7 +265,7 @@ if(window.rcmail) {
 
     for (var i = 0; i < recipients.length; i++) {
       var recipient = recipients[i].replace(/(.+?<)/, "").replace(/>/, "");
-      var pubkey = openpgp.keyring.getPublicKeyForAddress(recipient);
+      var pubkey = getPubkeyForAddress(recipient);
       if(typeof(pubkey[0]) != "undefined") {
         pubkeys.push(pubkey[0].obj);
       } else {
