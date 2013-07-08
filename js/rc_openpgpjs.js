@@ -123,9 +123,7 @@ if(window.rcmail) {
 
     // json string from set_passphrase, obj.id = privkey id, obj.passphrase = privkey passphrase
     var passobj = JSON.parse(this.passphrase);
-
-    var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
-    var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
+    var privkey_armored = getPrivkeyArmored(passobj.id);
 
     decrypted = decrypt(msg, privkey_armored, passobj.passphrase);
     if(decrypted) {
@@ -335,9 +333,7 @@ if(window.rcmail) {
       }
 
       var passobj = JSON.parse(this.passphrase);
-      var keyid = openpgp.keyring.privateKeys[passobj.id].obj.getKeyId();
-      var privkey_armored = openpgp.keyring.getPrivateKeyForKeyId(keyid)[0].key.armored;
-      var privkey = openpgp.read_privateKey(privkey_armored);
+      var privkey = getPrivkeyObj(passobj.id);
 
       if(!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
         alert(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));

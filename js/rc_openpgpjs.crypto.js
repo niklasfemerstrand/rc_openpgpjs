@@ -218,6 +218,11 @@ function getPrivkeyArmored(id) {
 	return privkey_armored;
 }
 
+function getPrivkeyObj(id) {
+	var privkey_armored = getPrivkeyArmored(id);
+    return privkey = openpgp.read_privateKey(privkey_armored);
+}
+
 // Gets privkey obj from armored
 function getPrivkey(armored) {
 	var privkey = openpgp.read_privateKey(armored);
