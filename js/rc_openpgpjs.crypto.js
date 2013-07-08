@@ -178,7 +178,7 @@ function getPubkeyCount() {
 }
 
 function getFingerprint(i, private, niceformat) {
-	if(typeof(private) !== "undefined") {
+	if(typeof(private) == "undefined") {
 		private = false;
 	}
 
@@ -187,9 +187,9 @@ function getFingerprint(i, private, niceformat) {
 	}
 
 	if(private == false) {
-		fingerprint = util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(0, 8);
+		fingerprint = util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase();
 	} else {
-		fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(0, 8);
+		fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase();
 	}
 
 	if(niceformat) {

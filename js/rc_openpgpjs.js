@@ -144,10 +144,9 @@ if(window.rcmail) {
    */
   function showKeyInfo(msg) {
     var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
-    var pubkey = openpgp.keyring.getPublicKeyForAddress(sender);
 
     try {
-      var fingerprint = util.hexstrdump(pubkey[0].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+      var fingerprint = getFingerprintForSender(sender);
     } catch(e) {
       return false;
     }
@@ -490,7 +489,7 @@ if(window.rcmail) {
    * @param i {Integer} Used as openpgp.keyring[private|public]Keys[i]
    */
   function select_key(i) {
-    fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+    fingerprint = getFingerprint(i, true, false);
     $("#openpgpjs_selected").html("<strong>" + rcmail.gettext("selected", "rc_openpgpjs") + ":</strong> " + fingerprint);
     $("#openpgpjs_selected_id").val(i);
     $("#passphrase").val("");
@@ -510,7 +509,7 @@ if(window.rcmail) {
       // Selected set as $("#openpgpjs_selected_id").val(), then get that value from set_passphrase
       for (var i = 0; i < getPrivkeyCount(); i++) {
         for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
-          fingerprint = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
+          fingerprint = getFingerprint(i, true, false);
           person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
           $("#openpgpjs_key_select_list").append("<div class=\"clickme\" onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
         }
@@ -531,7 +530,7 @@ if(window.rcmail) {
     $("#openpgpjs_pubkeys tbody").empty();
     for (var i = 0; i < getPubkeyCount(); i++) {
       var key_id = "0x" + util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getKeyId()).toUpperCase().substring(8);
-      var fingerprint = util.hexstrdump(openpgp.keyring.publicKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+      var fingerprint = getFingerprint(i);
       var person = escapeHtml(openpgp.keyring.publicKeys[i].obj.userIds[0].text);
       var length_alg = getAlgorithmString(openpgp.keyring.publicKeys[i].obj);
       var status = (openpgp.keyring.publicKeys[i].obj.verifyBasicSignatures() ? rcmail.gettext("valid", "rc_openpgpjs") : rcmail.gettext("invalid", "rc_openpgpjs"));
@@ -554,7 +553,7 @@ if(window.rcmail) {
     for (var i = 0; i < getPrivkeyCount(); i++) {
       for (var j = 0; j < openpgp.keyring.privateKeys[i].obj.userIds.length; j++) {
         var key_id = "0x" + util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getKeyId()).toUpperCase().substring(8);
-        var fingerprint = util.hexstrdump(openpgp.keyring.privateKeys[i].obj.getFingerprint()).toUpperCase().substring(8).replace(/(.{2})/g,"$1 ");
+        var fingerprint = getFingerprint(i, true);
         var person = escapeHtml(openpgp.keyring.privateKeys[i].obj.userIds[j].text);
         var length_alg = getAlgorithmString(openpgp.keyring.privateKeys[i].obj);
         var del = "<a href='#' onclick='if(confirm(\"" + rcmail.gettext('delete_priv', 'rc_openpgpjs') + "\")) { openpgp.keyring.removePrivateKey(" + i + "); updateKeyManager(); }'>" + rcmail.gettext('delete', 'rc_openpgpjs') + "</a>";
