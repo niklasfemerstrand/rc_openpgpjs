@@ -27,7 +27,7 @@
         </div>
         <textarea id='importPubkeyField'></textarea>
         <div class="formbuttons">
-          <input type='button' class='button mainaction' value='<roundcube:label name="import" />' onclick='importPubKey($("#importPubkeyField").val());' />
+          <input type='button' class='button mainaction' value='<roundcube:label name="import" />' onclick='importPubKey($("#openpgpjs_import #importPubkeyField").val()); $("#openpgpjs_import #importPubkeyField").val("");' />
           <input type='button' class='button mainaction' value='<roundcube:label name="search" />' onclick='$("#openpgpjs_key_search").dialog("open");' />
         </div>
       </fieldset>
