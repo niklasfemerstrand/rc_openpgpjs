@@ -146,6 +146,10 @@ function decrypt(msg, privkey_armored, passphrase) {
 
     for (var j = 0; j < priv_key[0].subKeys.length; j++) {
       if (priv_key[0].subKeys[j].publicKey.getKeyId() === msg[0].sessionKeys[i].keyId.bytes) {
+        if(!priv_key[0].subKeys[j].decryptSecretMPIs(passphrase)) {
+          alert("Wrong pass");
+          return false;
+        }
         keymat = { key: priv_key[0], keymaterial: priv_key[0].subKeys[j]};
         sesskey = msg[0].sessionKeys[i];
         break;
