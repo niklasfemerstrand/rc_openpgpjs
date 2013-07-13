@@ -161,8 +161,8 @@ def keygen(cmd):
 	keys = gpg.gen_key(input_data)
 
 	if keys:
-		return "y"
-	return "n"
+		return(True)
+	return(False)
 
 def keydel(cmd):
 	if "private" not in cmd:

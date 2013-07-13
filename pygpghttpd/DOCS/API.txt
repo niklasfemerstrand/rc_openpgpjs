@@ -1,5 +1,5 @@
 Generating keys
-===============
+---------------
 
 Generates key pair
 
@@ -10,10 +10,8 @@ Generates key pair
 {String}  email      Email address for key pair
 {String}  passphrase Passphrase for private key
 
-Generating 2048 bit RSA key pair for Alice <alice@foo.com>:
-
 Listing keys
-============
+------------
 
 Lists keys in keyring
 
@@ -21,7 +19,7 @@ Lists keys in keyring
 {Boolean} private Default false
 
 Deleting keys
-=============
+-------------
 
 To delete keys, their key identifiers must be specified. If a public/private
 keypair has been created, a private key needs to be deleted before the public
@@ -32,7 +30,7 @@ key can be deleted.
 {String}  fingerprint Fingerprint for key to delete
 
 Exporting keys
-==============
+--------------
 
 For security reasons only public keys can be exported through pygpghttpd.
 
@@ -40,13 +38,13 @@ For security reasons only public keys can be exported through pygpghttpd.
 {String} id  ID or fingerprint for key to export
 
 Importing keys
-==============
+--------------
 
 {String} cmd keyimport
 {String} key ASCII armored key 
 
 Encryption
-==========
+----------
 
 {String} cmd        encrypt
 {String} data       Data to encrypt
@@ -55,14 +53,14 @@ Encryption
 {String} passphrase Passphrase for key used to sign the encrypted data. Required if data is being signed
 
 Decryption
-==========
+----------
 
 {String} cmd        decrypt
 {String} data       Data to decrypt
 {String} passphrase Passphrase for key used to decrypt the data
 
 Signing
-=======
+-------
 
 {String} cmd        sign
 {String} data       Data to sign
@@ -70,7 +68,7 @@ Signing
 {String} passphrase Passphrase of the private key
 
 Verification
-============
+------------
 
 {String} cmd  verify
 {String} data Data to verify
