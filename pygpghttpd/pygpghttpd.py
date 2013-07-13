@@ -108,7 +108,7 @@ def do_something(connstream, data, origin, cmdstr):
 
 def do_gpg(cmdstr):
 	c       = {}
-	cmds_ok = ["keygen", "keylist"]
+	cmds_ok = ["keygen", "keylist", "keydel", "keyexport", "keyimport", "encrypt", "decrypt", "sign", "verify"]
 
 	if "&" in cmdstr: # Multiple params
 		cmds = cmdstr.split("&")
@@ -124,20 +124,22 @@ def do_gpg(cmdstr):
 	if not c["cmd"]:
 		return("Missing cmdstr for GPG op")
 
-	if c["cmd"] not in cmds_ok:
-		return("Unsupported cmdstr")
+	for cmd_ok in cmds_ok:
+		if cmd_ok == c["cmd"]:
+			return(globals()[c["cmd"]](c))
 
-	if c["cmd"] == "keygen":
-		return keygen(c)
-
-	if c["cmd"] == "keylist":
-		return keylist(c)
-
-	return("return")
+	return("Unsupported cmdstr")
 
 def keylist(cmd):
-	#keys = gpg.list_keys(private)
-	keys = gpg.list_keys()
+	if "private" not in cmd:
+		cmd["private"] = False
+	else:
+		if cmd["private"] == "true" or cmd["private"] == "1":
+			cmd["private"] = True
+		else:
+			cmd["private"] = False
+
+	keys = gpg.list_keys(cmd["private"])
 	return(json.dumps(keys))
 
 def keygen(cmd):
@@ -162,6 +164,76 @@ def keygen(cmd):
 		return "y"
 	return "n"
 
+def keydel(cmd):
+	if "private" not in cmd:
+		cmd["private"] = False
+	else:
+		if cmd["private"] == "true" or cmd["private"] == "1":
+			cmd["private"] = True
+		else:
+			cmd["private"] = False
+
+	if "fingerprint" not in cmd:
+		return("Insufficient parameters: fingerprint")
+
+	return(str(gpg.delete_keys(cmd["fingerprint"], cmd["private"])))
+
+# Allow only pubkey export for security
+def keyexport(cmd):
+	if "id" not in cmd:
+		return("Insufficient parameters: id")
+
+	return(gpg.export_keys(cmd["id"]))
+
+def keyimport(cmd):
+	if "key" not in cmd:
+		return("Insufficient parameters: key")
+
+	return(gpg.import_keys(cmd["key"]))
+
+def encrypt(cmd):
+	required = ["data", "recipients"]
+
+	for req in required:
+		if req not in cmd:
+			return("Insufficient parameters: %s" % (req))
+
+	try:
+		cmd["sign"]
+	except:
+		cmd["sign"] = None
+		cmd["passphrase"] = None
+		pass
+	else:
+		if "passphrase" not in cmd:
+			return("Insufficient parameters: passphrase (needed since sign is set")
+
+	return(gpg.encrypt(cmd["data"], cmd["recipients"], sign = cmd["sign"], passphrase = cmd["passphrase"]))
+
+def decrypt(cmd):
+	required = ["data", "passphrase"]
+
+	for req in required:
+		if req not in cmd:
+			return("Insufficient parameters: %s" % (req))
+
+	return(gpg.decrypt(cmd["data"], passphrase = cmd["passphrase"]))
+
+def sign(cmd):
+	required = ["data", "keyid", "passphrase"]
+
+	for req in required:
+		if req not in cmd:
+			return("Insufficient parameters: %s" % (req))
+
+	return(gpg.sign(cmd["data"], keyid = cmd["keyid"], passphrase = cmd["passphrase"]))
+
+def verify(cmd):
+	if "data" not in cmd:
+		return("Insufficient parameters: data")
+
+	return(gpg.verify(cmd["data"]))
+
 def threadHandler(client, addr):
 	connstream = ""
 
@@ -185,7 +257,7 @@ try:
 	sock = socket.socket(socket.AF_INET)
 	sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	sock.bind(("127.0.0.1", 11337))
-	sock.listen(5)
+	sock.listen(0)
 except socket.error:
 	print("Failed to create socket")
 	sys.exit()

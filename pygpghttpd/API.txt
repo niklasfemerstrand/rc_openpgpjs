@@ -37,7 +37,7 @@ Exporting keys
 For security reasons only public keys can be exported through pygpghttpd.
 
 {String} cmd keyexport
-{String} id  ID for key to export
+{String} id  ID or fingerprint for key to export
 
 Importing keys
 ==============
