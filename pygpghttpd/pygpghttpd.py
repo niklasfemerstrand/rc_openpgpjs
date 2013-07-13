@@ -24,19 +24,20 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,     #
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.                 #
 ###############################################################################
-# iM4G1N3 a FR33 W0RLD Wh3R3 0n3 W0uLDN'T N33D K0P1R19H7 2 S4Y N0 2 K0PiFi9H7 #
+# iM4G1N3 A FR33 W0RLD Wh3R3 0n3 W0uLDN'T N33D K0P1R19H7 2 S4Y N0 2 K0PiFi9H7 #
 ###############################################################################
 # openssl req -new -x509 -days 365 -nodes -out cert.pem -keyout cert.pem
-#
-# curl -i -k --data "cmd=keygen&key_type=RSA&key_length=2048&name_real=realname&name_email=email&passphrase=passphrase" -H "Origin: https://localhost" https://localhost:11337/
 #
 # NOTE: In order for Internet Explorer to work with this httpd it must have TLSv1.1 and TLSv1.2 enabled.
 # This is set in Internet Options -> Advanced, or HKEY_CURRENT_USER\Software\Classes\Local Settings\MuiCache\
 
 import re, socket, ssl, sys, gnupg, json
 import _thread as thread
+from os.path import expanduser
 
-gpg = gnupg.GPG(gnupghome="~/")
+home = expanduser("~")
+home += "/.gnupg/"
+gpg = gnupg.GPG(gnupghome = home)
 gpg.encoding = "utf-8"
 
 def deal_with_client(connstream):
@@ -98,7 +99,7 @@ def do_something(connstream, data, origin, cmdstr):
 		connstream.write("HTTP/1.1 403 Forbidden\r\n".encode())
 	connstream.write(("Content-Length: " + content_length + "\r\n").encode())
 	connstream.write("Content-Type: text/html\r\n".encode())
-	connstream.write("Server: PyGPG HTTPD bridge by qnrq\r\n".encode())
+	connstream.write("Server: pygpghttpd\r\n".encode())
 
 	if allow_request:
 		connstream.write(("Access-Control-Allow-Origin: " + origin + "\r\n").encode())
@@ -130,16 +131,17 @@ def do_gpg(cmdstr):
 		return keygen(c)
 
 	if c["cmd"] == "keylist":
-		return keylist()
+		return keylist(c)
 
 	return("return")
 
-def keylist(private = False):
-	keys = gpg.list_keys(private)
+def keylist(cmd):
+	#keys = gpg.list_keys(private)
+	keys = gpg.list_keys()
 	return(json.dumps(keys))
 
 def keygen(cmd):
-	required    = ["key_type", "key_length", "name_real", "name_email", "passphrase"]
+	required    = ["type", "length", "name", "email", "passphrase"]
 	key_types   = ["RSA", "DSA"]
 	key_lengths = ["2048", "4096"]
 
@@ -147,13 +149,13 @@ def keygen(cmd):
 		if req not in cmd:
 			return("Insufficient parameters: %s" % (req))
 
-	if cmd["key_type"] not in key_types:
-		return("Incorrect: key_type")
+	if cmd["type"] not in key_types:
+		return("Incorrect: type")
 
-	if cmd["key_length"] not in key_lengths:
-		return("Incorrect: key_length")
+	if cmd["length"] not in key_lengths:
+		return("Incorrect: length")
 
-	input_data = gpg.gen_key_input(key_type = cmd["key_type"], key_length = cmd["key_length"], name_real = cmd["name_real"], name_email = cmd["name_email"], passphrase = cmd["passphrase"], name_comment = "PyGPG HTTPD")
+	input_data = gpg.gen_key_input(key_type = cmd["type"], key_length = cmd["length"], name_real = cmd["name"], name_email = cmd["email"], passphrase = cmd["passphrase"], name_comment = "pygpghttpd")
 	keys = gpg.gen_key(input_data)
 
 	if keys:
