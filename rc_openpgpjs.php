@@ -270,10 +270,8 @@ class rc_openpgpjs extends rcube_plugin
   function preferences_save($p)
   {
     if ($p['section'] == 'compose') {
-      $p['prefs'] = array(
-        'encrypt'     => get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false,
-        'sign'     => get_input_value('_sign', RCUBE_INPUT_POST) ? true : false,
-      );
+      $p['prefs']['encrypt'] = get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false;
+      $p['prefs']['sign'] = get_input_value('_sign', RCUBE_INPUT_POST) ? true : false;
     }
 
     return $p;
