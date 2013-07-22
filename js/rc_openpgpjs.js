@@ -141,7 +141,7 @@ if(window.rcmail) {
    * @param string Parsed OpenPGP message
    */
   function showKeyInfo(msg) {
-    var sender = rcmail.env.sender.match(/<(.*)>$/)[1];
+    var sender = rcmail.env.sender.match(/[a-zA-Z0-9\._%+-]+@[a-zA-Z0-9\._%+-]+\.[a-zA-Z]{2,4}/g)[0];
 
     try {
       var fingerprint = getFingerprintForSender(sender);
