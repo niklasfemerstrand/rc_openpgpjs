@@ -38,7 +38,7 @@ if(window.rcmail) {
         updateKeySelector();
       }
     });
-
+	
     $("#openpgpjs_key_search").dialog({
       modal: true,
       autoOpen: false,
@@ -300,47 +300,44 @@ if(window.rcmail) {
       return true;
     }
 
-	// Encrypt and sign
+    // Encrypt and sign
     if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").is(":checked")) {
-		console.log('encrypt and sign');
-		// get the private key
-		if(this.passphrase === "" && getPrivkeyCount() > 0) {
-        	this.sendmail = true; // Global var to notify set_passphrase
-        	$("#openpgpjs_key_select").dialog("open");
-        	return false;
-      	}
+      // get the private key
+      if(this.passphrase === "" && getPrivkeyCount() > 0) {
+        this.sendmail = true; // Global var to notify set_passphrase
+        $("#openpgpjs_key_select").dialog("open");
+        return false;
+      }
 
-      	if(!getPrivkeyCount()) {
-        	alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
-        	return false;
-      	}
+      if(!getPrivkeyCount()) {
+        alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
+        return false;
+      }
 
-      	var passobj = JSON.parse(this.passphrase);
-		var privkey = getPrivkeyObj(passobj.id);
-	    
-		if(!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
-        	alert(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));
-      	}
+      var passobj = JSON.parse(this.passphrase);
+      var privkey = getPrivkeyObj(passobj.id);
 
-      	var priv_key = openpgp.read_privateKey(getPrivkeyArmored(passobj.id));
-		// we now have the private key (for signing)
+      if(!privkey[0].decryptSecretMPIs(passobj.passphrase)) {
+        alert(rcmail.gettext("incorrect_pass", "rc_openpgpjs"));
+      }
+      // we now have the private key (for signing)
+      
+      // get the public key
+      var pubkeys = fetchRecipientPubkeys();
+      if(pubkeys.length === 0) {
+        return false;
+      }
+      // done public keys
+
+      var text = $("textarea#composebody").val();
+      var encrypted = encrypt(pubkeys, text, 1, privkey, passobj.passphrase);
 		
-		// get the public key
-		var pubkeys = fetchRecipientPubkeys();
-      	if(pubkeys.length === 0) {
-        	return false;
-      	}
-      	// done public keys
-		
-		var text = $("textarea#composebody").val();
-      	var encrypted = encrypt(pubkeys, text, 1, priv_key, passobj.passphrase);
-		
-		if(encrypted) {
-        	$("textarea#composebody").val(encrypted);
-        	this.finished_treating = 1;
-        	return true;
-		}
-	}
+      if(encrypted) {
+        $("textarea#composebody").val(encrypted);
+        this.finished_treating = 1;
+        return true;
+      }
+    }
 	
     // Encrypt only
     if($("#openpgpjs_encrypt").is(":checked") &&
