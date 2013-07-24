@@ -347,6 +347,12 @@ if(window.rcmail) {
         return true;
       }
 
+      if($("#openpgpjs_sign").is(":checked") &&
+         $("#openpgpjs_encrypt").is(":checked")) {
+        alert("This plugin doesn't support encrypting and signing at the same time yet, please disable one of them.");
+        return false;
+      }
+
       return false;
     }
 
