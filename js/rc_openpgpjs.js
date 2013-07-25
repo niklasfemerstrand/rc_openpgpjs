@@ -284,6 +284,24 @@ if(window.rcmail) {
   }
 
   /**
+   * Get the user's public key
+   */
+  function fetchSendersPubkey() {
+    var re = /[a-zA-Z0-9\._%+-]+@[a-zA-Z0-9\._%+-]+\.[a-zA-Z]{2,4}/g;
+    var address = $("#_from>option:selected").html().match(re);
+    
+    if (address.length > 0) {
+      var pubkey = getPubkeyForAddress(address[0]);
+      
+      if(typeof(pubkey[0]) != "undefined") {
+        return pubkey[0].obj;
+      }  
+    
+    }
+    return false;
+  }
+
+  /**
    * Processes messages before sending
    */
   function beforeSend() {
@@ -329,6 +347,17 @@ if(window.rcmail) {
       }
       // done public keys
 
+      // add the user's public key
+      var pubkey_sender = fetchSendersPubkey();
+      if (pubkey_sender) {
+        pubkeys.push(pubkey_sender);
+      } else {
+        if (!confirm("Couldn't find your public key. You will not be able to decrypt this message. Continue?")) {
+          return false;
+        }
+      }
+      // end add user's public key
+
       var text = $("textarea#composebody").val();
       var encrypted = encrypt(pubkeys, text, 1, privkey, passobj.passphrase);
 		
@@ -347,6 +376,18 @@ if(window.rcmail) {
       if(pubkeys.length === 0) {
         return false;
       }
+      
+      // add the user's public key
+      var pubkey_sender = fetchSendersPubkey();
+      if (pubkey_sender) {
+        pubkeys.push(pubkey_sender);
+      } else {
+        if (!confirm("Couldn't find your public key. You will not be able to decrypt this message. Continue?")) {
+          return false;
+        }
+      }
+      // end add user's public key
+
       var text = $("textarea#composebody").val();
       var encrypted = encrypt(pubkeys, text);
       if(encrypted) {
