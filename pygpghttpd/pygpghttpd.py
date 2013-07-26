@@ -25,6 +25,7 @@
 import re, socket, ssl, sys, gnupg, json
 import _thread as thread
 from os.path import expanduser
+import urllib.parse
 
 home = expanduser("~")
 home += "/.gnupg/"
@@ -68,7 +69,7 @@ def do_something(connstream, data, origin, cmdstr):
 	allow_request = ""
 	response = ""
 
-	cors = []
+	cors = ["null"]
 	with open("accepted_domains.txt", 'r') as f:
 		lines = f.readlines()
 		for line in lines:
@@ -95,7 +96,10 @@ def do_something(connstream, data, origin, cmdstr):
 	if allow_request:
 		connstream.write(("Access-Control-Allow-Origin: " + origin + "\r\n").encode())
 	connstream.write("\r\n".encode())
-	connstream.write(response.encode())
+	try:
+		connstream.write(response.encode())
+	except:
+		connstream.write(response) # already utf8
 
 def do_gpg(cmdstr):
 	c       = {}
@@ -106,13 +110,13 @@ def do_gpg(cmdstr):
 		for cmd in cmds:
 			cc = cmd.split("=")
 			if cc[0] and cc[1]:
-				c[cc[0]] = cc[1]
+				c[cc[0]] = urllib.parse.unquote(cc[1])
 	else: # Single param
 		cc = cmdstr.split("=")
 		if cc[0] and cc[1]:
-			c[cc[0]] = cc[1]
+			c[cc[0]] = urllib.parse.unquote(cc[1])
 
-	if not c["cmd"]:
+	if "cmd" not in c:
 		return("Missing cmdstr for GPG op")
 
 	for cmd_ok in cmds_ok:
@@ -149,9 +153,9 @@ def keygen(cmd):
 		return("Incorrect: length")
 
 	input_data = gpg.gen_key_input(key_type = cmd["type"], key_length = cmd["length"], name_real = cmd["name"], name_email = cmd["email"], passphrase = cmd["passphrase"], name_comment = "pygpghttpd")
-	keys = gpg.gen_key(input_data)
+	key = gpg.gen_key(input_data)
 
-	if keys:
+	if key:
 		return("1")
 	return("0")
 
@@ -199,7 +203,9 @@ def encrypt(cmd):
 		if "passphrase" not in cmd:
 			return("Insufficient parameters: passphrase (needed since sign is set")
 
-	return(gpg.encrypt(cmd["data"], cmd["recipients"], sign = cmd["sign"], passphrase = cmd["passphrase"]))
+	encrypted = gpg.encrypt(cmd["data"], recipients = cmd["recipients"], sign = cmd["sign"], passphrase = cmd["passphrase"])
+	print(encrypted.stderr)
+	return(str(encrypted))
 
 def decrypt(cmd):
 	required = ["data", "passphrase"]
@@ -208,7 +214,14 @@ def decrypt(cmd):
 		if req not in cmd:
 			return("Insufficient parameters: %s" % (req))
 
-	return(gpg.decrypt(cmd["data"], passphrase = cmd["passphrase"]))
+	# TODO s/+/ / on these specific lines + comment
+	cmd["data"] = cmd["data"].replace("BEGIN+PGP+MESSAGE", "BEGIN PGP MESSAGE")
+	cmd["data"] = cmd["data"].replace("END+PGP+MESSAGE", "END PGP MESSAGE")
+	cmd["data"] = cmd["data"].replace("Version:+GnuPG+v2.0.20+(GNU/Linux)", "Version: GnuPG v2.0.20 (GNU/Linux)")
+
+	decrypted = gpg.decrypt(message = cmd["data"], passphrase = cmd["passphrase"])
+	print(decrypted.stderr)
+	return(decrypted.data)
 
 def sign(cmd):
 	required = ["data", "keyid", "passphrase"]
