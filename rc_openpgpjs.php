@@ -74,7 +74,7 @@ class rc_openpgpjs extends rcube_plugin
           // add encrypt and sign checkboxes to composeoptions
           $encrypt_opts = array('id' => 'openpgpjs_encrypt',
                                 'type' => 'checkbox');
-          if($this->rc->config->get('encrypt', true)) {
+          if($this->rc->config->get('encrypt', false)) {
              $encrypt_opts['checked'] = 'checked';
           }
           $encrypt = new html_inputfield($encrypt_opts);
@@ -84,7 +84,7 @@ class rc_openpgpjs extends rcube_plugin
           );
           $sign_opts = array('id' => 'openpgpjs_sign',
                              'type' => 'checkbox');
-          if($this->rc->config->get('sign', true)) {
+          if($this->rc->config->get('sign', false)) {
              $sign_opts['checked'] = 'checked';
           }
           $sign = new html_inputfield($sign_opts);
@@ -246,14 +246,14 @@ class rc_openpgpjs extends rcube_plugin
       $encrypt = new html_checkbox(array('name' => '_encrypt', 'id' => $field_id, 'value' => 1));
       $p['blocks']['openpgp']['options']['encrypt'] = array(
         'title' => html::label($field_id, Q($this->gettext('always_encrypt'))),
-        'content' => $encrypt->show($this->rc->config->get('encrypt', true)?1:0),
+        'content' => $encrypt->show($this->rc->config->get('encrypt', false)?1:0),
       );
       
       $field_id = 'rcmfd_sign';
       $sign = new html_checkbox(array('name' => '_sign', 'id' => $field_id, 'value' => 1));
       $p['blocks']['openpgp']['options']['sign'] = array(
         'title' => html::label($field_id, Q($this->gettext('always_sign'))),
-        'content' => $sign->show($this->rc->config->get('sign', true)?1:0),
+        'content' => $sign->show($this->rc->config->get('sign', false)?1:0),
       );
     }
 
