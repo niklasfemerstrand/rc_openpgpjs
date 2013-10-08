@@ -37,6 +37,7 @@ class rc_openpgpjs extends rcube_plugin
     $this->add_hook('user_create', array($this, 'user_create'));
     $this->register_action('plugin.pks_search', array($this, 'hkp_search'));
     $this->register_action('plugin.hkp_add', array($this, 'hkp_add'));
+    $this->register_action('plugin.pubkey_save', array($this, 'pubkey_save'));
 
     if ($this->rc->task == 'mail') {
       $this->add_hook('render_page', array($this, 'render_page'));
@@ -51,6 +52,10 @@ class rc_openpgpjs extends rcube_plugin
 
       // load css
       $this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
+
+      // add public key attachment related hooks
+      $this->add_hook('message_compose', array($this, 'message_compose'));
+      $this->add_hook('message_sent', array($this, 'unlink_pubkey'));
 
       if ($this->api->output->type == 'html') {
         // add key manager item to message menu
@@ -229,7 +234,20 @@ class rc_openpgpjs extends rcube_plugin
     header("HTTP/1.1 501 Not Implemented");
     die();
   }
- 
+
+  /**
+   * Saves the public key to a temporary file so we can send it as attachment
+   */
+  function pubkey_save() {
+    $rcmail = rcmail::get_instance();
+    $temp_dir = unslashify($rcmail->config->get('temp_dir'));
+    $file = $temp_dir."/".md5($_SESSION['username']).".asc";
+    if(file_exists($file)) {
+      $pubkey = trim(get_input_value('_pubkey', RCUBE_INPUT_POST));
+      file_put_contents($file, $pubkey);
+    }
+  }
+
   /**
    * Handler for preferences_list hook.
    * Adds options blocks into Compose settings sections in Preferences.
@@ -275,5 +293,48 @@ class rc_openpgpjs extends rcube_plugin
     }
 
     return $p;
-  } 
+  }
+
+  /**
+   * Handler for message_compose hook
+   * Creates a dummy publick key attachment
+   */
+  function message_compose($args) {
+    $dbg = print_r($args, true);
+
+    if ($f = $this->create_pubkey_dummy()) {
+      $args['attachments'][] = array('path' => $f, 'name' => "signature.asc", 'mimetype' => "text/plain");
+    }
+    return $args;
+  }
+
+  /**
+   * Handler for message_sent hook
+   * Deletes the public key from the server
+   */
+  function unlink_pubkey($args) {
+    $rcmail = rcmail::get_instance();
+    $temp_dir = unslashify($rcmail->config->get('temp_dir'));
+    $file = $temp_dir."/".md5($_SESSION['username']).".asc";
+    if(file_exists($file)) {
+      @unlink($file);
+    }
+  }
+
+  /**
+   * Creates a dummy public key file
+   */
+  function create_pubkey_dummy() {
+    $rcmail = rcmail::get_instance();
+    $temp_dir = unslashify($rcmail->config->get('temp_dir'));
+    if (!empty($temp_dir)) {
+      $file = $temp_dir."/".md5($_SESSION['username']).".asc";
+      if(file_exists($file))
+        @unlink($file);
+      if (file_put_contents($file, " ")) {
+        return $file;
+      }
+    }
+    return false;
+  }
 }

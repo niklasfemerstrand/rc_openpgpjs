@@ -286,17 +286,24 @@ if(window.rcmail) {
   /**
    * Get the user's public key
    */
-  function fetchSendersPubkey() {
+  function fetchSendersPubkey(armored) {
+    
+    if (typeof(armored) == "undefined") {
+      armored = false;
+    }
+
     var re = /[a-zA-Z0-9\._%+-]+@[a-zA-Z0-9\._%+-]+\.[a-zA-Z]{2,4}/g;
     var address = $("#_from>option:selected").html().match(re);
     
     if (address.length > 0) {
       var pubkey = getPubkeyForAddress(address[0]);
-      
+
       if(typeof(pubkey[0]) != "undefined") {
-        return pubkey[0].obj;
+        if (armored)
+          return pubkey[0].armored;
+        else
+          return pubkey[0].obj;
       }  
-    
     }
     return false;
   }
@@ -308,6 +315,8 @@ if(window.rcmail) {
     if(!$("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
       if(confirm(rcmail.gettext("continue_unencrypted", "rc_openpgpjs"))) {
+        // remove the public key attachment since we don't sign nor encrypt the message
+        removePublicKeyAttachment();
         return true;
       } else {
         return false;
@@ -317,6 +326,14 @@ if(window.rcmail) {
     if(typeof(this.finished_treating) !== "undefined") {
       return true;
     }
+
+    // send the user's public key to the server so it can be sent as attachment
+    var pubkey_sender = fetchSendersPubkey(true);
+    if (pubkey_sender) {
+        var lock = rcmail.set_busy(true, 'loading');
+        rcmail.http_post('plugin.pubkey_save', { _pubkey: pubkey_sender }, lock);
+    }
+    // end send user's public key to the server
 
     // Encrypt and sign
     if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").is(":checked")) {
@@ -431,6 +448,21 @@ if(window.rcmail) {
     }
 
     return false;
+  }
+
+  /**
+   * Removes the public key attachment
+   * Used if the user doesn't sign nor encrypt the message
+   */
+  function removePublicKeyAttachment() {
+    $("#attachment-list").each(function() {
+      $(this).find('li').each(function() {
+        if ($(this).text().indexOf('signature.asc') >= 0) {
+          rcmail.command('remove-attachment', $(this).attr('id'));
+          return false;
+        }
+      });
+    });
   }
 
   function importFromSKS(id) {
