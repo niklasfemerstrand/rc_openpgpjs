@@ -48,12 +48,12 @@ def deal_with_client(connstream):
 			print(header)
 			m = re.search("^Origin: (.*)$", header)
 			if m:
-				origin = m.groups()[0].rstrip("\n").rstrip("\r")
+				origin = m.groups()[0].rstrip()
 
 			# Fetch domain from referer header, some browsers always provide origin.
 			m = re.search("^Referer: (.*)/login", header)
 			if m:
-				referer = m.groups()[0].rstrip("\n").rstrip("\r")
+				referer = m.groups()[0].rstrip()
 
 			if "=" in header:
 				cmdstr = header
