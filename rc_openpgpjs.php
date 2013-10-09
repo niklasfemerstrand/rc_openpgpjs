@@ -31,6 +31,23 @@ class rc_openpgpjs extends rcube_plugin
    */
   function init()
   {
+    // Match remote version string with local version string to detect outdated plugin installs
+    if(!isset($_SESSION["rc_openpgpjs_ver"]) || $_SESSION["rc_openpgpjs_ver"] < date("Ymd")) {
+      $remote_src = file_get_contents("https://raw.github.com/qnrq/rc_openpgpjs/master/js/rc_openpgpjs.js");
+      $local_src = file_get_contents(__DIR__."/js/rc_openpgpjs.js");
+
+      preg_match("/var VERSTR = \"(.*)\"/", $remote_src, $remoteM);
+      preg_match("/var VERSTR = \"(.*)\"/", $local_src, $localM);
+
+      if(isset($remoteM[1]) && isset($localM[1])) {
+        if($remoteM[1] != $localM[1]) {
+          $_SESSION["rc_openpgpjs_outdated"] = 1;
+        }
+      }
+
+      $_SESSION["rc_openpgpjs_ver"] = date("Ymd"); // Checking once a day per session should be fine
+    }
+
     $this->rc = rcube::get_instance();
     $this->rm = rcmail::get_instance();
 
@@ -49,6 +66,10 @@ class rc_openpgpjs extends rcube_plugin
       $this->include_script('js/openpgp.min.js');
       $this->include_script('js/rc_openpgpjs.crypto.js');
       $this->include_script('js/rc_openpgpjs.js');
+
+      if(isset($_SESSION["rc_openpgpjs_outdated"])) {
+        $this->include_script('js/outdated.js');
+      }
 
       // load css
       $this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');

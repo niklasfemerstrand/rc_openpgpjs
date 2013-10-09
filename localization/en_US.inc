@@ -35,6 +35,7 @@ $labels['openpgp_options'] = 'OpenPGP Options';
 $labels['pass_mismatch'] = 'Passphrase mismatch';
 $labels['passphrase'] = 'Passphrase';
 $labels['person'] = 'Person';
+$labels['plugin_outdated'] = 'WARNING! rc_openpgpjs is outdated on this Roundcube installation. Update it, logout and then login again to make this message go away.';
 $labels['private_keys'] = 'Private keys';
 $labels['pubkey_import_success'] = 'Public key imported successfully';
 $labels['public_keys'] = 'Public keys';
