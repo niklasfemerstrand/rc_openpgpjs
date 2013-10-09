@@ -20,7 +20,7 @@
 +-------------------------------------------------------------------------+
 */
 
-var VERSTR = "20131008";
+var VERSTR = "20131009";
 
 if(window.rcmail) {
   rcmail.addEventListener("init", function() {
