@@ -521,18 +521,18 @@ if(window.rcmail) {
     $("#openpgpjs_search_input").removeAttr("disabled");
     $("#openpgpjs_search_submit").removeAttr("disabled");
 
-  if(response.message === "ERR: Missing param") {
-    console.log("Missing param");
-    return false;
-  }
+    if(response.message === "ERR: Missing param") {
+      console.log("Missing param");
+      return false;
+    }
 
-  if(response.message === "ERR: Invalid operation") {
-    console.log("Invalid operation");
-    return false;
-  }
+    if(response.message === "ERR: Invalid operation") {
+      console.log("Invalid operation");
+      return false;
+    }
 
     if(response.message === "ERR: No keys found") {
-        alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
+        alert(rcmail.gettext("search_no_keys", "rc_openpgpjs"));
         return false;
     }
 
@@ -540,7 +540,7 @@ if(window.rcmail) {
       try {
         result = JSON.parse(response.message);
       } catch(e) {
-        alert(rcmail.gettext("no_keys", "rc_openpgpjs"));
+        alert(rcmail.gettext("search_no_keys", "rc_openpgpjs"));
         return false;
       }
 
