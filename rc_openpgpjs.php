@@ -300,10 +300,8 @@ class rc_openpgpjs extends rcube_plugin
    * Creates a dummy publick key attachment
    */
   function message_compose($args) {
-    $dbg = print_r($args, true);
-
     if ($f = $this->create_pubkey_dummy()) {
-      $args['attachments'][] = array('path' => $f, 'name' => "signature.asc", 'mimetype' => "text/plain");
+      $args['attachments'][] = array('path' => $f, 'name' => "pubkey.asc", 'mimetype' => "text/plain");
     }
     return $args;
   }
