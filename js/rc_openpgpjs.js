@@ -20,6 +20,8 @@
 +-------------------------------------------------------------------------+
 */
 
+var VERSTR = "20131008";
+
 if(window.rcmail) {
   rcmail.addEventListener("init", function() {
     this.passphrase = "";
