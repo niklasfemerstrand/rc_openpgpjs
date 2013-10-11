@@ -38,8 +38,11 @@ Contact
 -------
 For any bug reports or feature requests please refer to the [tracking system][issues].
 
+Questions? Please see the [FAQ][faq].
+
 [roundcube]: http://www.roundcube.net/
-[openpgpjs]: http://openpgpjs.org/
+[openpgpjs]: https://openpgpjs.org/
 [issues]: https://github.com/qnrq/rc_openpgpjs/issues
 [why]: http://www.pgpi.org/doc/whypgp/en/
-[draft]: http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00
+[draft]: https://tools.ietf.org/html/draft-shaw-openpgp-hkp-00
+[faq]: https://github.com/qnrq/rc_openpgpjs/wiki/FAQ
