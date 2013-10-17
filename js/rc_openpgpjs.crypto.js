@@ -165,6 +165,18 @@ function decrypt(msg, privkey_armored, passphrase) {
   }
 }
 
+
+/**
+ * Verify signature of a clear-text message
+ *
+ * @param msg     {array}  Message to verify
+ * @param pubkeys {array}  Public key(s) to verify against
+ */
+function verify(msg, pubkeys) {
+  return msg[0].verifySignature(pubkeys);
+}
+
+
 function parseMsg(msg) {
 	return openpgp.read_message(msg);
 }

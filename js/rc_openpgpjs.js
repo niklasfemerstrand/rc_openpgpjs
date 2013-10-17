@@ -110,8 +110,30 @@ if(window.rcmail) {
 
     showKeyInfo(msg);
 
-    // TODO fix signature verification
-    if(msg[0].type === 2) return;
+    if(msg[0].type === 2) {
+      // rcmail.env.sender contains "Jon Doe <jd@example.com>" or just "jd@example.com";
+      // We try to extract the email address (according to RFC 5322) in either case
+      var senderAddress = rcmail.env.sender.match(/[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+/);
+      if(!senderAddress || !senderAddress.length) {
+        // In the case of a bogus sender name/address, throw an error
+        rcmail.display_message('CAUTION: Could not verify signature -- no valid sender email address recognized', 'error');
+        return false;
+      }
+      senderAddress = senderAddress[0];
+      var pubkeys = getPubkeyForAddress(senderAddress);
+      if(!pubkeys.length) {
+        rcmail.display_message('CAUTION: Could not verify signature -- no public key found for ' + senderAddress, 'error');
+        return false;
+      }
+      if(verify(msg, pubkeys)) {
+        rcmail.display_message('Signature valid: ' + senderAddress, 'confirmation');
+        $("#messagebody div.message-part pre").html("<strong>********* *BEGIN SIGNED PART* *********</strong>\n" + escapeHtml(msg[0].text) + "\n<strong>********** *END SIGNED PART* **********</strong>");
+        return true;
+      } else {
+        rcmail.display_message('CAUTION: Invalid signature', 'error');
+        return false;
+      }
+    }
 
     if(!getPrivkeyCount()) {
       rcmail.display_message(rcmail.gettext("no_key_imported", "rc_openpgpjs"), "error");
