@@ -623,7 +623,7 @@ if(window.rcmail) {
    */
   function select_key(i) {
     fingerprint = getFingerprint(i, true, false);
-    $("#openpgpjs_selected").html("<strong>" + rcmail.gettext("selected", "rc_openpgpjs") + ":</strong> " + fingerprint);
+    $("#openpgpjs_selected").html("<strong>" + rcmail.gettext("selected", "rc_openpgpjs") + ":</strong> " + $(".clickme#" + fingerprint).html());
     $("#openpgpjs_selected_id").val(i);
     $("#passphrase").val("");
   }
@@ -644,7 +644,7 @@ if(window.rcmail) {
         for (var j = 0; j < getKeyUserids(i, true).length; j++) {
           fingerprint = getFingerprint(i, true, false);
           person = escapeHtml(getPerson(i, j, true));
-          $("#openpgpjs_key_select_list").append("<div class=\"clickme\" onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
+          $("#openpgpjs_key_select_list").append("<div class=\"clickme\" id=\"" + fingerprint +"\"onclick=\"select_key(" + i + ");\">" + fingerprint + " " + person + "</div>");
         }
       }
 
