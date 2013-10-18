@@ -29,23 +29,27 @@ class rc_openpgpjs extends rcube_plugin
   /**
    * Plugin initialization.
    */
-  function init()
-  {
-    // Match remote version string with local version string to detect outdated plugin installs
-    if(!isset($_SESSION["rc_openpgpjs_ver"]) || $_SESSION["rc_openpgpjs_ver"] < date("Ymd")) {
-      $remote_src = file_get_contents("https://raw.github.com/qnrq/rc_openpgpjs/master/js/rc_openpgpjs.js");
-      $local_src = file_get_contents(__DIR__."/js/rc_openpgpjs.js");
+  function init() {
+    /**
+     * TODO: Setup listening httpd somewhere to serve latest file. Requires some infrastructure, like a website for the proj. This is TEMP.
+     */
+    if(ini_get("allow_url_fopen") === "1") {
+      // Match remote version string with local version string to detect outdated plugin installs
+      if(!isset($_SESSION["rc_openpgpjs_ver"]) || $_SESSION["rc_openpgpjs_ver"] < date("Ymd")) {
+        $remote_src = file_get_contents("https://raw.github.com/qnrq/rc_openpgpjs/master/js/rc_openpgpjs.js");
+        $local_src = file_get_contents(__DIR__."/js/rc_openpgpjs.js");
 
-      preg_match("/var VERSTR = \"(.*)\"/", $remote_src, $remoteM);
-      preg_match("/var VERSTR = \"(.*)\"/", $local_src, $localM);
+        preg_match("/var VERSTR = \"(.*)\"/", $remote_src, $remoteM);
+        preg_match("/var VERSTR = \"(.*)\"/", $local_src, $localM);
 
-      if(isset($remoteM[1]) && isset($localM[1])) {
-        if($remoteM[1] != $localM[1]) {
-          $_SESSION["rc_openpgpjs_outdated"] = 1;
+        if(isset($remoteM[1]) && isset($localM[1])) {
+          if($remoteM[1] != $localM[1]) {
+            $_SESSION["rc_openpgpjs_outdated"] = 1;
+          }
         }
-      }
 
-      $_SESSION["rc_openpgpjs_ver"] = date("Ymd"); // Checking once a day per session should be fine
+        $_SESSION["rc_openpgpjs_ver"] = date("Ymd"); // Checking once a day per session should be fine
+      }
     }
 
     $this->rc = rcube::get_instance();
