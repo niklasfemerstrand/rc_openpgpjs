@@ -38,7 +38,11 @@ if(window.rcmail) {
       width: "30%",
       open: function() {
         updateKeySelector();
-      }
+      },
+      close: function() {
+        $("#selected_key_passphrase").val("");
+        $("#openpgpjs_rememberpass").attr("checked", false);
+      },
     });
 	
     $("#openpgpjs_key_search").dialog({
@@ -71,6 +75,10 @@ if(window.rcmail) {
     rcmail.enable_command("open-key-manager", true);
 
     if(rcmail.env.action === "compose") {
+      rcmail.addEventListener("change_identity", function() {
+        sessionStorage.clear();
+        this.passphrase = "";
+      });
       // Disable draft autosave and prompt user when saving plaintext message as draft
       rcmail.env.draft_autosave = 0;
       rcmail.addEventListener("beforesavedraft", function() {
