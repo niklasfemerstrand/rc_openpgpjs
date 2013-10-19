@@ -21,8 +21,7 @@
 +-------------------------------------------------------------------------+
 */
 
-class rc_openpgpjs extends rcube_plugin
-{
+class rc_openpgpjs extends rcube_plugin {
   public $task = 'mail|settings';
   public $rc;
 
@@ -156,8 +155,7 @@ class rc_openpgpjs extends rcube_plugin
   /**
    * Create default identity, required as pubkey metadata
    */
-  function user_create($params)
-  {
+  function user_create($params) {
     $params['user_name'] = preg_replace("/@.*$/", "", $params['user']);
     $params['user_email'] = $params['user'];
     return $params;
@@ -280,8 +278,7 @@ class rc_openpgpjs extends rcube_plugin
    * @param array Original parameters
    * @return array Modified parameters
    */
-  function preferences_list($p)
-  {
+  function preferences_list($p) {
     if ($p['section'] == 'compose') {
       $p['blocks']['openpgp']['name'] = $this->gettext('openpgp_options');
 
@@ -310,8 +307,7 @@ class rc_openpgpjs extends rcube_plugin
    * @param array Original parameters
    * @return array Modified parameters
    */
-  function preferences_save($p)
-  {
+  function preferences_save($p) {
     if ($p['section'] == 'compose') {
       $p['prefs']['encrypt'] = get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false;
       $p['prefs']['sign'] = get_input_value('_sign', RCUBE_INPUT_POST) ? true : false;
