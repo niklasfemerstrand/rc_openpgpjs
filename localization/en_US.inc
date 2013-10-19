@@ -50,6 +50,7 @@ $labels['signature_match'] = 'Signature matches public key';
 $labels['signature_mismatch'] = 'WARNING! Signature doesn\'t match public key!';
 $labels['signature_invalid_sender'] = 'Could not verify signature: No valid sender email address recognized';
 $labels['signature_invalid_no_pubkey'] = 'Could not verify signature: No public key found for ';
+$labels['signature_invalid'] = 'CAUTION: Invalid signature';
 $labels['signature_valid'] = 'Signature valid';
 $labels['sign'] = 'Sign';
 $labels['status'] = 'Status';

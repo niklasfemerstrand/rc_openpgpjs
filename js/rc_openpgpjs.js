@@ -138,7 +138,7 @@ if(window.rcmail) {
         $("#messagebody div.message-part pre").html("<strong>********* *BEGIN SIGNED PART* *********</strong>\n" + escapeHtml(msg[0].text) + "\n<strong>********** *END SIGNED PART* **********</strong>");
         return true;
       } else {
-        displayUserMessage('CAUTION: Invalid signature', 'error');
+        displayUserMessage(rcmail.gettext('signature_invalid', 'rc_openpgpjs'), 'error');
         return false;
       }
     }
