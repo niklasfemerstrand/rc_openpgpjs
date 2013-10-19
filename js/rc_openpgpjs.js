@@ -124,17 +124,17 @@ if(window.rcmail) {
       var senderAddress = rcmail.env.sender.match(/[A-Za-z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+/);
       if(!senderAddress || !senderAddress.length) {
         // In the case of a bogus sender name/address, throw an error
-        displayUserMessage('Could not verify signature -- no valid sender email address recognized', 'notice');
+        displayUserMessage(rcmail.gettext('signature_invalid_sender', 'rc_openpgpjs'), 'notice');
         return false;
       }
       senderAddress = senderAddress[0];
       var pubkeys = getPubkeyForAddress(senderAddress);
       if(!pubkeys.length) {
-        displayUserMessage('Could not verify signature -- no public key found for ' + senderAddress, 'notice');
+        displayUserMessage(rcmail.gettext('signature_invalid_no_pubkey', 'rc_openpgpjs') + senderAddress, 'notice');
         return false;
       }
       if(verify(msg, pubkeys)) {
-        displayUserMessage('Signature valid: ' + senderAddress, 'confirmation');
+        displayUserMessage(rcmail.gettext('signature_valid', 'rc_openpgpjs') + ': ' + senderAddress, 'confirmation');
         $("#messagebody div.message-part pre").html("<strong>********* *BEGIN SIGNED PART* *********</strong>\n" + escapeHtml(msg[0].text) + "\n<strong>********** *END SIGNED PART* **********</strong>");
         return true;
       } else {
