@@ -47,3 +47,35 @@ ul.toolbarmenu li span.icon.key_manager {
 .odd { background-color: #ccc; }
 #openpgpjs_search_results { width: 99%; overflow: scroll; }
 #openpgpjs_search_results tr:hover { background-color: #fff; }
+
+/* Additional styles for the message-objects <div> in mail view;
+   Roundcube only includes a "notice" style for this area.
+   These are used for display of signature status of received messages. */
+#message-objects div.confirmation,
+#message-objects div.error {
+        font-weight: bold;
+        padding: 6px 30px 6px 25px;
+        background: url(../../../../skins/larry/images/messages.png) 0 5px no-repeat;
+        cursor: default;
+        display: block;
+        white-space: normal;
+}
+
+#message-objects div.confirmation {
+        color: #093;
+        border: 1px solid #093;
+        background-color: #9f9;
+        background-position: 5px -25px;
+}
+
+#message-objects div.error {
+        color: #900;
+        border: 1px solid #900;
+        background-color: #f99;
+        background-position: 5px -55px;
+}
+
+#message-objects div.messagepadding {
+        padding: 8px 12px 8px 30px;
+}
+
