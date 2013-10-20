@@ -113,27 +113,44 @@ class rc_openpgpjs extends rcube_plugin {
     } 
   }
 
+  // Match remote version string with local version string to detect outdated plugin installs
   private function version_detect() {
     /**
      * TODO: Setup listening httpd somewhere to serve latest file. Requires some infrastructure, like a website for the proj. This is TEMP.
      */
-    if(ini_get("allow_url_fopen") === "1") {
-      // Match remote version string with local version string to detect outdated plugin installs
-      if(!isset($_SESSION["rc_openpgpjs_ver"]) || $_SESSION["rc_openpgpjs_ver"] < date("Ymd")) {
+    if(!isset($_SESSION["rc_openpgpjs_ver"]) || $_SESSION["rc_openpgpjs_ver"] < date("Ymd")) {
+      $local_src = file_get_contents(__DIR__."/js/rc_openpgpjs.js");
+      if(ini_get("allow_url_fopen") === "1") {
         $remote_src = file_get_contents("https://raw.github.com/qnrq/rc_openpgpjs/master/js/rc_openpgpjs.js");
-        $local_src = file_get_contents(__DIR__."/js/rc_openpgpjs.js");
-
-        preg_match("/var VERSTR = \"(.*)\"/", $remote_src, $remoteM);
-        preg_match("/var VERSTR = \"(.*)\"/", $local_src, $localM);
-
-        if(isset($remoteM[1]) && isset($localM[1])) {
-          if($remoteM[1] != $localM[1]) {
-            $_SESSION["rc_openpgpjs_outdated"] = 1;
-          }
+      } elseif(ini_get("allow_url_fopen") != "1") {
+        if(!function_exists("curl_init")) {
+          // TODO: Add failure notif msg
+          return false;
         }
 
-        $_SESSION["rc_openpgpjs_ver"] = date("Ymd"); // Checking once a day per session should be fine
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "https://raw.github.com/qnrq/rc_openpgpjs/master/js/rc_openpgpjs.js");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $remote_src = curl_exec($ch);
+
+        if(curl_errno($ch)) {
+          // TODO: Add failure notif msg
+          return false;
+        }
+
+        curl_close($ch);
       }
+
+      preg_match("/var VERSTR = \"(.*)\"/", $remote_src, $remoteM);
+      preg_match("/var VERSTR = \"(.*)\"/", $local_src, $localM);
+
+      if(isset($remoteM[1]) && isset($localM[1])) {
+        if($remoteM[1] != $localM[1]) {
+          $_SESSION["rc_openpgpjs_outdated"] = 1;
+        }
+      }
+
+      $_SESSION["rc_openpgpjs_ver"] = date("Ymd"); // Checking once a day per session should be fine
     }
   }
 
