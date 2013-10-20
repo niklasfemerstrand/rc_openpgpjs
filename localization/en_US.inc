@@ -31,6 +31,7 @@ $labels['length_alg'] = 'Length/Alg';
 $labels['no_key_imported'] = 'Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the key manager!';
 $labels['no_keys'] = 'Please generate or import keys in the key manager!';
 $labels['none'] = 'none';
+$labels['no_window_crypto'] = 'WARNING! Your web browser does not support window.crypto (required by OpenPGP.js)';
 $labels['openpgp_options'] = 'OpenPGP Options';
 $labels['pass_mismatch'] = 'Passphrase mismatch';
 $labels['passphrase'] = 'Passphrase';

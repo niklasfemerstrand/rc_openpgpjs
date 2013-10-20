@@ -24,6 +24,10 @@ var VERSTR = "20131009";
 
 if(window.rcmail) {
   rcmail.addEventListener("init", function() {
+    if(!window.crypto || !window.crypto.getRandomValues) { // OpenPGP.js specific
+      rcmail.display_message(rcmail.gettext("no_window_crypto", "rc_openpgpjs"), "error");
+    }
+
     this.passphrase = "";
     rcmail.addEventListener("plugin.pks_search", pks_search_callback);
 
