@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ###############################################################################
 # This HTTPD acts bridge to make OpenPGP functionality accessible for         #
@@ -105,16 +105,7 @@ def do_gpg(cmdstr):
 	c       = {}
 	cmds_ok = ["keygen", "keylist", "keydel", "keyexport", "keyimport", "encrypt", "decrypt", "sign", "verify"]
 
-	if "&" in cmdstr: # Multiple params
-		cmds = cmdstr.split("&")
-		for cmd in cmds:
-			cc = cmd.split("=")
-			if cc[0] and cc[1]:
-				c[cc[0]] = urllib.parse.unquote(cc[1])
-	else: # Single param
-		cc = cmdstr.split("=")
-		if cc[0] and cc[1]:
-			c[cc[0]] = urllib.parse.unquote(cc[1])
+	c = dict(urllib.parse.parse_qsl(cmdstr))
 
 	if "cmd" not in c:
 		return("Missing cmdstr for GPG op")
@@ -213,11 +204,6 @@ def decrypt(cmd):
 	for req in required:
 		if req not in cmd:
 			return("Insufficient parameters: %s" % (req))
-
-	# TODO s/+/ / on these specific lines + comment
-	cmd["data"] = cmd["data"].replace("BEGIN+PGP+MESSAGE", "BEGIN PGP MESSAGE")
-	cmd["data"] = cmd["data"].replace("END+PGP+MESSAGE", "END PGP MESSAGE")
-	cmd["data"] = cmd["data"].replace("Version:+GnuPG+v2.0.20+(GNU/Linux)", "Version: GnuPG v2.0.20 (GNU/Linux)")
 
 	decrypted = gpg.decrypt(message = cmd["data"], passphrase = cmd["passphrase"])
 	print(decrypted.stderr)

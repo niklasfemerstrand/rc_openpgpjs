@@ -117,10 +117,8 @@
 						keyid = escapeHtml(obj[o].keyid);
 						length = escapeHtml(obj[o].length);
 						if(private) {
-							$("#privkeys").html("<thead><th>Keyid</th><th>Fingerprint</th><th>Algo</th><th>Length</th><th>Delete</th></thead>");
 							$("#privkeys").append("<tr><td>" + keyid + "</td>" + "<td>" +fingerprint + "</td><td>" + algo + "</td><td>" + length + "</td><td><a href='#' onclick='keydel(\"" + fingerprint + "\", true);'>X</a></td></tr>");
 						} else {
-							$("#pubkeys").html("<thead><th>Keyid</th><th>Fingerprint</th><th>Algo</th><th>Length</th><th>Delete</th><th></th></thead>");
 							$("#pubkeys").append("<tr><td>" + keyid + "</td><td>" + fingerprint + "</td><td>" + algo + "</td><td>" + length + "</td><td><a href='#' onclick='keydel(\"" + fingerprint + "\");'>X</a></td><td><a href=\"#\" onclick=\"exportPubkey('" + keyid + "')\">Export</a></td></tr>");
 						}
 					}
