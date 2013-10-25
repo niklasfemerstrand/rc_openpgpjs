@@ -9,6 +9,7 @@
 	<body>
 		<h1>pygpghttpd test suite</h1>
 		<div id="status"></div>
+		<hr />
 		<div id="tests" style="display:none;">
 			<h2>Key generation</h2>
 			<strong>Algo:</strong>
@@ -21,21 +22,68 @@
 			<input type="button" id="keygen" value="Generate" onclick="keygen($('#type').val(), $('#length').val(), $('#name').val(), $('#email').val(), $('#passphrase').val());" />
 			<p id="generating" style="display:none;color:red;">Generating, please wait...</div>
 
+			<hr />
 			<h2>Pubkeys</h2>
-			<table id="pubkeys">
-				<thead><th>Keyid</th><th>Fingerprint</th><th>Algo</th><th>Length</th><th>Delete</th></thead>
-			</table>
-			<h2>Privkeys</h2>
-			<table id="privkeys">
-				<thead><th>Keyid</th><th>Fingerprint</th><th>Algo</th><th>Length</th><th>Delete</th></thead>
+			<table id="pubkeys" style="border-collapse: collapse" border="1" cellpadding="3">
+				<thead><th>Keyid</th><th>Fingerprint</th><th>Algo</th><th>Length</th><th>Identities</th><th>Delete</th><th></th></thead>
 			</table>
 
+			<hr />
+			<h2>Privkeys</h2>
+			<table id="privkeys" style="border-collapse: collapse" border="1" cellpadding="3">
+				<thead><th>Keyid</th><th>Fingerprint</th><th>Algo</th><th>Length</th><th>Identities</th><th>Delete</th></thead>
+			</table>
+
+			<hr />
 			<h2>Encrypt</h2>
-			<textarea id="encrypt_data">Secrets</textarea>
+			Cleartext:<br />
+			<textarea rows="10" cols="80" id="encrypt_data">Secrets</textarea>
+			<br />
+			<fieldset style="width: 400px">
+				<legend> Signature options </legend>
+				<label><input type="checkbox" id="encrypt_sign" value="1" /> sign message</label>
+				<br />
+				Passphrase for signing:<br />
+				<input type="text" id="encrypt_sign_passphrase" />
+				<br />
+				Private key for signing:<br />
+				<select id="encrypt_sign_privkey"></select>
+			</fieldset>
+			<br />
+			Recipient email address(es):<br />
+			<input type="text" id="encrypt_recipient" />
+			<br />
 			<input type="button" value="Encrypt" onclick="encrypt();" />
+
+			<hr />
 			<h2>Decrypt</h2>
-			<textarea id="decrypt_data"></textarea>
+			Ciphertext:<br />
+			<textarea rows="10" cols="80" id="decrypt_data"></textarea>
+			<br />
+			Passphrase:<br />
+			<input type="text" id="decrypt_passphrase" />
+			<br />
 			<input type="button" value="Decrypt" onclick="decrypt();" />
+
+			<hr />
+			<h2>Sign</h2>
+			Message text:<br />
+			<textarea rows="10" cols="80" id="sign_data">setec astronomy</textarea>
+			<br />
+			Passphrase:<br />
+			<input type="text" id="sign_passphrase" />
+			<br />
+			Private key:<br />
+			<select id="sign_privkey"></select>
+			<br />
+			<input type="button" value="Sign" onclick="sign();" />
+
+			<hr />
+			<h2>Verify clear text</h2>
+			Message text:<br />
+			<textarea rows="10" cols="80" id="verify_data"></textarea>
+			<br />
+			<input type="button" value="Verify" onclick="verify();" />
 		</div>
 		<script src="./js/jquery-1.10.2.min.js"></script>
 		<script>
@@ -44,7 +92,7 @@
 				$("#status").append(": success!");
 				$("#tests").show();
 			}).fail(function() {
-				$("#status").append(": fail!");
+				$("#status").append(": fail! Make sure you imported the pypghttpd SSL certificate into your browser.");
 			});
 
 			function keygen(type, length, name, email, passphrase) {
@@ -111,15 +159,28 @@
 					private: private
 				}, function(data) {
 					obj = JSON.parse(data);
+					if(private) {
+						$("#privkeys tbody").empty();
+						$("#sign_privkey").empty();
+						$("#encrypt_sign_privkey").empty();
+					} else {
+						$("#pubkeys tbody").empty();
+					}
+
 					for(var o in obj) {
 						algo = escapeHtml(obj[o].algo);
 						fingerprint = escapeHtml(obj[o].fingerprint);
+						fingerprintHtml = fingerprint.fixed();
 						keyid = escapeHtml(obj[o].keyid);
+						keyidHtml = keyid.substr(0, 8).fixed() + keyid.substr(8, 8).bold().fixed();
 						length = escapeHtml(obj[o].length);
+						identities = escapeHtml(obj[o].uids.join(', '));
 						if(private) {
-							$("#privkeys").append("<tr><td>" + keyid + "</td>" + "<td>" +fingerprint + "</td><td>" + algo + "</td><td>" + length + "</td><td><a href='#' onclick='keydel(\"" + fingerprint + "\", true);'>X</a></td></tr>");
+							$("#privkeys").append("<tr><td>" + keyidHtml + "</td>" + "<td>" +fingerprintHtml + "</td><td>" + algo + "</td><td>" + length + "</td><td>" + identities + "</td><td><a href='#' onclick='keydel(\"" + fingerprint + "\", true);'>X</a></td></tr>");
+							$("<option>").text(keyid).appendTo("#sign_privkey");
+							$("<option>").text(keyid).appendTo("#encrypt_sign_privkey");
 						} else {
-							$("#pubkeys").append("<tr><td>" + keyid + "</td><td>" + fingerprint + "</td><td>" + algo + "</td><td>" + length + "</td><td><a href='#' onclick='keydel(\"" + fingerprint + "\");'>X</a></td><td><a href=\"#\" onclick=\"exportPubkey('" + keyid + "')\">Export</a></td></tr>");
+							$("#pubkeys").append("<tr><td>" + keyidHtml + "</td><td>" + fingerprintHtml + "</td><td>" + algo + "</td><td>" + length + "</td><td>" + identities + "</td><td><a href='#' onclick='keydel(\"" + fingerprint + "\");'>X</a></td><td><a href=\"#\" onclick=\"exportPubkey('" + keyid + "')\">Export</a></td></tr>");
 						}
 					}
 					return true;
@@ -139,7 +200,9 @@
 				$.post("https://localhost:11337", {
 					cmd: "encrypt",
 					data: $("#encrypt_data").val(),
-					recipients: "alice@foo.com"
+					sign: $("#encrypt_sign").is(":checked") ? $("#encrypt_sign_privkey").find(":selected").text() : "",
+					passphrase: $("#encrypt_sign_passphrase").val(),
+					recipients: $("#encrypt_recipient").val()
 				}, function(data) {
 					$("#decrypt_data").val(data);
 				});
@@ -149,9 +212,29 @@
 				$.post("https://localhost:11337", {
 					cmd: "decrypt",
 					data: $("#decrypt_data").val(),
-					passphrase: $("#passphrase").val()
+					passphrase: $("#decrypt_passphrase").val()
 				}, function(data) {
 					alert(data);
+				});
+			}
+
+			function sign() {
+				$.post("https://localhost:11337", {
+					cmd: "sign",
+					data: $("#sign_data").val(),
+					passphrase: $("#sign_passphrase").val(),
+					keyid: $("#sign_privkey").find(":selected").text()
+				}, function(data) {
+					$("#verify_data").val(data);
+				});
+			}
+
+			function verify() {
+				$.post("https://localhost:11337", {
+					cmd: "verify",
+					data: $("#verify_data").val(),
+				}, function(data) {
+					alert(data === "True" ? "Signature ok" : "Signature verification failed!");
 				});
 			}
 
