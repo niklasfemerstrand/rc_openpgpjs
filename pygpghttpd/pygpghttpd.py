@@ -22,7 +22,7 @@
 # iM4G1N3 A FR33 W0RLD Wh3R3 0n3 W0uLDN'T N33D K0P1R19H7 2 S4Y N0 2 K0PiFi9H7 #
 ###############################################################################
 
-import socket, ssl, sys, gnupg, json
+import re, socket, ssl, sys, gnupg, json
 from os.path import expanduser
 import urllib.parse
 import http.server
@@ -42,6 +42,12 @@ def handle_request(request_handler):
 	response = ""
 
 	origin = request_handler.headers.get("Origin")
+	if(not origin):
+		re_result = re.search("^(https?://.+?)/", request_handler.headers.get("Referer"))
+		if(re_result):
+			origin = re_result.groups()[0].strip()
+	print("origin: %s" % (origin))
+
 	origin_hostname = origin.replace("http://", "").replace("https://", "")
 	if origin_hostname not in cors:
 		response = "Illegal origin"
