@@ -303,19 +303,63 @@ class rc_openpgpjs extends rcube_plugin {
     if ($p['section'] == 'compose') {
       $p['blocks']['openpgp']['name'] = $this->gettext('openpgp_options');
 
+      if (!isset($no_override['encryption_level'])) 
+      {
+         $field_id = 'rcmfd_level';
+         $level = new html_select(array('name' => '_encLevel', 'id' => $field_id,
+            'onchange' => "$('#rcmfd_autoAttachKey').prop('disabled', !(this.selectedIndex) == 1 ); $('#rcmfd_encrypt').prop('disabled', !(this.selectedIndex) == 1 ); $('#rcmfd_sign').prop('disabled', !(this.selectedIndex) == 1 )"
+         ));
+         $level->add(Q($this->gettext('disabled')));
+         $level->add(Q($this->gettext('permissable')));
+         $level->add(Q($this->gettext('paranoid')));
+
+         
+         $p['blocks']['openpgp']['options']['level'] = array(
+            'title' => html::label($field_id, Q($this->gettext('encLevel'))),
+            'content' => $level->show($this->rc->config->get('encLevel', 1)),
+         );
+      } 
+
+      $field_id = 'rcmfd_autoAttachKey';
+      $encrypt = new html_checkbox(
+         array('name' => '_attachKey', 
+               'id' => $field_id, 
+               'value' => 1, 
+               'disabled' => ($this->rc->config->get('encLevel', $this->gettext('disabled')) == $this->gettext('disabled'))
+            )
+         );
+
+      $p['blocks']['openpgp']['options']['attachKey'] = array(
+        'title' => html::label($field_id, Q($this->gettext('always_attachKey'))),
+        'content' => $encrypt->show($this->rc->config->get('attachKey', false)?1:0),
+      );
+
       $field_id = 'rcmfd_encrypt';
-      $encrypt = new html_checkbox(array('name' => '_encrypt', 'id' => $field_id, 'value' => 1));
+      $encrypt = new html_checkbox(
+         array('name' => '_encrypt', 
+               'id' => $field_id, 
+               'value' => 1,  
+               'disabled' => ($this->rc->config->get('encLevel', $this->gettext('disabled')) == $this->gettext('disabled'))
+            )
+      );      
       $p['blocks']['openpgp']['options']['encrypt'] = array(
         'title' => html::label($field_id, Q($this->gettext('always_encrypt'))),
         'content' => $encrypt->show($this->rc->config->get('encrypt', false)?1:0),
       );
       
       $field_id = 'rcmfd_sign';
-      $sign = new html_checkbox(array('name' => '_sign', 'id' => $field_id, 'value' => 1));
+      $sign = new html_checkbox(
+         array('name' => '_sign', 
+               'id' => $field_id, 
+               'value' => 1, 
+               'disabled' => ($this->rc->config->get('encLevel', $this->gettext('disabled')) == $this->gettext('disabled'))
+            )
+         );      
       $p['blocks']['openpgp']['options']['sign'] = array(
         'title' => html::label($field_id, Q($this->gettext('always_sign'))),
         'content' => $sign->show($this->rc->config->get('sign', false)?1:0),
       );
+
     }
 
     return $p;
@@ -332,6 +376,8 @@ class rc_openpgpjs extends rcube_plugin {
     if ($p['section'] == 'compose') {
       $p['prefs']['encrypt'] = get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false;
       $p['prefs']['sign'] = get_input_value('_sign', RCUBE_INPUT_POST) ? true : false;
+      $p['prefs']['attachKey'] = get_input_value('_attachKey', RCUBE_INPUT_POST) ? true : false;
+      $p['prefs']['encLevel'] = get_input_value('_encLevel', RCUBE_INPUT_POST);
     }
 
     return $p;
