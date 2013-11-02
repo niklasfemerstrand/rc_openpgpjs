@@ -191,6 +191,8 @@ class rc_openpgpjs extends rcube_plugin {
    * For more details see the following:
    *   http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00
    *   http://sks-keyservers.net/
+   *
+   *    Please use http://pool.sks-keyservers.net as the source for this proxy
    */
   function hkp_search() {
     if(!isset($_POST['op']) || !isset($_POST['search'])) {
@@ -216,7 +218,7 @@ class rc_openpgpjs extends rcube_plugin {
     if($op == "index") {
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=index&search={$search}");
+      curl_setopt($ch, CURLOPT_URL, "http://pool.sks-keyservers.net:11371/pks/lookup?op=index&search={$search}");
       $result = curl_exec($ch);
       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
@@ -257,7 +259,7 @@ class rc_openpgpjs extends rcube_plugin {
 
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=get&search={$search}");
+      curl_setopt($ch, CURLOPT_URL, "http://pool.sks-keyservers.net:11371/pks/lookup?op=get&search={$search}");
       $result = curl_exec($ch);
       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
