@@ -1,3 +1,11 @@
+#sections-table #rcmrowopenpgp_prefs td.section {
+    background: url("images/openpgp.png") 4px 0px no-repeat;
+}
+
+#sections-table #rcmrowopenpgp_prefs.selected td.section {
+    background: url("images/openpgp.png") 4px -23px no-repeat;
+}
+
 .hidden {
   display: none; 
   visibility: hidden;

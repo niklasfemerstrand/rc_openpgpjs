@@ -63,3 +63,4 @@ $labels['permissable'] = "Permit sending unencrypted messages";
 $labels['paranoid'] = "Warn when sending unencrypted messages";
 $labels['encEnabled'] = "GPG Encryption";
 $labels['always_attachKey'] = "Attach public key to all outgoing message";
+$labels['openpgp_title'] = 'Message Encryption';

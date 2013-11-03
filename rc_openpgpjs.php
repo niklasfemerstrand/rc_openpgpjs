@@ -117,8 +117,12 @@ class rc_openpgpjs extends rcube_plugin {
     } elseif ($this->rc->task == 'settings') {
       // load localization
       $this->add_texts('localization/', false);
+
+      // load style sheet
+      $this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
       
       // add hooks for OpenPGP settings
+      $this->add_hook('preferences_sections_list', array($this, 'preferences_sections_list'));
       $this->add_hook('preferences_list', array($this, 'preferences_list'));
       $this->add_hook('preferences_save', array($this, 'preferences_save'));
     } 
@@ -309,6 +313,23 @@ class rc_openpgpjs extends rcube_plugin {
   }
 
   /**
+   * Handler for preferences_sections_list hook.
+   * Add new section to preferences for encryption
+   *
+   * @param array Original params
+   * @return array Modified params
+   */
+  function preferences_sections_list($p) {
+      $this->add_texts('locallization/', false);
+      $p['list']['openpgp_prefs'] = array(
+          'id'      => 'openpgp_prefs',
+          'section' => Q($this->gettext('openpgp_title'))
+      );
+      return ($p);
+  }
+
+
+  /**
    * Handler for preferences_list hook.
    * Adds options blocks into Compose settings sections in Preferences.
    *
@@ -316,7 +337,15 @@ class rc_openpgpjs extends rcube_plugin {
    * @return array Modified parameters
    */
   function preferences_list($p) {
-    if ($p['section'] == 'compose') {
+    if (!get_input_value('_framed', RCUBE_INPUT_GPC) && $args['section'] == 'openpgp_prefs') {
+        $p['blocks'][$args['section']]['options'] = array (
+            'title'     => '',
+            'content'   => html::tag('div', array('id' => 'pm_dummy'), '')
+        );
+        return $p;
+    }
+
+    if ($p['section'] == 'openpgp_prefs') {
       $p['blocks']['openpgp']['name'] = $this->gettext('openpgp_options');
 
       if (!isset($no_override['GPGPlugin'])) 
