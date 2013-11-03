@@ -167,7 +167,7 @@ class rc_openpgpjs extends rcube_plugin {
 
   private function is_enabled()
   {
-    return ($this->rc->config->get('encEnabled', $this->gettext('disabled')) != $this->gettext('disabled'));
+    return ($this->rc->config->get('encEnabled', '0') != '0');
   }
 
   /**
@@ -325,14 +325,14 @@ class rc_openpgpjs extends rcube_plugin {
          $enabled = new html_select(array('name' => '_encEnabled', 'id' => $field_id,
             'onchange' => "$('#rcmfd_autoAttachKey').prop('disabled', !(this.selectedIndex) == 1 ); $('#rcmfd_encrypt').prop('disabled', !(this.selectedIndex) == 1 ); $('#rcmfd_sign').prop('disabled', !(this.selectedIndex) == 1 )"
          ));
-         $enabled->add(Q($this->gettext('disabled')));
-         $enabled->add(Q($this->gettext('permissable')));
-         $enabled->add(Q($this->gettext('paranoid')));
+         $enabled->add(Q($this->gettext('disabled')), '0');
+         $enabled->add(Q($this->gettext('permissable')), '1');
+         $enabled->add(Q($this->gettext('paranoid')), '2');
 
          
          $p['blocks']['openpgp']['options']['enabled'] = array(
             'title' => html::label($field_id, Q($this->gettext('encEnabled'))),
-            'content' => $enabled->show($this->rc->config->get('encEnabled', 1)),
+            'content' => $enabled->show($this->rc->config->get('encEnabled', '0')),
          );
       } 
 
