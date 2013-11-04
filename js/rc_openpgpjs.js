@@ -351,7 +351,7 @@ if(window.rcmail) {
     if( !$("#openpgpjs_encrypt").is(":checked") &&
         !$("#openpgpjs_sign").is(":checked")) {
 
-         if ($("#openpgpjs_opts").val() == "2" ) {
+         if ($("#openpgpjs_warn").val() == "1" ) {
             if(confirm(rcmail.gettext("continue_unencrypted", "rc_openpgpjs"))) {
                 // remove the public key attachment since we don't sign nor encrypt the message
                 removePublicKeyAttachment();

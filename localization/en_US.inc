@@ -58,9 +58,7 @@ $labels['status'] = 'Status';
 $labels['valid'] = 'Valid';
 $labels['verify'] = 'Verify';
 
-$labels['disabled'] = "Disabled";
-$labels['permissable'] = "Permit sending unencrypted messages";
-$labels['paranoid'] = "Warn when sending unencrypted messages";
-$labels['encEnabled'] = "GPG Encryption";
+$labels['openpgp_enabled'] = "Enabled";
+$labels['warn_on_unencrypted'] = "Warn before sending unencrypted messages";
 $labels['always_attachKey'] = "Attach public key to all outgoing message";
 $labels['openpgp_title'] = 'Message Encryption';
