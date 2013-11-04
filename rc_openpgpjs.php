@@ -172,7 +172,7 @@ class rc_openpgpjs extends rcube_plugin {
 
   private function is_enabled()
   {
-    return $this->rc->config->get('openpgp_enabled', 0);
+    return $this->rc->config->get('openpgp_enabled', 1);
   }
 
   /**
@@ -365,7 +365,7 @@ class rc_openpgpjs extends rcube_plugin {
          ));
          $p['blocks']['openpgp']['options']['enabled'] = array(
             'title' => html::label($field_id, Q($this->gettext('openpgp_enabled'))),
-            'content' => $enabled->show($this->rc->config->get('openpgp_enabled', 1)),
+            'content' => $enabled->show($this->is_enabled())
          );
       } 
 
