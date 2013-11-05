@@ -63,13 +63,16 @@ class rc_openpgpjs extends rcube_plugin {
 
       if ($this->api->output->type == 'html') {
         // add key manager item to message menu
-        $opts = array("command"    => "open-key-manager",
-                      "label"      => "rc_openpgpjs.key_manager",
-                      "type"       => "link",
-                      "classact"   => "icon active",
-                      "class"      => "icon",
-                      "innerclass" => "icon key_manager");
-        $this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
+        if ( $this->is_enabled()) {
+            $opts = array("command"    => "open-key-manager",
+                          "label"      => "rc_openpgpjs.key_manager",
+                          "type"       => "link",
+                          "classact"   => "icon active",
+                          "class"      => "icon",
+                          "innerclass" => "icon key_manager");
+
+            $this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
+        }
 
         if ($this->rc->action == 'compose') {
 
@@ -444,7 +447,7 @@ class rc_openpgpjs extends rcube_plugin {
       $p['prefs']['sign'] = get_input_value('_sign', RCUBE_INPUT_POST) ? true : false;
       $p['prefs']['attachKey'] = get_input_value('_attachKey', RCUBE_INPUT_POST) ? true : false;
       $p['prefs']['warn_on_unencrypted'] = get_input_value('_warn', RCUBE_INPUT_POST) ? true : false;
-      $p['prefs']['openpgp_enabled'] = get_input_value('_encEnabled', RCUBE_INPUT_POST) ? true: false;
+      $p['prefs']['openpgp_enabled'] = get_input_value('_encEnabled', RCUBE_INPUT_POST) ? '1': '0';
     }
     return $p;
   }
