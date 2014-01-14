@@ -25,9 +25,9 @@ externally generated keys can be imported and used inside Roundcube.
 
 Key lookups
 -----------
-Public keys can be imported from PGP Secure Key Servers like pgp.mit.edu and
+Public keys can be imported from PGP Secure Key Servers, i.e. pool.sks-keyservers.net and
 any other Public Key Server which follows the [OpenPGP HTTP Keyserver Protocol 
-(HKP)][draft].
+(HKP)][draft], i.e pgp.mit.edu.
 
 Installation
 ------------

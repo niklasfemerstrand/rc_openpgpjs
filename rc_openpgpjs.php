@@ -101,6 +101,16 @@ class rc_openpgpjs extends rcube_plugin {
             html::span('composeoption', html::label(null, $sign->show() . $this->gettext('sign'))),
             "composeoptions"
           );
+          $warn_unencrypted_opts = array('id' => 'openpgpjs_warn_unencrypted',
+                             'type' => 'checkbox');
+          if($this->rc->config->get('warn_unencrypted', false)) {
+             $warn_unencrypted_opts['checked'] = 'checked';
+          }
+          $warn_unencrypted = new html_inputfield($warn_unencrypted_opts);
+          $this->api->add_content(
+            html::span('composeoption', html::label(null, $warn_unencrypted->show() . $this->gettext('warn_unencrypted'))),
+            "composeoptions"
+          );
         }
       }
     } elseif ($this->rc->task == 'settings') {
@@ -191,6 +201,8 @@ class rc_openpgpjs extends rcube_plugin {
    * For more details see the following:
    *   http://tools.ietf.org/html/draft-shaw-openpgp-hkp-00
    *   http://sks-keyservers.net/
+   *
+   *    Please use http://pool.sks-keyservers.net as the source for this proxy
    */
   function hkp_search() {
     if(!isset($_POST['op']) || !isset($_POST['search'])) {
@@ -216,7 +228,7 @@ class rc_openpgpjs extends rcube_plugin {
     if($op == "index") {
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=index&search={$search}");
+      curl_setopt($ch, CURLOPT_URL, "http://pool.sks-keyservers.net:11371/pks/lookup?op=index&search={$search}");
       $result = curl_exec($ch);
       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
@@ -257,7 +269,7 @@ class rc_openpgpjs extends rcube_plugin {
 
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-      curl_setopt($ch, CURLOPT_URL, "http://pgp.mit.edu:11371/pks/lookup?op=get&search={$search}");
+      curl_setopt($ch, CURLOPT_URL, "http://pool.sks-keyservers.net:11371/pks/lookup?op=get&search={$search}");
       $result = curl_exec($ch);
       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
@@ -316,6 +328,13 @@ class rc_openpgpjs extends rcube_plugin {
         'title' => html::label($field_id, Q($this->gettext('always_sign'))),
         'content' => $sign->show($this->rc->config->get('sign', false)?1:0),
       );
+
+      $field_id = 'rcmfd_warn_unencrypted';
+      $warn_unencrypted = new html_checkbox(array('name' => '_warn_unencrypted', 'id' => $field_id, 'value' => 1));
+      $p['blocks']['openpgp']['options']['warn_unencrypted'] = array(
+        'title' => html::label($field_id, Q($this->gettext('warn_unencrypted'))),
+        'content' => $warn_unencrypted->show($this->rc->config->get('warn_unencrypted', false)?1:0),
+      );
     }
 
     return $p;
@@ -332,6 +351,7 @@ class rc_openpgpjs extends rcube_plugin {
     if ($p['section'] == 'compose') {
       $p['prefs']['encrypt'] = get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false;
       $p['prefs']['sign'] = get_input_value('_sign', RCUBE_INPUT_POST) ? true : false;
+      $p['prefs']['warn_unencrypted'] = get_input_value('_warn_unencrypted', RCUBE_INPUT_POST) ? true : false;
     }
 
     return $p;

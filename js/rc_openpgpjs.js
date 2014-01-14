@@ -350,12 +350,18 @@ if(window.rcmail) {
   function beforeSend() {
     if(!$("#openpgpjs_encrypt").is(":checked") &&
        !$("#openpgpjs_sign").is(":checked")) {
-      if(confirm(rcmail.gettext("continue_unencrypted", "rc_openpgpjs"))) {
+      if($("#openpgpjs_warn_unencrypted").is(":checked")) {
+        if(confirm(rcmail.gettext("continue_unencrypted", "rc_openpgpjs"))) {
+          // remove the public key attachment since we don't sign nor encrypt the message
+          removePublicKeyAttachment();
+          return true;
+        } else {
+          return false;
+        }
+      } else {
         // remove the public key attachment since we don't sign nor encrypt the message
         removePublicKeyAttachment();
         return true;
-      } else {
-        return false;
       }
     }
 
