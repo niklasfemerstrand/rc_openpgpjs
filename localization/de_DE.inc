@@ -55,3 +55,4 @@ $labels['sign'] = 'Signieren';
 $labels['status'] = 'Status';
 $labels['valid'] = 'Gültig';
 $labels['verify'] = 'Überprüfen';
+$labels['warn_unencrypted'] = 'Vor dem Senden von unverschlüsselten Nachrichten warnen';
