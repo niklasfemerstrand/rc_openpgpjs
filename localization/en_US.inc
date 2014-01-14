@@ -57,3 +57,4 @@ $labels['sign'] = 'Sign';
 $labels['status'] = 'Status';
 $labels['valid'] = 'Valid';
 $labels['verify'] = 'Verify';
+$labels['warn_unencrypted'] = 'Notify on sending unencrypted mail';
