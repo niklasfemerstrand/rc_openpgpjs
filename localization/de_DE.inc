@@ -55,3 +55,8 @@ $labels['sign'] = 'Signieren';
 $labels['status'] = 'Status';
 $labels['valid'] = 'Gültig';
 $labels['verify'] = 'Überprüfen';
+
+$labels['openpgp_enabled'] = "Aktiviert";
+$labels['warn_on_unencrypted'] = "Vor dem Senden von unverschlüsselten Nachrichten warnen";
+$labels['always_attachKey'] = "Öffentlichen Schlüssel als Anhang hinzufügen";
+$labels['openpgp_title'] = 'OpenPGP Verschlüsselung';
