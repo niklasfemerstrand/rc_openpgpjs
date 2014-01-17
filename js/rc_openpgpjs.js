@@ -152,7 +152,7 @@ if(window.rcmail) {
       return false;
     }
 
-    if(this.passphrase === "" && getPrivkeyCount() > 0) {
+    if((typeof this.passphrase == "undefined" || this.passphrase === "") && getPrivkeyCount() > 0) {
       $("#openpgpjs_key_select").dialog("open");
       return false;
     }
@@ -232,7 +232,6 @@ if(window.rcmail) {
    */
   function importGenerated() {
     $("#import_button").addClass("hidden");
-    importPubKey($("#generated_public").html());
 
     if(importPrivKey($("#generated_private").html(), $("#gen_passphrase").val())) {
       alert(rcmail.gettext("import_gen", "rc_openpgpjs"));
@@ -374,7 +373,7 @@ if(window.rcmail) {
     // Encrypt and sign
     if($("#openpgpjs_encrypt").is(":checked") && $("#openpgpjs_sign").is(":checked")) {
       // get the private key
-      if(this.passphrase === "" && getPrivkeyCount() > 0) {
+      if((typeof this.passphrase == "undefined" || this.passphrase === "") && getPrivkeyCount() > 0) {
         this.sendmail = true; // Global var to notify set_passphrase
         $("#openpgpjs_key_select").dialog("open");
         return false;
@@ -454,7 +453,7 @@ if(window.rcmail) {
     if($("#openpgpjs_sign").is(":checked") &&
        !$("#openpgpjs_encrypt").is(":checked")) {
 
-      if(this.passphrase === "" && getPrivkeyCount() > 0) {
+      if((typeof this.passphrase == "undefined" || this.passphrase === "") && getPrivkeyCount() > 0) {
         this.sendmail = true; // Global var to notify set_passphrase
         $("#openpgpjs_key_select").dialog("open");
         return false;
@@ -619,6 +618,9 @@ if(window.rcmail) {
       return false;
     }
 
+    // Extract pubkey from privkey and import
+	pubkey = privkey_obj.extractPublicKey();
+	importPubkey(pubkey);
 	importPrivkey(key, passphrase);
     updateKeyManager();
     $("#importPrivkeyField").val("");

@@ -225,9 +225,9 @@ class rc_openpgpjs extends rcube_plugin {
 
       if($status == 200) {
         // TODO Fix search regex to match 32/64-bit str
-        preg_match_all("/\/pks\/lookup\?op=vindex&search=(.*)\">(.*)<\/a>/", $result, $m);
+        preg_match_all("/\/pks\/lookup\?op=vindex&amp;search=(.*)\">(.*)<\/a>/", $result, $m);
 
-        if(count($m) > 0) {
+        if(count($m[0]) > 0) {
           $found = array();
           for($i = 0; $i < count($m[0]); $i++)
             $found[] = array($m[1][$i], $m[2][$i]);
