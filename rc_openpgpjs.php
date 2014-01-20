@@ -63,51 +63,70 @@ class rc_openpgpjs extends rcube_plugin {
 
       if ($this->api->output->type == 'html') {
         // add key manager item to message menu
-        $opts = array("command"    => "open-key-manager",
-                      "label"      => "rc_openpgpjs.key_manager",
-                      "type"       => "link",
-                      "classact"   => "icon active",
-                      "class"      => "icon",
-                      "innerclass" => "icon key_manager");
-        $this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
+        if ( $this->is_enabled()) {
+            $opts = array("command"    => "open-key-manager",
+                          "label"      => "rc_openpgpjs.key_manager",
+                          "type"       => "link",
+                          "classact"   => "icon active",
+                          "class"      => "icon",
+                          "innerclass" => "icon key_manager");
+
+            $this->api->add_content(html::tag('li', null, $this->api->output->button($opts)), "messagemenu");
+        }
 
         if ($this->rc->action == 'compose') {
-          // add key manager button to compose toolbar
-          $opts = array("command"    => "open-key-manager",
-                        "label"      => "rc_openpgpjs.key_manager",
-                        "type"       => "link",
-                        "classact"   => "button active key_manager",
-                        "class"      => "button key_manager");
-          $this->api->add_content($this->api->output->button($opts), "toolbar");
-          
-          // add encrypt and sign checkboxes to composeoptions
-          $encrypt_opts = array('id' => 'openpgpjs_encrypt',
-                                'type' => 'checkbox');
-          if($this->rc->config->get('encrypt', false)) {
-             $encrypt_opts['checked'] = 'checked';
-          }
-          $encrypt = new html_inputfield($encrypt_opts);
-          $this->api->add_content(
-            html::span('composeoption', html::label(null, $encrypt->show() . $this->gettext('encrypt'))),
-            "composeoptions"
-          );
-          $sign_opts = array('id' => 'openpgpjs_sign',
-                             'type' => 'checkbox');
-          if($this->rc->config->get('sign', false)) {
-             $sign_opts['checked'] = 'checked';
-          }
-          $sign = new html_inputfield($sign_opts);
-          $this->api->add_content(
-            html::span('composeoption', html::label(null, $sign->show() . $this->gettext('sign'))),
-            "composeoptions"
-          );
+
+            if ( $this->is_enabled()) 
+            {
+               // Add hidden field to determine if warning should be enabled
+               $openpgp_warn_opts = array('id' => 'openpgpjs_warn',
+                   'type' => 'hidden',
+                   'value' => $this->rc->config->get('warn_on_unencrypted', false)?'1':'0'
+               );
+               $opengpg_warn = new html_inputfield($openpgp_warn_opts);
+               $this->api->add_content( html::span('composeoption', html::label(null, $opengpg_warn->show())), "composeoptions");
+
+              // add key manager button to compose toolbar
+              $opts = array("command"    => "open-key-manager",
+                            "label"      => "rc_openpgpjs.key_manager",
+                            "type"       => "link",
+                            "classact"   => "button active key_manager",
+                            "class"      => "button key_manager");
+              $this->api->add_content($this->api->output->button($opts), "toolbar");
+              
+              // add encrypt and sign checkboxes to composeoptions
+              $encrypt_opts = array('id' => 'openpgpjs_encrypt',
+                                    'type' => 'checkbox');
+              if($this->rc->config->get('encrypt', false)) {
+                 $encrypt_opts['checked'] = 'checked';
+              }
+              $encrypt = new html_inputfield($encrypt_opts);
+              $this->api->add_content(
+                html::span('composeoption', html::label(null, $encrypt->show() . $this->gettext('encrypt'))),
+                "composeoptions"
+              );
+              $sign_opts = array('id' => 'openpgpjs_sign',
+                                 'type' => 'checkbox');
+              if($this->rc->config->get('sign', false)) {
+                 $sign_opts['checked'] = 'checked';
+              }
+              $sign = new html_inputfield($sign_opts);
+              $this->api->add_content(
+                html::span('composeoption', html::label(null, $sign->show() . $this->gettext('sign'))),
+                "composeoptions"
+              );
+            }
         }
       }
     } elseif ($this->rc->task == 'settings') {
       // load localization
       $this->add_texts('localization/', false);
+
+      // load style sheet
+      $this->include_stylesheet($this->local_skin_path() . '/rc_openpgpjs.css');
       
       // add hooks for OpenPGP settings
+      $this->add_hook('preferences_sections_list', array($this, 'preferences_sections_list'));
       $this->add_hook('preferences_list', array($this, 'preferences_list'));
       $this->add_hook('preferences_save', array($this, 'preferences_save'));
     } 
@@ -152,6 +171,11 @@ class rc_openpgpjs extends rcube_plugin {
 
       $_SESSION["rc_openpgpjs_ver"] = date("Ymd"); // Checking once a day per session should be fine
     }
+  }
+
+  private function is_enabled()
+  {
+    return $this->rc->config->get('openpgp_enabled', 1);
   }
 
   /**
@@ -295,6 +319,23 @@ class rc_openpgpjs extends rcube_plugin {
   }
 
   /**
+   * Handler for preferences_sections_list hook.
+   * Add new section to preferences for encryption
+   *
+   * @param array Original params
+   * @return array Modified params
+   */
+  function preferences_sections_list($p) {
+      $this->add_texts('locallization/', false);
+      $p['list']['openpgp_prefs'] = array(
+          'id'      => 'openpgp_prefs',
+          'section' => Q($this->gettext('openpgp_title'))
+      );
+      return ($p);
+  }
+
+
+  /**
    * Handler for preferences_list hook.
    * Adds options blocks into Compose settings sections in Preferences.
    *
@@ -302,22 +343,93 @@ class rc_openpgpjs extends rcube_plugin {
    * @return array Modified parameters
    */
   function preferences_list($p) {
-    if ($p['section'] == 'compose') {
+    if (!get_input_value('_framed', RCUBE_INPUT_GPC) && $args['section'] == 'openpgp_prefs') {
+        $p['blocks'][$args['section']]['options'] = array (
+            'title'     => '',
+            'content'   => html::tag('div', array('id' => 'pm_dummy'), '')
+        );
+        return $p;
+    }
+
+    if ($p['section'] == 'openpgp_prefs') {
       $p['blocks']['openpgp']['name'] = $this->gettext('openpgp_options');
 
+      if (!isset($no_override['openpgp_enabled'])) 
+      {
+         $field_id = 'rcmfd_openpgp_enabled';
+         $enabled = new html_checkbox(
+             array('name' => '_encEnabled', 
+                    'id' => $field_id,
+                    'value' => 1,
+                    'onchange' => "$('#rcmfd_auto_attach_key').prop('disabled', !(this.checked)); " .
+                                  "$('#rcmfd_warn_unencrypted').prop('disabled', !(this.checked)); " .
+                                  "$('#rcmfd_encrypt').prop('disabled', !(this.checked)); " .
+                                  "$('#rcmfd_sign').prop('disabled', !(this.checked))"
+         ));
+         $p['blocks']['openpgp']['options']['enabled'] = array(
+            'title' => html::label($field_id, Q($this->gettext('openpgp_enabled'))),
+            'content' => $enabled->show($this->is_enabled())
+         );
+      } 
+
+      /* Warn on encrypted checkbox */
+      $field_id = 'rcmfd_warn_unencrypted';
+      $warn = new html_checkbox(
+         array('name' => '_warn', 
+               'id' => $field_id, 
+               'value' => 1, 
+               'disabled' => !$this->is_enabled()
+            )
+         );
+
+      $p['blocks']['openpgp']['options']['warn'] = array(
+        'title' => html::label($field_id, Q($this->gettext('warn_on_unencrypted'))),
+        'content' => $warn->show($this->rc->config->get('warn_on_unencrypted', false)?1:0),
+    );
+
+      /* Auto attach checkbox */
+      $field_id = 'rcmfd_auto_attach_key';
+      $attach = new html_checkbox(
+         array('name' => '_attachKey', 
+               'id' => $field_id, 
+               'value' => 1, 
+               'disabled' => !$this->is_enabled()
+            )
+         );
+
+      $p['blocks']['openpgp']['options']['attachKey'] = array(
+        'title' => html::label($field_id, Q($this->gettext('always_attachKey'))),
+        'content' => $attach->show($this->rc->config->get('attachKey', false)?1:0),
+      );
+
+      /* Encrypt default checkbox */
       $field_id = 'rcmfd_encrypt';
-      $encrypt = new html_checkbox(array('name' => '_encrypt', 'id' => $field_id, 'value' => 1));
+      $encrypt = new html_checkbox(
+         array('name' => '_encrypt', 
+               'id' => $field_id, 
+               'value' => 1,  
+               'disabled' => !$this->is_enabled()
+            )
+      );      
       $p['blocks']['openpgp']['options']['encrypt'] = array(
         'title' => html::label($field_id, Q($this->gettext('always_encrypt'))),
         'content' => $encrypt->show($this->rc->config->get('encrypt', false)?1:0),
       );
-      
+
+      /* Sign default checkbox */
       $field_id = 'rcmfd_sign';
-      $sign = new html_checkbox(array('name' => '_sign', 'id' => $field_id, 'value' => 1));
+      $sign = new html_checkbox(
+         array('name' => '_sign', 
+               'id' => $field_id, 
+               'value' => 1, 
+               'disabled' => !$this->is_enabled()
+            )
+         );      
       $p['blocks']['openpgp']['options']['sign'] = array(
         'title' => html::label($field_id, Q($this->gettext('always_sign'))),
         'content' => $sign->show($this->rc->config->get('sign', false)?1:0),
       );
+
     }
 
     return $p;
@@ -331,11 +443,14 @@ class rc_openpgpjs extends rcube_plugin {
    * @return array Modified parameters
    */
   function preferences_save($p) {
-    if ($p['section'] == 'compose') {
+    if ($p['section'] == 'openpgp_prefs') 
+    {
       $p['prefs']['encrypt'] = get_input_value('_encrypt', RCUBE_INPUT_POST) ? true : false;
       $p['prefs']['sign'] = get_input_value('_sign', RCUBE_INPUT_POST) ? true : false;
+      $p['prefs']['attachKey'] = get_input_value('_attachKey', RCUBE_INPUT_POST) ? true : false;
+      $p['prefs']['warn_on_unencrypted'] = get_input_value('_warn', RCUBE_INPUT_POST) ? true : false;
+      $p['prefs']['openpgp_enabled'] = get_input_value('_encEnabled', RCUBE_INPUT_POST) ? '1': '0';
     }
-
     return $p;
   }
 
@@ -344,7 +459,7 @@ class rc_openpgpjs extends rcube_plugin {
    * Creates a dummy publick key attachment
    */
   function message_compose($args) {
-    if ($f = $this->create_pubkey_dummy()) {
+    if ($this->is_enabled() && ($this->rc->config->get('attachKey', false)) && ( $f = $this->create_pubkey_dummy() )) {
       $args['attachments'][] = array('path' => $f, 'name' => "pubkey.asc", 'mimetype' => "text/plain");
     }
     return $args;
