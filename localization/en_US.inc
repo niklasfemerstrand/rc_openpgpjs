@@ -2,9 +2,9 @@
 $labels = array();
 $labels['action'] = 'Action';
 $labels['always_encrypt'] = 'Always encrypt messages';
-$labels['always_sign'] = 'Always sign messages'; 
+$labels['always_sign'] = 'Always sign messages';
 $labels['bits'] = 'Bits';
-$labels['continue_unencrypted'] = 'Continue sending unencrypted and unsigned email?'; 
+$labels['continue_unencrypted'] = 'Continue sending unencrypted and unsigned email?';
 $labels['delete'] = 'Delete';
 $labels['delete_priv'] = 'Delete this private key?';
 $labels['delete_pub'] = 'Delete this public key?';
@@ -60,5 +60,5 @@ $labels['verify'] = 'Verify';
 
 $labels['openpgp_enabled'] = "Enabled";
 $labels['warn_on_unencrypted'] = "Warn before sending unencrypted messages";
-$labels['always_attachKey'] = "Attach public key to all outgoing message";
+$labels['always_attachKey'] = "Attach public key to all outgoing messages";
 $labels['openpgp_title'] = 'Message Encryption';
