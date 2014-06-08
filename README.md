@@ -1,7 +1,13 @@
+THIS PROJECT IS DEAD.
+================
+This project is killed due to lost interest, motivation and resources. Its
+future development and survival relies entirely on the FOSS community. Please
+turn to maintained forks instead.
+
+Feel free to contact me if you have any questions.
+
 rc_openpgpjs
 ================
-[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=qnrq&url=https://github.com/qnrq/rc_openpgpjs/&title=rc_openpgpjs&language=&tags=github&category=software)
-
 rc_openpgpjs is an open source (GPLv2) extension adding OpenPGPs functionality
 to the Roundcube webmail project. rc_openpgpjs is written with the intention to
 be as user friendly as possible for everyday PGP use. See
