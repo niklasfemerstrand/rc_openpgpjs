@@ -306,7 +306,7 @@ if(window.rcmail) {
         pubkeys.push(pubkey[0].obj);
       } else {
         // Querying PKS for recipient pubkey
-       if(confirm("Couldn't find a public key for " + recipient + ". If you already have it you can import it into the key manager. Would you like to query the key server for the missing key?")) {
+       if(confirm(rcmail.gettext("missing_recipient_pubkey", "rc_openpgpjs") + recipient)) {
           rcmail.http_post("plugin.pks_search", "search=" + recipient + "&op=index");
           $("#openpgpjs_search_input").attr("disabled", "disabled");
           $("#openpgpjs_search_submit").attr("disabled", "disabled");

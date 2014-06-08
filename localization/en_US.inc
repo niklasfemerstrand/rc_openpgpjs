@@ -28,6 +28,7 @@ $labels['key_manager'] = 'Key manager';
 $labels['key_mismatch'] = 'This message was not intended for this private key';
 $labels['key_search'] = 'Key search';
 $labels['length_alg'] = 'Length/Alg';
+$labels['missing_recipient_pubkey'] = 'Couldn\'t find a public key. If you already have it you can import it into the key manager. Would you like to query the key server for the missing key?: ';
 $labels['no_key_imported'] = 'Detected PGP encrypted content but no imported private keys. Please import your private PGP key using the key manager!';
 $labels['no_keys'] = 'Please generate or import keys in the key manager!';
 $labels['none'] = 'none';
